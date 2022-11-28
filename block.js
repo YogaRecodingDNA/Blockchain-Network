@@ -1,6 +1,6 @@
-const CryptoJS = require("cryto-js");
+const CryptoJS = require("crypto-js");
 
-function Block(index, transactions, difficulty, prevBlockHash, minedBy, nonce, blockDataHash, dateCreated, blockHash) {
+function Block({ index, transactions, difficulty, prevBlockHash, minedBy, nonce, blockDataHash, dateCreated, blockHash }) {
     this.index = index;
     this.transactions = transactions;
     this.difficulty = difficulty;
@@ -33,23 +33,14 @@ Block.prototype.calculateBlockDataHash = function() {
         minedBy: this.minedBy
     };
 
-    let blockDataJSON = JSON.stringify(blockData);
-
-    this.blockDataHash = CryptoJS.SHA256(blockDataJSON);
+    this.blockDataHash = CryptoJS.SHA256(blockData).toString();
 };
 
 Block.prototype.calculateBlockHash = function() {
-    // const blockDataHash = this.blockDataHash.toString();
-    // const nonce = this.nonce.toString();
-    // const dateCreated = this.dateCreated.toString();
-    // const dataToHash = blockDataHash + nonce + dateCreated;
-    const data = {
-        blockDataHash: this.blockDataHash.toString(),
-        nonce: this.nonce.toString(),
-        dateCreated: this.dateCreated.toString()
-    };
 
-    const dataJSON = JSON.stringify(data);
-
-    this.blockHash = CryptoJS.SHA256(dataToHash);
+    this.blockHash = CryptoJS.SHA256(
+        this.blockDataHash + this.nonce + this.dateCreated).toString();
 };
+
+
+module.exports = Block;
