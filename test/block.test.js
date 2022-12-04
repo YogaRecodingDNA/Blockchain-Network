@@ -1,4 +1,4 @@
-const Block = require("./block");
+const Block = require("../src/block");
 
 describe('Block', () => {
     const index = 99; 
@@ -33,12 +33,12 @@ describe('Block', () => {
     const difficulty = 5; 
     const prevBlockHash = "029438HPWIOERG20398GH"; 
     const minedBy = "2048750ASURVQ0487HHW85Q4FY8"; 
-    const nonce = 90875; 
     const blockDataHash = "09Q3840PQWRJNSOHFIH205W89GHW"; 
+    const nonce = 90875; 
     const dateCreated = 1669611445361; 
     const blockHash = "29085HGSOITBH0W8547HW0T8UHW0";
 
-    const block = new Block({ index, transactions, difficulty, prevBlockHash, minedBy, nonce, blockDataHash, dateCreated, blockHash });
+    const block = new Block({ index, transactions, difficulty, prevBlockHash, minedBy, blockDataHash, nonce, dateCreated, blockHash });
 
     it('has an "index" property', () => {
         expect(block.index).toEqual(index);
@@ -60,12 +60,12 @@ describe('Block', () => {
         expect(block.minedBy).toEqual(minedBy);
     });
 
-    it('has a "nonce" property', () => {
-        expect(block.nonce).toEqual(nonce);
-    });
-
     it('has a "blockDataHash" property', () => {
         expect(block.blockDataHash).toEqual(blockDataHash);
+    });
+
+    it('has a "nonce" property', () => {
+        expect(block.nonce).toEqual(nonce);
     });
 
     it('has a dateCreated property', () => {

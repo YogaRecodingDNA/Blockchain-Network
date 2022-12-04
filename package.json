@@ -21,6 +21,7 @@
     "jest": "^29.3.1"
   },
   "dependencies": {
-    "crypto-js": "^4.1.1"
+    "crypto-js": "^4.1.1",
+    "elliptic": "^6.5.4"
   }
 }
