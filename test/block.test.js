@@ -39,7 +39,7 @@ describe('Block', () => {
     const dateCreated = 1669611445361; 
     const blockHash = "29085HGSOITBH0W8547HW0T8UHW0";
 
-    const block = new Block({ index, transactions, difficulty, prevBlockHash, minedBy, blockDataHash, nonce, dateCreated, blockHash });
+    const block = new Block(index, transactions, difficulty, prevBlockHash, minedBy, blockDataHash, nonce, dateCreated, blockHash);
 
     it('has a "index" property', () => {
         expect(block.index).toEqual(index);
@@ -77,6 +77,7 @@ describe('Block', () => {
         expect(block.blockHash).toEqual(blockHash);
     });
 
+
     describe('genesis()', () => {
         const genesisBlock = Block.genesis(); //static functions used when you don't need to use or change data but contain functionality within a class name itself
         console.log('genesisBlock', genesisBlock);
@@ -85,8 +86,32 @@ describe('Block', () => {
             expect(genesisBlock instanceof Block).toBe(true); // returns true if genesisBlock and Block are same type
         });
 
-        it('returns genesis the data', () => {
+        it('returns the genesis data', () => {
             expect(genesisBlock).toEqual(GENESIS_DATA);
+        });
+    });
+
+
+    describe('mineNewBlock()', () => {
+        const previousBlock = Block.genesis();
+        const data = "Mined data";
+
+        const minedBlock = Block.mineNewBlock({ previousBlock, data });
+
+        it('returns a Block instance', () => {
+            expect(minedBlock instanceof Block).toBe(true);
+        });
+
+        it('sets the `prevBlockHash` to be the `hash` of the previousBlock', () => {
+            expect(minedBlock.prevBlockHash).toEqual(previousBlock.blockHash);
+        });
+
+        it('sets the `data`', () => {
+            expect(minedBlock.data).toEqual(data);
+        });
+        
+        it('sets a `dateCreated`', () => {
+            expect(minedBlock.dateCreated).not.toEqual(undefined); // don't want to equal undefined
         });
     });
 });
