@@ -17,7 +17,7 @@ describe("Transaction", () => {
     const minedInBlockIndex = 4;
     const transferSuccessful = true;
 
-    const transaction = new Transaction({ from, to, value, fee, dateCreated, data, senderPubKey, transactionDataHash, senderSignature, minedInBlockIndex, transferSuccessful });
+    const transaction = new Transaction(from, to, value, fee, dateCreated, data, senderPubKey, transactionDataHash, senderSignature, minedInBlockIndex, transferSuccessful);
 
     it('has a "from" property', () => {
         expect(transaction.from).toEqual(from);

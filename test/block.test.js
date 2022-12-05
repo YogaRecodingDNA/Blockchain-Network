@@ -1,3 +1,4 @@
+const { GENESIS_DATA } = require("../config");
 const Block = require("../src/block");
 
 describe('Block', () => {
@@ -40,7 +41,7 @@ describe('Block', () => {
 
     const block = new Block({ index, transactions, difficulty, prevBlockHash, minedBy, blockDataHash, nonce, dateCreated, blockHash });
 
-    it('has an "index" property', () => {
+    it('has a "index" property', () => {
         expect(block.index).toEqual(index);
     });
 
@@ -74,5 +75,18 @@ describe('Block', () => {
 
     it('has a "blockHash" property', () => {
         expect(block.blockHash).toEqual(blockHash);
+    });
+
+    describe('genesis()', () => {
+        const genesisBlock = Block.genesis(); //static functions used when you don't need to use or change data but contain functionality within a class name itself
+        console.log('genesisBlock', genesisBlock);
+
+        it('returns a Block instance', () => {
+            expect(genesisBlock instanceof Block).toBe(true); // returns true if genesisBlock and Block are same type
+        });
+
+        it('returns genesis the data', () => {
+            expect(genesisBlock).toEqual(GENESIS_DATA);
+        });
     });
 });
