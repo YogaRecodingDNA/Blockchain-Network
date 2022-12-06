@@ -1,4 +1,4 @@
-const { GENESIS_DATA } = require("../config");
+const { GENESIS_DATA } = require("../src/utils/config");
 const Block = require("../src/block");
 
 describe('Block', () => {

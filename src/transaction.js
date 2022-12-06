@@ -1,6 +1,4 @@
-const CryptoJS = require("crypto-js");
-const EC = require('elliptic').ec;
-const ec = new EC('secp256k1');
+const CryptoHashUtils = require("./utils/CryptoHashUtils");
 
 // Transaction constructor function
 function Transaction(from, to, value, fee, dateCreated, data, senderPubKey, transactionDataHash, senderSignature, minedInBlockIndex, transferSuccessful) {
@@ -20,7 +18,6 @@ function Transaction(from, to, value, fee, dateCreated, data, senderPubKey, tran
     this.transferSuccessful = transferSuccessful;
 }
 
-
 // Method - Calculate Transaction Data Hash
 Transaction.prototype.calculateTransactionDataHash = function() {
     const transactionData = {
@@ -37,19 +34,19 @@ Transaction.prototype.calculateTransactionDataHash = function() {
 
     const transactionDataJSON = JSON.stringify(transactionData);
 
-    this.transactionDataHash = CryptoJS.SHA256(transactionDataJSON).toString();
-
-    // return transactionDataJSON;
+    this.transactionDataHash = CryptoHashUtils.sha256(transactionDataJSON).toString();
 };
-
 
 // Method - Sign A Transaction
 Transaction.prototype.signTransaction = function(privateKey) {
-    const key = ec.keyFromPrivate(privateKey);
-    const transactionDataJSON = calculateTransactionDataHash().split(" ").join("");
-    const signature = key.sign(transactionDataJSON);
+    this.senderSignature = CryptoHashUtils.signData(
+        this.transactionDataHash, privateKey);
+};
 
-    this.senderSignature = [signature.r.toString(16), signature.s.toString(16)];
+// Method - Verify Signature
+Transaction.prototype.verifySignature = function() {
+    return CryptoUtils.verifySignature(this.transactionDataHash,
+        this.senderPubKey, this.senderSignature);
 };
 
 
