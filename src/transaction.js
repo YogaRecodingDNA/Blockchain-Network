@@ -12,6 +12,9 @@ function Transaction(from, to, value, fee, dateCreated, data, senderPubKey, tran
     this.data = data;
     this.senderPubKey = senderPubKey;
     this.transactionDataHash = transactionDataHash;
+        // Calculate hash if not present
+    if (transactionDataHash === undefined) this.calculateTransactionDataHash();
+
     this.senderSignature = senderSignature;
     this.minedInBlockIndex = minedInBlockIndex;
     this.transferSuccessful = transferSuccessful;
@@ -30,11 +33,13 @@ Transaction.prototype.calculateTransactionDataHash = function() {
         senderPubKey: this.senderPubKey
     };
 
-    this.transactionDataHash = CryptoJS.SHA256(transactionData).toString();
-    
     if (!transactionData.data) delete transactionData.data;
 
-    return JSON.stringify(transactionData);
+    const transactionDataJSON = JSON.stringify(transactionData);
+
+    this.transactionDataHash = CryptoJS.SHA256(transactionDataJSON).toString();
+
+    // return transactionDataJSON;
 };
 
 

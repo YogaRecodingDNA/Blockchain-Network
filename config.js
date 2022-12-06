@@ -5,7 +5,7 @@ const EC = require('elliptic').ec;
 const secp256k1 = new EC('secp256k1');
 
  // GENESIS + FAUCET TRANSACTION CREATION DATE
- const genesisDate = new Date();
+ const genesisDate = "2022-12-12T00:00:00.000Z";
 
  // FAUCET KEYS / ADDRESS
  const faucetPrivateKey = "1d513f8a9689d2c43852ab9a9777ed333811c1d9d6e1b90c47a7e9e214153308";
@@ -28,7 +28,7 @@ const secp256k1 = new EC('secp256k1');
      faucetAddress, // to Address
      1000000000000, // Faucet value
      0, // mining fee
-     genesisDate.toISOString(), // date created
+     genesisDate, // date created
      "genesis tx", // data
      genesisPublicKey, //senderPubKey
      undefined, // transactionDataHash
@@ -37,11 +37,8 @@ const secp256k1 = new EC('secp256k1');
      true // transferSuccessful
  );
  
- // GENESIS BLOCK INSERT DYNAMIC DATA
-//  genesisBlock.transactions = [genesisFaucetTransaction];
-//  genesisBlock.dateCreated = genesisDate.toISOString();
-
-const GENESIS_DATA = new Block( // SCREEN_CASE syntax common for hard code data
+// GENESIS BLOCK
+ const genesisBlock = new Block( // SCREEN_CASE syntax common for hard code data
     0, // index
     [genesisFaucetTransaction], // transactions
     0 ,// difficulty
@@ -49,8 +46,10 @@ const GENESIS_DATA = new Block( // SCREEN_CASE syntax common for hard code data
     genesisAddress, // minedBy
     undefined, // blockDataHash
     0, // nonce
-    genesisDate.toISOString(), // dateCreated
+    genesisDate, // dateCreated
     undefined, // blockHash
 );
 
-module.exports = { GENESIS_DATA };
+module.exports = { 
+    genesisBlock
+};

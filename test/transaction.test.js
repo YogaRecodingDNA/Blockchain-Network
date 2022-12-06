@@ -19,39 +19,18 @@ describe("Transaction", () => {
 
     const transaction = new Transaction(from, to, value, fee, dateCreated, data, senderPubKey, transactionDataHash, senderSignature, minedInBlockIndex, transferSuccessful);
 
-    it('has a "from" property', () => {
+    it('has the properties: from, to, value, fee, dateCreated, data, senderPubKey, transactionDataHash, senderSignature, minedInBlockIndex, transferSuccessful', () => {
         expect(transaction.from).toEqual(from);
-    });
-    it('has a "to" property', () => {
         expect(transaction.to).toEqual(to);
-    });
-    it('has a "value" property', () => {
         expect(transaction.value).toEqual(value);
-    });
-    it('has a "fee" property', () => {
         expect(transaction.fee).toEqual(fee);
-    });
-    it('has a "dateCreated" property', () => {
         expect(transaction.dateCreated).toEqual(dateCreated);
-    });
-    it('has a "data" property', () => {
         expect(transaction.data).toEqual(data);
-    });
-    it('has a "senderPubKey" property', () => {
         expect(transaction.senderPubKey).toEqual(senderPubKey);
-    });
-    it('has a "transactionDataHash" property', () => {
         expect(transaction.transactionDataHash).toEqual(transactionDataHash);
-    });
-    it('has a "senderSignature" property', () => {
         expect(transaction.senderSignature).toEqual(senderSignature);
-    });
-    it('has a "minedInBlockIndex" property', () => {
         expect(transaction.minedInBlockIndex).toEqual(minedInBlockIndex);
-    });
-    it('has a "transferSuccessful" property', () => {
         expect(transaction.transferSuccessful).toEqual(transferSuccessful);
     });
-    
 
 });
