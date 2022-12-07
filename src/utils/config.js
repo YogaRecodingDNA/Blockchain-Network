@@ -2,6 +2,10 @@ const Block = require("../Block");
 const Transaction = require("../Transaction");
 const CryptoHashUtils = require("./CryptoHashUtils");
 
+// DEFAULT SERVER PORT AND URL
+const PORT = process.argv[2]; // 2nd arg of node package "script" is port number
+const currentNodeURL = process.argv[3]; // 3rd arg of node package "script" is url
+
 // GENESIS + FAUCET TRANSACTION CREATION DATE
 const genesisDate = "2022-12-12T00:00:00.000Z";
 
@@ -52,6 +56,21 @@ const genesisBlock = new Block( // SCREEN_CASE syntax common for hard code data
 );
 
 
-module.exports = { 
-    genesisBlock
+module.exports = {
+    defaultServerHost: "localhost",
+    defaultServerPort: PORT,
+    currentNodeURL,
+    genesisBlock,
+    faucetPrivateKey,
+    faucetPublicKey,
+    faucetAddress,
+    minerPrivateKey,
+    minerPublicKey,
+    minerAddress,
+    genesisAddress,
+    genesisPublicKey,
+    genesisSignature,
+    blockReward: 50000000,
+    minimumTransactionFee: 10,
+    initialDifficulty: 5
 };

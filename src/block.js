@@ -42,14 +42,14 @@ Block.prototype.calculateBlockDataHash = function() {
 
     this.blockDataHash = CryptoHashUtils.sha256(blockData).toString();
 
-    console.log("BLOCK DATA HASH", this.blockDataHash);
+    // console.log("BLOCK DATA HASH", this.blockDataHash);
 };
 
 Block.prototype.calculateBlockHash = function() {
     this.blockHash = CryptoHashUtils.sha256(
         this.blockDataHash + this.nonce + this.dateCreated).toString();
 
-    console.log("BLOCK HASH", this.blockHash);
+    // console.log("BLOCK HASH", this.blockHash);
 };
 
 

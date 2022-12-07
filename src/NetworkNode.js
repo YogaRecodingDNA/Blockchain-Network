@@ -1,258 +1,269 @@
+const express = require("express");
+const bodyParser = require("body-parser");
 const Blockchain = require("./blockchain");
-const config = require("./utils/Config");
-
-// Create Blockchain Network Node
-let node = {
-    NodeId: "", // unique_string - Current Node's unique identifier
-    SelfUri: "", // URL - Base URL of REST endpoints
-    Peers: {}, // Map map(nodeId -> URL) of peers connected to this node
-    Chain: new Blockchain(), // The Blockchain (Blocks, Transactions, Balances, Mining jobs)
-};
-
+const Config = require("./utils/Config");
+// const uuid = require("uuid/v1");
+const cors = require("cors");
+const rp = require("request-promise");
+const { StatusCodes } = require("http-status-codes");
+const { json } = require("express");
+// const PORT = process.argv[2];
 
 // Create Express app
-const express = require("express");
 const app = express();
-
-
-// Enable JSON data in the HTTP request body
-const bodyParser = require("body-parser");
-app.use(bodyParser.json());
+app.use(bodyParser.json()); // Enable JSON data in the HTTP request body
 app.use(bodyParser.urlencoded({ extended: false}));
+app.use(cors()); // Enable Cross-Origin Resource Sharing (CORS)
 
 
 // ENDPOINTS - BUILDING THE BLOCKCHAIN NODE  ========================================
 // ==================================================================================
 
-// HOME ENDPOINT
+// HOME
 app.get("/", (req, res) => {
-
-})
-.then(data => {
-    // TODO:
-    
-    // Response message
-    res.json({});
+    const ExpressListEndpoints = require("express-list-endpoints");
+    let endpoints = ExpressListEndpoints(app);
+    let listEndpoints = endpoints.map( endpoint => 
+        `<li>${endpoint.methods} <a href="${endpoint.path}">${endpoint.path}</a></li>`).join("");
+    res.send(
+        "<h1>VinyasaChain - A simple unified blockchain network</h1>" +
+        `<ul>${listEndpoints}</ul>`
+    );
 });
 
 // INFO - Nodes may provide additional info by choice
 app.get("/info", (req, res) => {
-
-})
-.then(data => {
-    // TODO:
-    
-    // Response message
-    res.json({});
-});
-// DEBUG - Debug Info (All Node Data)
-app.get("/debug", (req, res) => {
-
-})
-.then(data => {
-    // TODO:
-    
-    // Response message
-    res.json({});
-});
-// Debug/Reset Chain - For debugging/testing only. Should reset entire chain to its initial state.
-app.get("/debug/reset-chain", (req, res) => {
-
-})
-.then(data => {
-    // TODO:
-    
-    // Response message
-    res.json({});
+    res.json({
+        "about": "VinyasaChain/0.9-js",
+        "nodeId": "76igyug",
+        "chainId": "987goihjbgi",
+        "nodeUrl": Config.currentNodeURL,
+        "peers": 0,
+        "currentDifficulty": 5,
+        "blocksCount": 2,
+        "cumulativeDifficulty": 2,
+        "confirmedTransactions": 2,
+        "pendingTransactions": 108
+    });
 });
 
+// // DEBUG - Debug Info (All Node Data)
+// app.get("/debug", (req, res) => {
 
-// IMPLEMENTING BLOCKS ==============================================================
-// ==================================================================================
-// BLOCKS
-app.get("/blocks", (req, res) => {
+// })
+// .then(data => {
+//     // TODO:
 
-})
-.then(data => {
-    // TODO:
-    
-    // Response message
-    res.json({});
-});
+//     // Response message
+//     res.json({});
+// });
+// // Debug/Reset Chain - For debugging/testing only. Should reset entire chain to its initial state.
+// app.get("/debug/reset-chain", (req, res) => {
 
-// BLOCK BY INDEX
-app.get("/blocks/:blockIndex", (req, res) => {
+// })
+// .then(data => {
+//     // TODO:
 
-})
-.then(data => {
-    // TODO:
-    
-    // Response message
-    res.json({});
-});
+//     // Response message
+//     res.json({});
+// });
 
 
-// IMPLEMENTING TRANSACTIONS ========================================================
-// ==================================================================================
-// GET PENDING TRANSACTIONS
-app.get("/transactions/pending", (req, res) => {
+// // IMPLEMENTING BLOCKS ==============================================================
+// // ==================================================================================
+// // BLOCKS
+// app.get("/blocks", (req, res) => {
 
-})
-.then(data => {
-    // TODO:
-    
-    // Response message
-    res.json({});
-});
+// })
+// .then(data => {
+//     // TODO:
 
-// GET CONFIRMED TRANSACTIONS
-app.get("/transactions/confirmed", (req, res) => {
+//     // Response message
+//     res.json({});
+// });
 
-})
-.then(data => {
-    // TODO:
-    
-    // Response message
-    res.json({});
-});
+// // BLOCK BY INDEX
+// app.get("/blocks/:blockIndex", (req, res) => {
 
-// GET TRANSACTION BY HASH
-app.get("/transactions/:transactionHash", (req, res) => {
+// })
+// .then(data => {
+//     // TODO:
 
-})
-.then(data => {
-    // TODO:
-    
-    // Response message
-    res.json({});
-});
-
-// LIST ALL ACCOUNT BALANCES
-app.get("/balances", (req, res) => {
-
-})
-.then(data => {
-    // TODO:
-    
-    // Response message
-    res.json({});
-});
-
-// LIST TRANSACTIONS FOR ADDRESS
-app.get("/address/:address/transactions", (req, res) => {
-
-})
-.then(data => {
-    // TODO:
-    
-    // Response message
-    res.json({});
-});
-
-// GET BALANCES FOR ADDRESS
-app.get("/address/:address/balance", (req, res) => {
-
-})
-.then(data => {
-    // TODO:
-    
-    // Response message
-    res.json({});
-});
-
-// BALANCES INVALID FOR ADDRESS
-app.get("/address/invalidAddress/balance", (req, res) => {
-
-})
-.then(data => {
-    // TODO:
-    
-    // Response message
-    res.json({});
-});
-
-// SEND TRANSACTION
-app.post("/transactions/send", (req, res) => {
-
-})
-.then(data => {
-    // TODO:
-    
-    // Response message
-    res.json({});
-});
+//     // Response message
+//     res.json({});
+// });
 
 
-// IMPLEMENTING MINING ========================================================
-// ============================================================================
-// GET MINING JOB
-app.get("/mining/get-mining-job/:minerAddress", (req, res) => {
+// // IMPLEMENTING TRANSACTIONS ========================================================
+// // ==================================================================================
+// // GET PENDING TRANSACTIONS
+// app.get("/transactions/pending", (req, res) => {
 
-})
-.then(data => {
-    // TODO:
-    
-    // Response message
-    res.json({});
-});
+// })
+// .then(data => {
+//     // TODO:
 
-// SUBMIT MINED BLOCK | IMPLEMENTING MINING (validate)
-app.post("/mining/submit-mined-block", (req, res) => {
+//     // Response message
+//     res.json({});
+// });
 
-})
-.then(data => {
-    // TODO:
-    
-    // Response message
-    res.json({});
-});
+// // GET CONFIRMED TRANSACTIONS
+// app.get("/transactions/confirmed", (req, res) => {
 
-// DEBUG -> MINE A BLOCK
-app.get("/debug/mine/:minerAddress/:difficulty", (req, res) => {
+// })
+// .then(data => {
+//     // TODO:
 
-})
-.then(data => {
-    // TODO:
-    
-    // Response message
-    res.json({});
-});
+//     // Response message
+//     res.json({});
+// });
+
+// // GET TRANSACTION BY HASH
+// app.get("/transactions/:transactionHash", (req, res) => {
+
+// })
+// .then(data => {
+//     // TODO:
+
+//     // Response message
+//     res.json({});
+// });
+
+// // LIST ALL ACCOUNT BALANCES
+// app.get("/balances", (req, res) => {
+
+// })
+// .then(data => {
+//     // TODO:
+
+//     // Response message
+//     res.json({});
+// });
+
+// // LIST TRANSACTIONS FOR ADDRESS
+// app.get("/address/:address/transactions", (req, res) => {
+
+// })
+// .then(data => {
+//     // TODO:
+
+//     // Response message
+//     res.json({});
+// });
+
+// // GET BALANCES FOR ADDRESS
+// app.get("/address/:address/balance", (req, res) => {
+
+// })
+// .then(data => {
+//     // TODO:
+
+//     // Response message
+//     res.json({});
+// });
+
+// // BALANCES INVALID FOR ADDRESS
+// app.get("/address/invalidAddress/balance", (req, res) => {
+
+// })
+// .then(data => {
+//     // TODO:
+
+//     // Response message
+//     res.json({});
+// });
+
+// // SEND TRANSACTION
+// app.post("/transactions/send", (req, res) => {
+
+// })
+// .then(data => {
+//     // TODO:
+
+//     // Response message
+//     res.json({});
+// });
 
 
-// PEERS AND SYNCHRONIZATION ========================================================
-// ==================================================================================
-// LIST ALL PEERS
-app.get("/peers", (req, res) => {
+// // IMPLEMENTING MINING ========================================================
+// // ============================================================================
+// // GET MINING JOB
+// app.get("/mining/get-mining-job/:minerAddress", (req, res) => {
 
-})
-.then(data => {
-    // TODO:
-    
-    // Response message
-    res.json({});
-});
+// })
+// .then(data => {
+//     // TODO:
 
-// CONNECT A PEER (validate)
-app.post("/peers/connect", (req, res) => {
+//     // Response message
+//     res.json({});
+// });
 
-})
-.then(data => {
-    // TODO:
-    
-    // Response message
-    res.json({});
-});
+// // SUBMIT MINED BLOCK | IMPLEMENTING MINING (validate)
+// app.post("/mining/submit-mined-block", (req, res) => {
 
-// NOTIFY PEERS ABOUT NEW BLOCK
-app.post("/peers/notify-new-block", (req, res) => {
+// })
+// .then(data => {
+//     // TODO:
 
-})
-.then(data => {
-    // TODO:
-    
-    // Response message
-    res.json({});
-});
+//     // Response message
+//     res.json({});
+// });
+
+// // DEBUG -> MINE A BLOCK
+// app.get("/debug/mine/:minerAddress/:difficulty", (req, res) => {
+
+// })
+// .then(data => {
+//     // TODO:
+
+//     // Response message
+//     res.json({});
+// });
+
+
+// // PEERS AND SYNCHRONIZATION ========================================================
+// // ==================================================================================
+// // LIST ALL PEERS
+// app.get("/peers", (req, res) => {
+
+// })
+// .then(data => {
+//     // TODO:
+
+//     // Response message
+//     res.json({});
+// });
+
+// // CONNECT A PEER (validate)
+// app.post("/peers/connect", (req, res) => {
+
+// })
+// .then(data => {
+//     // TODO:
+
+//     // Response message
+//     res.json({});
+// });
+
+// // NOTIFY PEERS ABOUT NEW BLOCK
+// app.post("/peers/notify-new-block", (req, res) => {
+
+// })
+// .then(data => {
+//     // TODO:
+
+//     // Response message
+//     res.json({});
+// });
+
+// REGISTER NEW NODES - Network Node Data Structure:
+// networkNode = {
+//     NodeId: "", // unique_string - Current Node's unique identifier
+//     SelfUri: "", // URL - Base URL of REST endpoints
+//     Peers: {}, // Map map(nodeId -> URL) of peers connected to this node
+//     Chain: new Blockchain(), // The Blockchain (Blocks, Transactions, Balances, Mining jobs)
+//     chainID: "" // Genesis Block Hash identifies the chain
+// };
 
 // DELETE LOST PEERS
 // If a peer is contacted and does not respond, delete it from the connected peers
@@ -260,8 +271,6 @@ app.post("/peers/notify-new-block", (req, res) => {
 
 
 // REGISTER A NODE WITH THE NETWORK
-const PORT = process.argv[2];
-
-app.listen(PORT, function() {
-    console.log(`Success! Listening on port ${PORT}...`);
+app.listen(Config.defaultServerPort, function() {
+    console.log(`Success! Listening on port ${Config.defaultServerPort}...`);
 });
