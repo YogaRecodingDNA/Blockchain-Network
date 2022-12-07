@@ -1,5 +1,5 @@
-const { GENESIS_DATA } = require("../src/utils/config");
-const Block = require("../src/block");
+const { GENESIS_DATA } = require("../src/utils/Config");
+const Block = require("../src/Block");
 
 describe('Block', () => {
     const index = 99; 

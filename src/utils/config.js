@@ -1,5 +1,5 @@
-const Block = require("../block");
-const Transaction = require("../transaction");
+const Block = require("../Block");
+const Transaction = require("../Transaction");
 const CryptoHashUtils = require("./CryptoHashUtils");
 
 // GENESIS + FAUCET TRANSACTION CREATION DATE

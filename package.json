@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest --watchAll"
+    "test": "jest --watchAll",
+    "node_1": "nodemon --watch dev -e js src/NetworkNode.js 5555 http://localhost:5555"
   },
   "repository": {
     "type": "git",
@@ -21,7 +22,10 @@
     "jest": "^29.3.1"
   },
   "dependencies": {
+    "body-parser": "^1.20.1",
     "crypto-js": "^4.1.1",
-    "elliptic": "^6.5.4"
+    "elliptic": "^6.5.4",
+    "express": "^4.18.2",
+    "nodemon": "^2.0.20"
   }
 }
