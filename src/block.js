@@ -1,6 +1,6 @@
 const CryptoHashUtils = require("./utils/CryptoHashUtils");
 
-function Block(index, transactions, difficulty, prevBlockHash, minedBy, blockDataHash, nonce, dateCreated, blockHash) {
+function Block(index, transactions, difficulty, prevBlockHash, minedBy, blockDataHash, nonce, dateCreated, blockHash, blockReward) {
     this.index = index;
     this.transactions = transactions;
     this.difficulty = difficulty;
@@ -15,6 +15,8 @@ function Block(index, transactions, difficulty, prevBlockHash, minedBy, blockDat
     this.blockHash = blockHash;
         // Calculate blockHash if undefined 
     if(this.blockHash === undefined) this.calculateBlockHash();
+    
+    this.blockReward = blockReward;
 }
 
 Block.prototype.calculateBlockDataHash = function() {

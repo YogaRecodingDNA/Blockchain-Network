@@ -1,6 +1,6 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const Blockchain = require("./blockchain");
+const Blockchain = require("./Blockchain");
 const Config = require("./utils/Config");
 // const uuid = require("uuid/v1");
 const cors = require("cors");
@@ -15,6 +15,7 @@ app.use(bodyParser.json()); // Enable JSON data in the HTTP request body
 app.use(bodyParser.urlencoded({ extended: false}));
 app.use(cors()); // Enable Cross-Origin Resource Sharing (CORS)
 
+const vinyasa = new Blockchain();
 
 // ENDPOINTS - BUILDING THE BLOCKCHAIN NODE  ========================================
 // ==================================================================================
@@ -34,16 +35,17 @@ app.get("/", (req, res) => {
 // INFO - Nodes may provide additional info by choice
 app.get("/info", (req, res) => {
     res.json({
-        "about": "VinyasaChain/0.9-js",
-        "nodeId": "76igyug",
-        "chainId": "987goihjbgi",
+        "about": "VinyasaChain",
+        "nodeId": Config.currentNodeId,
+        "chainId": vinyasa.blocks[0].blockHash,
         "nodeUrl": Config.currentNodeURL,
-        "peers": 0,
-        "currentDifficulty": 5,
-        "blocksCount": 2,
-        "cumulativeDifficulty": 2,
-        "confirmedTransactions": 2,
-        "pendingTransactions": 108
+        "peersTotal": vinyasa.networkNodes.size, // Number of peers in network
+        "peersMap": vinyasa.getPeers(), // Number of peers in network
+        "currentDifficulty": vinyasa.currentDifficulty,
+        "blocksCount": vinyasa.blocks.length,
+        "cumulativeDifficulty": vinyasa.calculateCumulativeDifficulty(),
+        "confirmedTransactions": vinyasa.getConfirmedTransactions().length,
+        "pendingTransactions": vinyasa.pendingTransactions.length
     });
 });
 
@@ -226,34 +228,16 @@ app.get("/info", (req, res) => {
 // // LIST ALL PEERS
 // app.get("/peers", (req, res) => {
 
-// })
-// .then(data => {
-//     // TODO:
-
-//     // Response message
-//     res.json({});
 // });
 
 // // CONNECT A PEER (validate)
 // app.post("/peers/connect", (req, res) => {
 
-// })
-// .then(data => {
-//     // TODO:
-
-//     // Response message
-//     res.json({});
 // });
 
 // // NOTIFY PEERS ABOUT NEW BLOCK
 // app.post("/peers/notify-new-block", (req, res) => {
 
-// })
-// .then(data => {
-//     // TODO:
-
-//     // Response message
-//     res.json({});
 // });
 
 // REGISTER NEW NODES - Network Node Data Structure:

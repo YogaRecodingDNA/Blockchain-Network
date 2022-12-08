@@ -2,10 +2,11 @@
   "name": "Blockchain-Network",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "lets.js",
   "scripts": {
     "test": "jest --watchAll",
-    "node_1": "nodemon --watch dev -e js src/NetworkNode.js 5555 http://localhost:5555"
+    "node_1": "nodemon --watch src -e js src/NetworkNode.js 5555 http://localhost:5555",
+    "start": "lets.js"
   },
   "repository": {
     "type": "git",
