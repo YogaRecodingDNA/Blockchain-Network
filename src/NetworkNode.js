@@ -40,7 +40,7 @@ app.get("/info", (req, res) => {
         "chainId": vinyasa.blocks[0].blockHash,
         "nodeUrl": Config.currentNodeURL,
         "peersTotal": vinyasa.networkNodes.size, // Number of peers in network
-        "peersMap": vinyasa.getPeers(), // Number of peers in network
+        "peersMap": vinyasa.getPeersData(), // Number of peers in network
         "currentDifficulty": vinyasa.currentDifficulty,
         "blocksCount": vinyasa.blocks.length,
         "cumulativeDifficulty": vinyasa.calculateCumulativeDifficulty(),
@@ -50,15 +50,21 @@ app.get("/info", (req, res) => {
 });
 
 // // DEBUG - Debug Info (All Node Data)
-// app.get("/debug", (req, res) => {
+app.get("/debug", (req, res) => {
 
-// })
-// .then(data => {
-//     // TODO:
+    res.json({
+        "nodeId": Config.currentNodeId,
+        "selfUrl": Config.currentNodeURL,
+        "peers": vinyasa.getPeersData(),
+        "chain": vinyasa.blocks,
+        "pendingTransactions": vinyasa.pendingTransactions,
+        "currentDifficulty": vinyasa.currentDifficulty,
+        "miningJobs": null,
+        "confirmedBalances": null
+    });
 
-//     // Response message
-//     res.json({});
-// });
+});
+
 // // Debug/Reset Chain - For debugging/testing only. Should reset entire chain to its initial state.
 // app.get("/debug/reset-chain", (req, res) => {
 

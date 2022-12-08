@@ -3,7 +3,6 @@ const Transaction = require("./Transaction");
 const CryptoHashUtils = require("./utils/CryptoHashUtils");
 const Config = require("./utils/Config");
 
-
 function Blockchain() {
     this.blocks = [Config.genesisBlock]; // Array of blocks in the chain
     this.pendingTransactions = []; // array of pending transactions
@@ -15,6 +14,7 @@ function Blockchain() {
     this.currentDifficulty = Config.initialDifficulty; // Integer of number of leading zeros
     this.miningJobs = {}; // A map map(blockDataHash -> Block) of blocks mined by this network node
 }
+
 
 Blockchain.prototype.calculateCumulativeDifficulty = function() {
     let difficulty = 0;
@@ -35,9 +35,7 @@ Blockchain.prototype.getConfirmedTransactions = function() {
 };
 
 
-
-
-Blockchain.prototype.getPeers = function() {
+Blockchain.prototype.getPeersData = function() {
     const peers = this.networkNodes.entries();
     let peerObj = {};
 
