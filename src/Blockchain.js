@@ -35,21 +35,29 @@ Blockchain.prototype.getLastBlockOnChain = function() {
 Blockchain.prototype.createNewTransaction = function(transactionData) {
     // CHECKS for missing property fields keys
     const missingFields = ValidationUtils.isMissing_FieldKeys(transactionData);
-    if (missingFields) {return missingFields};
-    
+    if (missingFields) {return { "errorMsg": missingFields}};
     // CHECKS for invalid property fields keys
     const invalidFields = ValidationUtils.isValid_FieldKeys(transactionData);
-    if (invalidFields) {return invalidFields};
+    if (invalidFields) {return { "errorMsg": invalidFields}};
     // VALIDATE address
+    const isValidAddress = ValidationUtils.isValidAddress(transactionData.to);
+    if (!isValidAddress) { return {"errorMsg": "Invalid Recipient Address"} };
     // VALIDATE public key
+    const isValidPublicKey = ValidationUtils.isValidPublicKey(transactionData.senderPubKey);
+    if (!isValidPublicKey) { return {"errorMsg": "Invalid Public Key"} };
     // VALIDATE private key
+    const isValidPrivateKey = ValidationUtils.isValidPrivateKey(transactionData.senderPrivKey);
+    if (!isValidPrivateKey) { return {"errorMsg": "Invalid Private Key"} };
     // VALIDATE "value"
+    const isValidTransferValue = ValidationUtils.isValidTransferValue(transactionData.value);
+    if (!isValidTransferValue) { return {"errorMsg": "Invalid transfer value"} };
     // VALIDATE fee
-    // CHECKS that "value" is >= 0 
+    const isValidTransferFee = ValidationUtils.isValidTransferFee(transactionData.fee);
+    if (!isValidTransferFee) { return {"errorMsg": "Invalid transfer fee"} };
     // CHECKS sender account balance >= "value" + "fee" 
 
     let date = new Date();
-    // Create new Transaction params (to, value, fee, dateCreated, data, senderPubKey, senderPrivKey)
+    // Create newTransaction params (to, value, fee, dateCreated, data, senderPubKey, senderPrivKey)
     const newTransaction = new Transaction(
         transactionData.to,
         transactionData.value,
@@ -60,11 +68,12 @@ Blockchain.prototype.createNewTransaction = function(transactionData) {
         transactionData.senderPrivKey
     );
 
-    // console.log("TRANSACTION =====> ", newTransaction)
+    // Validate and Verify signature
+    const isValidSignature = ValidationUtils.isValidSignature(newTransaction.senderSignature);
+    if (!isValidSignature) { return {"errorMsg": "Invalid Signature"} };
+
     const newTransactionDataJSON = JSON.stringify(newTransaction);
-    // console.log("JSON TRANSACTION =====> ", newTransactionDataJSON)
     newTransaction.transactionDataHash = CryptoHashUtils.sha256(newTransactionDataJSON).toString();
-    // console.log("TRANSACTION WITH HASH =====> ", newTransaction)
 
     // CHECKS for collisions -> skip duplicated transactions 
     // ADD TRANSACTION to pending transactions pool 

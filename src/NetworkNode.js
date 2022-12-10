@@ -164,19 +164,10 @@ app.post("/transactions/send", (req, res) => {
 
     if (newTransaction.transactionDataHash) {
         // BROADCAST TRANSACTION to peers TODO:
-
-        res.status(StatusCodes.CREATED).json({
-            newTransaction
-        });
-
+        res.status(StatusCodes.CREATED).json({newTransaction});
     } else {
-        res.status(StatusCodes.BAD_REQUEST).json({
-            "errorMsg": newTransaction
-        });
-
+        res.status(StatusCodes.BAD_REQUEST).json(newTransaction);
     }
-
-
 });
 
 
