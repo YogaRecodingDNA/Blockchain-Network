@@ -1,6 +1,7 @@
 const Block = require("./Block");
 const Transaction = require("./Transaction");
 const CryptoHashUtils = require("./utils/CryptoHashUtils");
+const ValidationUtils = require("./utils/ValidationUtils");
 const Config = require("./utils/Config");
 
 function Blockchain() {
@@ -30,18 +31,22 @@ Blockchain.prototype.calculateCumulativeDifficulty = function() {
 Blockchain.prototype.getLastBlockOnChain = function() {
     return this.blocks[this.blocks.length - 1];
 };
+
 Blockchain.prototype.createNewTransaction = function(transactionData) {
+    // CHECKS for missing property fields keys
+    const missingFields = ValidationUtils.isMissing_FieldKeys(transactionData);
+    if (missingFields) {return missingFields};
+    
+    // CHECKS for invalid property fields keys
+    const invalidFields = ValidationUtils.isValid_FieldKeys(transactionData);
+    if (invalidFields) {return invalidFields};
     // VALIDATE address
     // VALIDATE public key
     // VALIDATE private key
-    // VALIDATE signature
     // VALIDATE "value"
     // VALIDATE fee
     // CHECKS that "value" is >= 0 
     // CHECKS sender account balance >= "value" + "fee" 
-    // CHECKS for collisions -> skip duplicated transactions 
-    // ADD TRANSACTION to pending transactions pool 
-    // BROADCASTS TRANSACTION to peers 
 
     let date = new Date();
     // Create new Transaction params (to, value, fee, dateCreated, data, senderPubKey, senderPrivKey)
@@ -60,6 +65,9 @@ Blockchain.prototype.createNewTransaction = function(transactionData) {
     // console.log("JSON TRANSACTION =====> ", newTransactionDataJSON)
     newTransaction.transactionDataHash = CryptoHashUtils.sha256(newTransactionDataJSON).toString();
     // console.log("TRANSACTION WITH HASH =====> ", newTransaction)
+
+    // CHECKS for collisions -> skip duplicated transactions 
+    // ADD TRANSACTION to pending transactions pool 
 
     return newTransaction;
 };

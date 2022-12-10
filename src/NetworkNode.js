@@ -162,9 +162,20 @@ app.post("/transactions/send", (req, res) => {
 
     const newTransaction = vinyasa.createNewTransaction(requestBody);
 
-    res.status(StatusCodes.CREATED).json({
-        "transaction": newTransaction
-    });
+    if (newTransaction.transactionDataHash) {
+        // BROADCAST TRANSACTION to peers TODO:
+
+        res.status(StatusCodes.CREATED).json({
+            newTransaction
+        });
+
+    } else {
+        res.status(StatusCodes.BAD_REQUEST).json({
+            "errorMsg": newTransaction
+        });
+
+    }
+
 
 });
 
