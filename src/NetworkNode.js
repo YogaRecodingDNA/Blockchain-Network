@@ -1,10 +1,13 @@
 const express = require("express");
-const bodyParser = require("body-parser");
+const Block = require("./Block");
 const Blockchain = require("./Blockchain");
+const Transaction = require("./Transaction");
+const CryptoHashUtils = require("./utils/CryptoHashUtils");
 const Config = require("./utils/Config");
 // const uuid = require("uuid/v1");
-const cors = require("cors");
 const rp = require("request-promise");
+const cors = require("cors");
+const bodyParser = require("body-parser");
 const { StatusCodes } = require("http-status-codes");
 const { json } = require("express");
 // const PORT = process.argv[2];
@@ -22,19 +25,26 @@ const vinyasa = new Blockchain();
 
 // HOME
 app.get("/", (req, res) => {
-    const ExpressListEndpoints = require("express-list-endpoints");
-    let endpoints = ExpressListEndpoints(app);
-    let listEndpoints = endpoints.map( endpoint => 
-        `<li>${endpoint.methods} <a href="${endpoint.path}">${endpoint.path}</a></li>`).join("");
-    res.send(
-        "<h1>VinyasaChain - A simple unified blockchain network</h1>" +
-        `<ul>${listEndpoints}</ul>`
-    );
+    if (!res) {
+        res.status(StatusCodes.NOT_FOUND).json({errorMsg: "Page not found."})
+    } else {
+        const ExpressListEndpoints = require("express-list-endpoints");
+        let endpoints = ExpressListEndpoints(app);
+        let listEndpoints = endpoints.map( endpoint => 
+            `<li>${endpoint.methods} <a href="${endpoint.path}">${endpoint.path}</a></li>`).join("");
+
+        res.status(StatusCodes.OK)
+        .send(
+            "<h1>VinyasaChain - A simple unified blockchain network</h1>" +
+            `<ul>${listEndpoints}</ul>`
+        );
+    }
 });
 
 // INFO - Nodes may provide additional info by choice
 app.get("/info", (req, res) => {
-    res.json({
+    res.status(StatusCodes.OK)
+    .json({
         "about": "VinyasaChain",
         "nodeId": Config.currentNodeId,
         "chainId": vinyasa.blocks[0].blockHash,
@@ -52,145 +62,111 @@ app.get("/info", (req, res) => {
 // // DEBUG - Debug Info (All Node Data)
 app.get("/debug", (req, res) => {
 
-    res.json({
+    res.status(StatusCodes.OK)
+    .json({
         "nodeId": Config.currentNodeId,
         "selfUrl": Config.currentNodeURL,
         "peers": vinyasa.getPeersData(),
         "chain": vinyasa.blocks,
         "pendingTransactions": vinyasa.pendingTransactions,
         "currentDifficulty": vinyasa.currentDifficulty,
-        "miningJobs": null,
-        "confirmedBalances": null
+        "miningJobs": null, // TODO:
+        "confirmedBalances": null // TODO:
     });
 
 });
 
-// // Debug/Reset Chain - For debugging/testing only. Should reset entire chain to its initial state.
-// app.get("/debug/reset-chain", (req, res) => {
+// Debug/Reset Chain - For debugging/testing only. Should reset entire chain to its initial state.
+app.get("/debug/reset-chain", (req, res) => {
+    vinyasa.resetChain();
+    const blocks = vinyasa.blocks;
 
-// })
-// .then(data => {
-//     // TODO:
-
-//     // Response message
-//     res.json({});
-// });
-
-
-// // IMPLEMENTING BLOCKS ==============================================================
-// // ==================================================================================
-// // BLOCKS
-// app.get("/blocks", (req, res) => {
-
-// })
-// .then(data => {
-//     // TODO:
-
-//     // Response message
-//     res.json({});
-// });
-
-// // BLOCK BY INDEX
-// app.get("/blocks/:blockIndex", (req, res) => {
-
-// })
-// .then(data => {
-//     // TODO:
-
-//     // Response message
-//     res.json({});
-// });
+    if (!vinyasa.resetChain()) {
+        res.json({
+            "message": "Failed to reset the chain.",
+            "blockchain": vinyasa
+        });
+    } else {
+        res.status(StatusCodes.OK)
+        .json({
+            "message": "The chain was reset to its genesis block.",
+            "blockchain": vinyasa
+        });
+    }
+});
 
 
-// // IMPLEMENTING TRANSACTIONS ========================================================
-// // ==================================================================================
-// // GET PENDING TRANSACTIONS
-// app.get("/transactions/pending", (req, res) => {
+// IMPLEMENTING BLOCKS ==============================================================
+// ==================================================================================
+// BLOCKS
+app.get("/blocks", (req, res) => {
+    res.status(StatusCodes.OK).json({ "blocks": vinyasa.blocks });
+});
 
-// })
-// .then(data => {
-//     // TODO:
+// BLOCK BY INDEX
+app.get("/blocks/:blockIndex", (req, res) => {
+    const blockIndex = req.params.blockIndex;
+    const block = vinyasa.blocks[blockIndex];
 
-//     // Response message
-//     res.json({});
-// });
+    if (!block) {
+        res.status(StatusCodes.NOT_FOUND).json({ errorMsg: "Invalid block index."});
+    } else {
+        res.json({ "block": block})
+        res.status(StatusCodes.OK);
+    }
+});
+
+
+// IMPLEMENTING TRANSACTIONS ========================================================
+// ==================================================================================
+// GET PENDING TRANSACTIONS
+app.get("/transactions/pending", (req, res) => {
+    res.status(StatusCodes.OK).json({
+        "pending-transactions": vinyasa.pendingTransactions
+    });
+});
 
 // // GET CONFIRMED TRANSACTIONS
 // app.get("/transactions/confirmed", (req, res) => {
 
-// })
-// .then(data => {
-//     // TODO:
-
-//     // Response message
-//     res.json({});
 // });
 
 // // GET TRANSACTION BY HASH
 // app.get("/transactions/:transactionHash", (req, res) => {
 
-// })
-// .then(data => {
-//     // TODO:
-
-//     // Response message
-//     res.json({});
 // });
 
 // // LIST ALL ACCOUNT BALANCES
 // app.get("/balances", (req, res) => {
 
-// })
-// .then(data => {
-//     // TODO:
-
-//     // Response message
-//     res.json({});
 // });
 
 // // LIST TRANSACTIONS FOR ADDRESS
 // app.get("/address/:address/transactions", (req, res) => {
 
-// })
-// .then(data => {
-//     // TODO:
-
-//     // Response message
-//     res.json({});
 // });
 
 // // GET BALANCES FOR ADDRESS
 // app.get("/address/:address/balance", (req, res) => {
 
-// })
-// .then(data => {
-//     // TODO:
-
-//     // Response message
-//     res.json({});
 // });
 
 // // BALANCES INVALID FOR ADDRESS
 // app.get("/address/invalidAddress/balance", (req, res) => {
 
-// })
-// .then(data => {
-//     // TODO:
-
-//     // Response message
-//     res.json({});
 // });
 
-// // SEND TRANSACTION
-// app.post("/transactions/send", (req, res) => {
+// SEND TRANSACTION
+app.post("/transactions/send", (req, res) => {
+    const requestBody = req.body;
 
-// })
-// .then(data => {
-//     // TODO:
+    const newTransaction = vinyasa.createNewTransaction(requestBody);
 
-//     // Response message
-//     res.json({});
-// });
+    res.status(StatusCodes.CREATED).json({
+        "transaction": newTransaction
+    });
+
+});
 
 
 // // IMPLEMENTING MINING ========================================================
@@ -198,34 +174,16 @@ app.get("/debug", (req, res) => {
 // // GET MINING JOB
 // app.get("/mining/get-mining-job/:minerAddress", (req, res) => {
 
-// })
-// .then(data => {
-//     // TODO:
-
-//     // Response message
-//     res.json({});
 // });
 
 // // SUBMIT MINED BLOCK | IMPLEMENTING MINING (validate)
 // app.post("/mining/submit-mined-block", (req, res) => {
 
-// })
-// .then(data => {
-//     // TODO:
-
-//     // Response message
-//     res.json({});
 // });
 
 // // DEBUG -> MINE A BLOCK
 // app.get("/debug/mine/:minerAddress/:difficulty", (req, res) => {
 
-// })
-// .then(data => {
-//     // TODO:
-
-//     // Response message
-//     res.json({});
 // });
 
 
@@ -233,17 +191,17 @@ app.get("/debug", (req, res) => {
 // // ==================================================================================
 // // LIST ALL PEERS
 // app.get("/peers", (req, res) => {
-
+    // TODO:
 // });
 
 // // CONNECT A PEER (validate)
 // app.post("/peers/connect", (req, res) => {
-
+    // TODO:
 // });
 
 // // NOTIFY PEERS ABOUT NEW BLOCK
 // app.post("/peers/notify-new-block", (req, res) => {
-
+    
 // });
 
 // REGISTER NEW NODES - Network Node Data Structure:
@@ -255,7 +213,7 @@ app.get("/debug", (req, res) => {
 //     chainID: "" // Genesis Block Hash identifies the chain
 // };
 
-// DELETE LOST PEERS
+// DELETE LOST PEERS    // TODO:
 // If a peer is contacted and does not respond, delete it from the connected peers
 
 
