@@ -104,24 +104,26 @@ Blockchain.prototype.createNewTransaction = function(transactionData) {
         return { errorMsg: `Invalid signature: ${newTransaction.senderSignature}` };
     }
 
+    // Parse to JSON and Create Transaction Data Hash
     const newTransactionDataJSON = JSON.stringify(newTransaction);
-    newTransaction.transactionDataHash = CryptoHashUtils.sha256(newTransactionDataJSON).toString();
+    const transactionDataHash = newTransaction.transactionDataHash;
+    transactionDataHash = CryptoHashUtils.sha256(newTransactionDataJSON).toString();
 
     // CHECKS for collisions -> skip duplicated transactions
-    const checkForCollisions = this.findTransactionByDataHash(newTransaction.transactionDataHash);
+    const checkForCollisions = this.findTransactionByDataHash(transactionDataHash);
     if (checkForCollisions) {
-        return { errorMsg: `Duplicate transaction: ${newTransaction.transactionDataHash}`};
+        return { errorMsg: `Duplicate transaction: ${transactionDataHash}`};
     }
-
-    // ADD TRANSACTION to pending transactions pool 
-    this.pendingTransactions.push(newTransaction);
 
     return newTransaction;
 };
 
-// Blockchain.prototype.addNewTransactionToPendingTransactions = function(transactionObject) {
-    
-// };
+Blockchain.prototype.addNewTransactionToPendingTransactions = function(transactionObject) {
+    // ADD TRANSACTION to pending transactions pool 
+    this.pendingTransactions.push(newTransaction);
+    // Return index of the next block for transaction to be assigned to
+    return this.getLastBlockOnChain()[index] + 1;
+};
 
 
 Blockchain.prototype.getPeersData = function() {

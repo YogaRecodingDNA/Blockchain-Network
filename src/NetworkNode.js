@@ -5,7 +5,7 @@ const Transaction = require("./Transaction");
 const CryptoHashUtils = require("./utils/CryptoHashUtils");
 const Config = require("./utils/Config");
 // const uuid = require("uuid/v1");
-const rp = require("request-promise");
+const RP = require("request-promise");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const { StatusCodes } = require("http-status-codes");
@@ -156,19 +156,50 @@ app.get("/transactions/pending", (req, res) => {
 
 // });
 
+app.post("/transaction", (req,res) => {
+    const transactionObject = req.body;
+    // Add transaction to transaction pool and receive next block's index
+    const nextBlock = vinyasa.addNewTransactionToPendingTransactions(transactionObject);
+
+    res.json({ message: `Transaction will be added to block ${nextBlock}`});
+})
+
 // SEND TRANSACTION
 app.post("/transactions/send", (req, res) => {
     const requestBody = req.body;
-
     const newTransaction = vinyasa.createNewTransaction(requestBody);
+    
+    if (newTransaction.errorMsg) {
+        res.json(newTransaction.errorMsg);
+        return;
+    }
 
     if (newTransaction.transactionDataHash) {
-        // BROADCAST TRANSACTION to peers TODO:
-        res.status(StatusCodes.CREATED).json({newTransaction});
-    } else {
-        res.status(StatusCodes.BAD_REQUEST).json(newTransaction);
-    }
+        let requestPromises = [];
+        this.networkNodes.forEach(peer => {
+            const requestOptions = {
+                uri: peer + "/transaction",
+                method: "POST",
+                body: newTransaction,
+                json: true
+            };
+
+            requestPromises.push(RP(requestOptions));
+        });
+
+        Promises.all(requestPromises)
+        .then(data => {
+            res.status(StatusCodes.CREATED).json({ 
+                message: "Transaction created and successfully broadcast.",
+                transactionID: newTransaction.transactionDataHash,
+                newTransaction
+            });
+        })
+        .catch(err => res.status(400).json({ errorMsg: err.message}));
+
+    } else res.status(StatusCodes.BAD_REQUEST).json(newTransaction);
 });
+
 
 
 // // IMPLEMENTING MINING ========================================================
