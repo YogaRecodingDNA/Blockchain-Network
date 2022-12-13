@@ -57,6 +57,11 @@ function verifySignature(data, publicKey, signature) {
     return valid;
 }
 
+// Create unique ID
+function createId() {
+    return (new Date()).getTime().toString(16) + Math.random().toString(16).substring(2);
+}
+
 
 module.exports = {
     sha256,
@@ -64,5 +69,6 @@ module.exports = {
     getPublicKeyFromPrivateKey,
     getAddressFromPrivateKey,
     signData,
-    verifySignature
+    verifySignature,
+    createId
 };

@@ -1,22 +1,17 @@
 const CryptoHashUtils = require("./utils/CryptoHashUtils");
 
-function Block(index, transactions, difficulty, prevBlockHash, minedBy, blockDataHash, nonce, dateCreated, blockHash, blockReward) {
+function Block(index, transactions, difficulty, prevBlockHash, minedBy, nonce, dateCreated) {
     this.index = index;
     this.transactions = transactions;
     this.difficulty = difficulty;
     this.prevBlockHash = prevBlockHash;
     this.minedBy = minedBy;
-    this.blockDataHash = blockDataHash;
-        // Calculate blockDataHash if undefined 
-    if(this.blockDataHash === undefined) this.calculateBlockDataHash();
-    
+    this.blockDataHash = this.calculateBlockDataHash();
     this.nonce = nonce;
     this.dateCreated = dateCreated;
-    this.blockHash = blockHash;
-        // Calculate blockHash if undefined 
-    if(this.blockHash === undefined) this.calculateBlockHash();
-    
-    this.blockReward = blockReward;
+    this.blockHash = this.calculateBlockHash();
+    // if(this.blockHash === undefined) this.calculateBlockHash();
+    // this.blockReward;
 }
 
 Block.prototype.calculateBlockDataHash = function() {
@@ -42,16 +37,12 @@ Block.prototype.calculateBlockDataHash = function() {
         minedBy: this.minedBy
     };
 
-    this.blockDataHash = CryptoHashUtils.sha256(blockData).toString();
-
-    // console.log("BLOCK DATA HASH", this.blockDataHash);
+    return CryptoHashUtils.sha256(blockData).toString();
 };
 
 Block.prototype.calculateBlockHash = function() {
-    this.blockHash = CryptoHashUtils.sha256(
+    return CryptoHashUtils.sha256(
         this.blockDataHash + this.nonce + this.dateCreated).toString();
-
-    // console.log("BLOCK HASH", this.blockHash);
 };
 
 

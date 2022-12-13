@@ -32,14 +32,24 @@ Blockchain.prototype.getLastBlockOnChain = function() {
     return this.blocks[this.blocks.length - 1];
 };
 
-Blockchain.prototype.getPendingTransactions = () => {
+// TRANSACTIONS ===========================================================
+// ========================================================================
+Blockchain.prototype.addNewTransactionToPendingTransactions = function(transactionObject) {
+    // ADD TRANSACTION to pending transactions pool 
+    this.pendingTransactions.push(transactionObject);
+    // Return index of the next block for transaction to be assigned to
+    return this.getLastBlockOnChain().index + 1;
+};
+
+
+Blockchain.prototype.getPendingTransactions = function() {
     return this.pendingTransactions;
 }
 
 /**
  * @notice - Locates all confirmed transactions within the blockchain
  * @returns - An array the total confirmed transactions of each block in the chain 
- */
+*/
 Blockchain.prototype.getConfirmedTransactions = function() {
     let confirmedTransactions = [];
     for (let block of this.blocks) {
@@ -48,17 +58,18 @@ Blockchain.prototype.getConfirmedTransactions = function() {
     return confirmedTransactions;
 };
 
-Blockchain.prototype.getAllTransactions = () => {
+Blockchain.prototype.getAllTransactions = function() {
     let transactions = this.getConfirmedTransactions();
     transactions.push.apply(transactions, this.pendingTransactions);
     return transactions;
 }
 
-Blockchain.prototype.findTransactionByDataHash = (hash) => {
-    const allTransactions = this.getAllTransactions;
-    let targetTransactions = allTransactions.filter( transaction => 
-        transaction.transactionDataHash === hash);
-    return targetTransactions[0];
+Blockchain.prototype.findTransactionByDataHash = function(hash) {
+    const allTransactions = this.getAllTransactions();
+    let targetTransaction = allTransactions.filter((transaction) => 
+    transaction.transactionDataHash === hash);
+    // console.log("findTransactionByDataHash", targetTransaction[0]);
+    return targetTransaction[0];
 }
 
 Blockchain.prototype.createNewTransaction = function(transactionData) {
@@ -97,19 +108,22 @@ Blockchain.prototype.createNewTransaction = function(transactionData) {
         transactionData.senderPrivKey
     );
 
+    // Parse to JSON and Create Transaction Data Hash
+    // const newTransactionDataJSON = JSON.stringify(newTransaction);
+    // const transactionDataHash = CryptoHashUtils.sha256(newTransactionDataJSON).toString();
+     
+
     // Validate and Verify signature
     const isValidSignature = ValidationUtils.isValidSignature(newTransaction.senderSignature);
     if (!isValidSignature) return { errorMsg: "Invalid Signature" };
-    if (!Transaction.verifySignature()) {
+    if (!newTransaction.verifySignature()) {
+        console.log("VErify SIG ", newTransaction.verifySignature());
+        console.log(newTransaction);
         return { errorMsg: `Invalid signature: ${newTransaction.senderSignature}` };
     }
 
-    // Parse to JSON and Create Transaction Data Hash
-    const newTransactionDataJSON = JSON.stringify(newTransaction);
-    const transactionDataHash = newTransaction.transactionDataHash;
-    transactionDataHash = CryptoHashUtils.sha256(newTransactionDataJSON).toString();
-
     // CHECKS for collisions -> skip duplicated transactions
+    const transactionDataHash = newTransaction.transactionDataHash;
     const checkForCollisions = this.findTransactionByDataHash(transactionDataHash);
     if (checkForCollisions) {
         return { errorMsg: `Duplicate transaction: ${transactionDataHash}`};
@@ -118,14 +132,45 @@ Blockchain.prototype.createNewTransaction = function(transactionData) {
     return newTransaction;
 };
 
-Blockchain.prototype.addNewTransactionToPendingTransactions = function(transactionObject) {
-    // ADD TRANSACTION to pending transactions pool 
-    this.pendingTransactions.push(newTransaction);
-    // Return index of the next block for transaction to be assigned to
-    return this.getLastBlockOnChain()[index] + 1;
+Blockchain.prototype.getAllBalances = function() {
+    const confirmedTransactions = this.getConfirmedTransactions();
+    let balances = {};
+    confirmedTransactions.forEach(transfer => {
+        let fromAccount = transfer.from;
+        let toAccount = transfer.to;
+
+        balances[fromAccount] = balances[fromAccount] || 0; // {"sender address": current val or 0}
+        balances[fromAccount] -= transfer.fee; // subtract fee from sender
+
+        balances[toAccount] = balances[toAccount] || 0; // {"recipient address": current val or 0}
+
+        if (transfer.transferSuccessful) {
+            balances[fromAccount] -= transfer.value; // subtract value amount from sender
+            balances[toAccount] += transfer.value; // add value amount to recipient
+
+            // Remove any accounts with a zero balance
+            if(balances[fromAccount] === 0) delete balances[fromAccount];
+            if(balances[toAccount] === 0) delete balances[toAccount];
+        }
+
+    });
+
+    return balances;
 };
 
+Blockchain.prototype.getAddressTransactionHistory = function(address) {
+    const allTransactions = this.getAllTransactions();
+    let targetedAddressTransactions = allTransactions.filter((transaction) => 
+    transaction.from === address || transaction.to === address);
+    // Sort the transactions
+    targetedAddressTransactions.sort((a, b) => a.dateCreated.localeCompare(b.dateCreated));
 
+    return targetedAddressTransactions;
+}
+
+
+
+// PEER NODE DATA =====================================================================
 Blockchain.prototype.getPeersData = function() {
     const peers = this.networkNodes.entries();
 
@@ -145,8 +190,7 @@ Blockchain.prototype.resetChain = function() {
 
     const isReset =  ( // IF...
         this.blocks.length === 1
-        && this.blocks[0] === Config.genesisBlock
-        && this.pendingTransactions.length === 1 //TODO: Check only genesis txs are pending
+        && this.pendingTransactions.length === 0
         && this.currentDifficulty === 5
         ? true
         : false

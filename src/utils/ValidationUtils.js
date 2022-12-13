@@ -22,8 +22,11 @@ const isValidSignature = (signature) => {
     if (!Array.isArray(signature)) return false;
     if (signature.length !== 2) return false;
     const isValid_0 = /[A-Fa-f0-9]{64}/g.test(signature[0]);
+    console.log("isValid_0 ====== ", isValid_0);
     const isValid_1 = /[A-Fa-f0-9]{64}/g.test(signature[1]);
+    console.log("isValid_1 ====== ", isValid_1);
     const isValid = isValid_0 && isValid_1;
+    console.log("isValid ====== ", isValid);
     return isValid;
 }
 

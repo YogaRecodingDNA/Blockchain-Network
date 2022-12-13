@@ -1,20 +1,27 @@
+// const Config = require("./utils/Config");
+const Blockchain = require("./Blockchain");
 const CryptoHashUtils = require("./utils/CryptoHashUtils");
 
 // Transaction constructor function
 function Transaction(to, value, fee, dateCreated, data, senderPubKey, senderPrivKey) {
-    this.from = CryptoHashUtils.getAddressFromPublicKey(senderPubKey); // Sender address derived from senderPubKey
+    this.from = CryptoHashUtils.getAddressFromPublicKey(senderPubKey); // address from PubKey
+    // if (!this.from) return CryptoHashUtils.getAddressFromPublicKey(senderPubKey);
     this.to = to; // Recipient address - 40 hex digits
     this.value = value; // Positive integer
     this.fee = fee; // Fee for miner (positive integer)
     this.dateCreated = dateCreated; // ISO8601 UTC datetime string (to avoid replay attacks)
     this.data = data; // Transaction data (payload/comments) - optional string
     this.senderPubKey = senderPubKey; // Sender public key – 65 hex digits
-    this.transactionDataHash = "";
-
+    this.transactionDataHash = this.calculateDataHash(); // 
     this.senderSignature = this.signTransaction(senderPrivKey);
+    this.minedInBlockIndex = undefined;
+    this.transferSuccessful = undefined;
 
-    this.minedInBlockIndex = "pending";
-    this.transferSuccessful = "pending";
+    // Set Block index and transferSuccesful bool if Genesis Transaction
+    // if (this.senderSignature === Blockchain.pendingTransactions[0].senderSignature) {
+    //     this.minedInBlockIndex = 0;
+    //     this.transferSuccessful = true;
+    // }
 }
 
 // Method - Calculate Transaction Data Hash
@@ -40,9 +47,8 @@ Transaction.prototype.signTransaction = function(privateKey) {
 
 // Method - Verify Signature
 Transaction.prototype.verifySignature = function() {
-    return CryptoUtils.verifySignature(this.transactionDataHash,
+    return CryptoHashUtils.verifySignature(this.transactionDataHash,
         this.senderPubKey, this.senderSignature);
 };
-
 
 module.exports = Transaction;

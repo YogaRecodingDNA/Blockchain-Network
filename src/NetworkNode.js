@@ -126,25 +126,44 @@ app.get("/transactions/pending", (req, res) => {
     });
 });
 
-// // GET CONFIRMED TRANSACTIONS
-// app.get("/transactions/confirmed", (req, res) => {
+// GET CONFIRMED TRANSACTIONS
+app.get("/transactions/confirmed", (req, res) => {
+    const confirmedTransactions = vinyasa.getConfirmedTransactions();
+    if (!confirmedTransactions.length >= 1) res.json({errorMsg: "Zero confirmed. There should always be a genesis transaction."});
 
-// });
+    res.status(StatusCodes.OK).json(confirmedTransactions);
+});
 
-// // GET TRANSACTION BY HASH
-// app.get("/transactions/:transactionHash", (req, res) => {
+// GET TRANSACTION BY HASH
+app.get("/transactions/:transactionHash", (req, res) => {
+    const transactionHash = req.params.transactionHash;
+    const transaction = vinyasa.findTransactionByDataHash(transactionHash);
 
-// });
+    if (!transaction) res.status(StatusCodes.NOT_FOUND).send("404 NOT FOUND");
 
-// // LIST ALL ACCOUNT BALANCES
-// app.get("/balances", (req, res) => {
+    res.status(StatusCodes.OK).json(transaction)
+});
 
-// });
+// LIST ALL ACCOUNT BALANCES
+app.get("/balances", (req, res) => {
+    const allBalances = vinyasa.getAllBalances();
 
-// // LIST TRANSACTIONS FOR ADDRESS
-// app.get("/address/:address/transactions", (req, res) => {
+    res.status(StatusCodes.OK).json(allBalances);
+});
 
-// });
+// LIST TRANSACTIONS FOR ADDRESS
+app.get("/address/:address/transactions", (req, res) => {
+    const address = req.params.address;
+    const addressHistory = vinyasa.getAddressTransactionHistory(address);
+
+    if (!address) res.status(StatusCodes.NOT_FOUND).send("404 NOT FOUND");
+
+    res.status(StatusCodes.OK).json({
+        address,
+        addressHistory
+    });
+
+});
 
 // // GET BALANCES FOR ADDRESS
 // app.get("/address/:address/balance", (req, res) => {
@@ -176,7 +195,7 @@ app.post("/transactions/send", (req, res) => {
 
     if (newTransaction.transactionDataHash) {
         let requestPromises = [];
-        this.networkNodes.forEach(peer => {
+        vinyasa.networkNodes.forEach(peer => {
             const requestOptions = {
                 uri: peer + "/transaction",
                 method: "POST",
@@ -187,15 +206,15 @@ app.post("/transactions/send", (req, res) => {
             requestPromises.push(RP(requestOptions));
         });
 
-        Promises.all(requestPromises)
-        .then(data => {
+        Promise.all(requestPromises)
+        .then(() => {
             res.status(StatusCodes.CREATED).json({ 
                 message: "Transaction created and successfully broadcast.",
                 transactionID: newTransaction.transactionDataHash,
-                newTransaction
+                transaction: newTransaction
             });
         })
-        .catch(err => res.status(400).json({ errorMsg: err.message}));
+        .catch(err => res.status(400).json({ errorMsg: err}));
 
     } else res.status(StatusCodes.BAD_REQUEST).json(newTransaction);
 });
