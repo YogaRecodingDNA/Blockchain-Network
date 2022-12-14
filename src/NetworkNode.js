@@ -229,18 +229,18 @@ app.post("/transactions/send", (req, res) => {
 // // IMPLEMENTING MINING ========================================================
 // // ============================================================================
 // GET MINING JOB
-// app.get("/mining/get-mining-job", (req, res) => {
-//     // TEST MINER ADDRESS ===>  http://localhost:5555
-//     // const minerAddress = req.params.minerAddress;
-//     const minerAddress = Config.currentNodeId;
+app.get("/mining/get-mining-job", (req, res) => {
+    // TEST MINER ADDRESS ===>  http://localhost:5555
+    // const minerAddress = req.params.minerAddress;
+    const minerAddress = Config.currentNodeId;
 
-//     const newBlockHash = vinyasa.mineNewBlock(minerAddress);
+    const newBlockHash = vinyasa.mineNewBlock(minerAddress);
 
-//     res.json({ 
-//         minerAddress,
-//         newBlockHash
-//     });
-// });
+    res.json({ 
+        minerAddress,
+        newBlockHash
+    });
+});
 
 // // SUBMIT MINED BLOCK | IMPLEMENTING MINING (validate)
 // app.post("/mining/submit-mined-block", (req, res) => {

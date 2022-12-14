@@ -213,7 +213,41 @@ Blockchain.prototype.getBalancesForAddress = function(address) {
 
 // MINING =============================================================================
 // ====================================================================================
+Blockchain.prototype.proofOfWork = function(block) {
+    let leadingZeros = "0";
+    const difficulty = leadingZeros.repeat(block.difficulty);
+    let blockHash = "";
+    while(blockHash.substring(0, block.difficulty) !== difficulty) {
+        block.nonce++;
+        block.dateCreated = new Date().toISOString();
+        blockHash = block.calculateBlockHash();
+        console.log(blockHash);
+    }
+    block.blockHash = blockHash;
+    
 
+    console.log("previous BLOCK =====> ", this.blocks[this.blocks.length - 1]);
+    console.log("previous HASH =====> ", this.blocks[this.blocks.length - 1].blockHash);
+    console.log("proofOfWork() =====> ", block);
+    return blockHash;
+};
+
+Blockchain.prototype.mineNewBlock = function(minerAddress) {
+    const newBlock = new Block(
+        this.blocks.length, // block index
+        this.pendingTransactions, // transactions in waiting pool
+        // this.currentDifficulty, // new difficulty
+        4, // new difficulty
+        this.blocks[this.blocks.length - 1].blockHash, // previous block hash
+        minerAddress, // mined by
+        0, // nonce
+        new Date().toISOString(), // timestamp of now
+    )
+
+    const newBlockHash = this.proofOfWork(newBlock)
+
+    return newBlockHash;
+}
 
 
 
