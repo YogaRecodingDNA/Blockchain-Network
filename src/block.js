@@ -7,7 +7,7 @@ function Block(index, transactions, difficulty, prevBlockHash, minedBy, nonce, d
     this.prevBlockHash = prevBlockHash;
     this.minedBy = minedBy;
     this.blockDataHash = this.calculateBlockDataHash();
-    this.nonce = nonce;
+    this.nonce = 0;
     this.dateCreated = dateCreated;
     this.blockHash = this.calculateBlockHash();
     // if(this.blockHash === undefined) this.calculateBlockHash();
@@ -37,7 +37,9 @@ Block.prototype.calculateBlockDataHash = function() {
         minedBy: this.minedBy
     };
 
-    return CryptoHashUtils.sha256(blockData).toString();
+    const blockDataJSON = JSON.stringify(blockData).split(" ").join("");
+
+    return CryptoHashUtils.sha256(blockDataJSON).toString();
 };
 
 Block.prototype.calculateBlockHash = function() {

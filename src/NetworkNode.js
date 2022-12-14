@@ -165,10 +165,15 @@ app.get("/address/:address/transactions", (req, res) => {
 
 });
 
-// // GET BALANCES FOR ADDRESS
-// app.get("/address/:address/balance", (req, res) => {
+// GET BALANCES FOR ADDRESS
+app.get("/address/:address/balance", (req, res) => {
+    const address = req.params.address;
+    const addressBalances = vinyasa.getBalancesForAddress(address);
 
-// });
+    if (!addressBalances) res.status(StatusCodes.NOT_FOUND).json({errorMsg: "Invalid address"});
+
+    res.status(StatusCodes.OK).json({addressBalances})
+});
 
 // // BALANCES INVALID FOR ADDRESS
 // app.get("/address/invalidAddress/balance", (req, res) => {
@@ -223,9 +228,18 @@ app.post("/transactions/send", (req, res) => {
 
 // // IMPLEMENTING MINING ========================================================
 // // ============================================================================
-// // GET MINING JOB
-// app.get("/mining/get-mining-job/:minerAddress", (req, res) => {
+// GET MINING JOB
+// app.get("/mining/get-mining-job", (req, res) => {
+//     // TEST MINER ADDRESS ===>  http://localhost:5555
+//     // const minerAddress = req.params.minerAddress;
+//     const minerAddress = Config.currentNodeId;
 
+//     const newBlockHash = vinyasa.mineNewBlock(minerAddress);
+
+//     res.json({ 
+//         minerAddress,
+//         newBlockHash
+//     });
 // });
 
 // // SUBMIT MINED BLOCK | IMPLEMENTING MINING (validate)

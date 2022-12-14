@@ -168,6 +168,54 @@ Blockchain.prototype.getAddressTransactionHistory = function(address) {
     return targetedAddressTransactions;
 }
 
+Blockchain.prototype.getBalancesForAddress = function(address) {
+    // The address balance is calculated by iterating over all transactions
+    // For each block and for each successful transaction for the specified address:
+    // 1. Match the confirmations count
+    // 2. Sum the values received
+    // 3. Subtract values spent + fees
+    // *********** 3 TYPES OF BALANCES PER ADDRESS *********************
+    // SAFE BALANCE = 6 or more confirmations TODO:
+    // CONFIRMED BALANCE = 1 or more confirmations
+    // PENDING BALANCE = expected balance (0 confirmations) TODO:
+    let allConfirmedTrans = this.getConfirmedTransactions();
+    let allPendingTrans = this.getPendingTransactions();
+
+    function getAddressBalances(address, transactions) {
+        let addressHistory = transactions.filter(transaction => transaction.to === address || transaction.from === address);
+
+        let balance = 0;
+        addressHistory.forEach(transfer => {
+            if (transfer.from === address) {
+                balance -= transfer.value;
+                balance -= transfer.fee;
+            } else if (transfer.to === address) {
+                balance += transfer.value;
+            }
+        });
+
+        return balance;
+    }
+
+    const confirmedTotalBalance = getAddressBalances(address, allConfirmedTrans);
+    const pendingTotalBalance = getAddressBalances(address, allPendingTrans);
+
+    console.log("confirmedTotalBalance", confirmedTotalBalance);
+    console.log("pendingTotalBalance", pendingTotalBalance);
+    
+    return { 
+        address,
+        confirmedTotalBalance,
+        pendingTotalBalance
+    };
+}
+
+
+// MINING =============================================================================
+// ====================================================================================
+
+
+
 
 
 // PEER NODE DATA =====================================================================
