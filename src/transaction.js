@@ -1,8 +1,21 @@
-// const Config = require("./utils/Config");
 const Blockchain = require("./Blockchain");
 const CryptoHashUtils = require("./utils/CryptoHashUtils");
 
-// Transaction constructor function
+// Pseudo values for GENESIS / COINBASE TRANSACTIONS ===============================
+const nodeValues = {
+    from: "0000000000000000000000000000000000000000",
+    senderPubKey: "00000000000000000000000000000000000000000000000000000000000000000",
+    senderSignature: [
+        "0000000000000000000000000000000000000000000000000000000000000000",
+        "0000000000000000000000000000000000000000000000000000000000000000"
+    ],
+    senderPrivKey: "0000000000000000000000000000000000000000000000000000000000000000",
+    minedInBlockIndex: 0,
+    transferSuccessful: true
+}
+
+// TRANSACTION CONSTRUCTOR FUNCTION ========================================================
+// =========================================================================================
 function Transaction(to, value, fee, dateCreated, data, senderPubKey, senderPrivKey) {
     this.from = CryptoHashUtils.getAddressFromPublicKey(senderPubKey); // address from PubKey
     // if (!this.from) return CryptoHashUtils.getAddressFromPublicKey(senderPubKey);
@@ -24,7 +37,7 @@ function Transaction(to, value, fee, dateCreated, data, senderPubKey, senderPriv
     // }
 }
 
-// Method - Calculate Transaction Data Hash
+// METHOD - Calculate Transaction Data Hash
 Transaction.prototype.calculateDataHash = function() {
     const transactionData = {
         from: this.from,
@@ -40,12 +53,12 @@ Transaction.prototype.calculateDataHash = function() {
     return CryptoHashUtils.sha256(transactionDataJSON).toString();
 };
 
-// Method - Sign A Transaction
+// METHOD - Sign A Transaction
 Transaction.prototype.signTransaction = function(privateKey) {
     return CryptoHashUtils.signData(this.calculateDataHash(), privateKey);
 };
 
-// Method - Verify Signature
+// METHOD - Verify Signature
 Transaction.prototype.verifySignature = function() {
     return CryptoHashUtils.verifySignature(this.transactionDataHash,
         this.senderPubKey, this.senderSignature);

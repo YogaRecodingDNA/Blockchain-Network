@@ -23,7 +23,7 @@ const faucetPrivateKey = "1d513f8a9689d2c43852ab9a9777ed333811c1d9d6e1b90c47a7e9
 const faucetPublicKey = CryptoHashUtils.getPublicKeyFromPrivateKey(faucetPrivateKey);
 const faucetAddress = CryptoHashUtils.getAddressFromPublicKey(faucetPublicKey);
 
-// GENESIS TRANSACTION = FAUCET TRANSACTION
+// GENESIS / FAUCET TRANSACTION
 const genesisFaucetTransaction = new Transaction(
     faucetAddress, // to Address
     1000000000000, // Faucet value
@@ -47,7 +47,6 @@ const genesisBlock = new Block(
 
 console.log(genesisFaucetTransaction);
 
-
 module.exports = {
     defaultServerHost: "localhost",
     defaultServerPort: PORT,
@@ -61,7 +60,8 @@ module.exports = {
     faucetAddress,
     faucetPublicKey,
     faucetPrivateKey,
+    initialDifficulty: 5,
     blockReward: 50000000,
     minimumTransactionFee: 10,
-    initialDifficulty: 5
+    safeConfirmations: 6
 };

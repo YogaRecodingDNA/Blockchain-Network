@@ -230,15 +230,22 @@ app.post("/transactions/send", (req, res) => {
 // // ============================================================================
 // GET MINING JOB
 app.get("/mining/get-mining-job", (req, res) => {
-    // TEST MINER ADDRESS ===>  http://localhost:5555
+    // Miner puts in request for block candidate
+    // Node prepares block candidate, coinbase tx, rewards/fees...
+    // Miners mine and submit the mined block to the node
+
     // const minerAddress = req.params.minerAddress;
     const minerAddress = Config.currentNodeId;
 
-    const newBlockHash = vinyasa.mineNewBlock(minerAddress);
+    const blockCandidate = vinyasa.prepareBlockCandidate(minerAddress);
 
-    res.json({ 
-        minerAddress,
-        newBlockHash
+    res.status(StatusCodes.OK).json({ 
+        index: blockCandidate.index,
+        transactionsIncluded: blockCandidate.transactions,
+        difficulty: blockCandidate.difficulty,
+        expectedReward: blockCandidate.transactions[0].value,
+        rewardAddress: blockCandidate.transactions[0].to,
+        blockDataHash: blockCandidate.blockdataHash
     });
 });
 
