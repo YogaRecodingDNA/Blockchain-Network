@@ -1,5 +1,10 @@
+const Config = require("./utils/Config");
+const Transaction = require("./Transaction");
 const CryptoHashUtils = require("./utils/CryptoHashUtils");
 
+// ===================================================================================
+// ============================= BLOCK CONSTRUCTOR ===================================
+// ===================================================================================
 function Block(index, transactions, difficulty, prevBlockHash, minedBy, nonce, dateCreated) {
     this.index = index;
     this.transactions = transactions;
@@ -9,10 +14,13 @@ function Block(index, transactions, difficulty, prevBlockHash, minedBy, nonce, d
     this.blockDataHash = this.calculateBlockDataHash();
     this.nonce = 0;
     this.dateCreated = dateCreated;
-    this.blockHash = this.calculateBlockHash();
-    // if(this.blockHash === undefined) this.calculateBlockHash();
-    // this.blockReward;
+    this.blockHash = undefined;
 }
+
+
+// ===================================================================================
+// ========================= Calculate Block Data Hash ===============================
+// ===================================================================================
 
 Block.prototype.calculateBlockDataHash = function() {
     let blockData = {
@@ -42,9 +50,29 @@ Block.prototype.calculateBlockDataHash = function() {
     return CryptoHashUtils.sha256(blockDataJSON).toString();
 };
 
+
+// ===================================================================================
+// ======================= Calculate Block Hash ======================================
+// ===================================================================================
 Block.prototype.calculateBlockHash = function() {
-    return CryptoHashUtils.sha256(
+    this.blockHash = CryptoHashUtils.sha256(
         this.blockDataHash + this.nonce + this.dateCreated).toString();
+};
+
+
+// ===================================================================================
+// ========================== GENESIS BLOCK ==========================================
+// ===================================================================================
+Block.genesisBlock = function() {
+    return new Block(
+        0,                                      // index
+        [Transaction.genesisFaucetTransaction()], // transactions
+        0,                                      // difficulty
+        undefined,                              // prevBlockHash
+        Config.nullMinerAddress,                // minedBy
+        0,                                      // nonce
+        Config.genesisDate                      // dateCreated
+     );
 };
 
 

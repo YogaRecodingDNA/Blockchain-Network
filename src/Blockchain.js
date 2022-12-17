@@ -3,10 +3,15 @@ const Transaction = require("./Transaction");
 const CryptoHashUtils = require("./utils/CryptoHashUtils");
 const ValidationUtils = require("./utils/ValidationUtils");
 const Config = require("./utils/Config");
-const clonedeep = require("lodash.clonedeep");
+// const cloneDeep = require("lodash.clonedeep");
+var cloneDeep = require('lodash.clonedeep');
+const res = require("express/lib/response");
 
+// ********************************************************************************
+// *********************** BLOCKCHAIN CONSTRUCTOR *********************************
+// ********************************************************************************
 function Blockchain() {
-    this.blocks = [Config.genesisBlock]; // Array of blocks in the chain
+    this.blocks = [Block.genesisBlock()]; // Array of blocks in the chain
     this.pendingTransactions = []; // array of pending transactions
     this.networkNodes = new Map(); // Array of nodes in the network
     if(this.networkNodes.size === 0) {
@@ -15,6 +20,8 @@ function Blockchain() {
     this.currentNodeURL = Config.currentNodeURL; // URL
     this.currentDifficulty = Config.initialDifficulty; // Integer of number of leading zeros
     this.miningJobs = {}; // A map map(blockDataHash -> Block) of blocks mined by this network node
+    console.log("BLOCKS", this.blocks);
+    console.log("PENDING TRANSACTIONS", this.pendingTransactions);
 }
 
 
@@ -37,10 +44,9 @@ Blockchain.prototype.getLastBlockOnChain = function() {
 };
 
 
-// =========================================================================================
-// ================================= TRANSACTIONS ==========================================
-// =========================================================================================
-
+// ***********************************************************************************
+// ***************************** TRANSACTIONS ****************************************
+// ***********************************************************************************
 /** GET CONFIRMED TRANSACTIONS
  * @notice - Locates all confirmed transactions within the blockchain
  * @returns - An array the total confirmed transactions of each block in the chain 
@@ -115,12 +121,17 @@ Blockchain.prototype.createNewTransaction = function(transactionData) {
     );
 
     // Validate and Verify signature
-    const isValidSignature = ValidationUtils.isValidSignature(newTransaction.senderSignature);
-    if (!isValidSignature) return { errorMsg: "Invalid Signature" };
-    if (!newTransaction.verifySignature()) {
-        console.log("VERIFY SIG ", newTransaction.verifySignature());
-        console.log(newTransaction);
-        return { errorMsg: `Invalid signature: ${newTransaction.senderSignature}` };
+    try {
+        const isValidSignature = ValidationUtils.isValidSignature(newTransaction.senderSignature);
+        if (!isValidSignature) return { errorMsg: "Invalid Signature" };
+        
+        if (!newTransaction.verifySignature()) {
+            console.log("VERIFY SIG ", newTransaction.verifySignature());
+            console.log(newTransaction);
+            return { errorMsg: `Invalid signature: ${newTransaction.senderSignature}` };
+        }
+    } catch (error) {
+        res.json({ catchError: error });
     }
 
     // Checks for collisions -> skip duplicated transactions
@@ -157,7 +168,8 @@ Blockchain.prototype.removePendingTransactions = function(transactionsToRemove) 
     }
 
     // Update transaction pool with valid list (pendingTransactions)
-    this.pendingTransactions = this.pendingTransactions.filter( transaction => !transactionHashesToRemove.has(transaction.transactionDataHash));
+    this.pendingTransactions = this.pendingTransactions.filter(
+        transaction => !transactionHashesToRemove.has(transaction.transactionDataHash));
 }
 
 
@@ -290,41 +302,52 @@ Blockchain.prototype.getAllBalances = function() {
 };
 
 
-// ===================================================================================
-// ================================= MINING ==========================================
-// ===================================================================================
-Blockchain.prototype.mineNewBlock = function(block) {//TODO:
-    // PROOF OF WORK -> FOR BUILT IN MINER
-    let leadingZeros = "0";
-    const difficulty = leadingZeros.repeat(this.currentDifficulty);
-    let blockHash = "";
-    while(blockHash.substring(0, block.difficulty) !== difficulty) {
-        block.nonce++;
-        block.dateCreated = new Date().toISOString();
-        blockHash = block.calculateBlockHash();
-        console.log(blockHash);
-    }
-    block.blockHash = blockHash;
+// ***********************************************************************************
+// ********************************* MINING ******************************************
+// ***********************************************************************************
+// -----------------------------------------------------------------------------------
+// ----------------------------- MINE NEW BLOCK --------------------------------------
+// -----------------------------------------------------------------------------------
+Blockchain.prototype.mineNewBlock = function(minerAddress, difficulty) {
+    // PROOF OF WORK
+    let blockCandidate = this.prepareBlockCandidate(minerAddress, difficulty);
+    blockCandidate.calculateBlockHash();
+    console.log(("0").repeat(difficulty));
 
-    console.log("previous BLOCK =====> ", this.blocks[this.blocks.length - 1]);
-    console.log("previous HASH =====> ", this.blocks[this.blocks.length - 1].blockHash);
-    console.log("mineNewBlock() =====> ", block);
-    return blockHash;
+    while(blockCandidate.blockHash.substring(0, difficulty) !== ("0").repeat(difficulty)) {
+        console.log(blockCandidate.nonce);
+        blockCandidate.nonce++;
+        blockCandidate.dateCreated = new Date().toISOString();
+        blockCandidate.calculateBlockHash();
+        console.log(blockCandidate.blockHash);
+    }
+
+    const newBlock = this.submitMinedBlockToNode(
+        blockCandidate.blockDataHash,
+        blockCandidate.dateCreated,
+        blockCandidate.nonce,
+        blockCandidate.blockHash,
+        difficulty
+    );
+
+    return newBlock;
 };
 
-
-// PREPARE THE BLOCK CANDIDATE FOR MINING
-Blockchain.prototype.prepareBlockCandidate = function(minerAddress) {
+// ------------------------------------------------------------------------------------
+// ------------------- PREPARE THE BLOCK CANDIDATE FOR MINING -------------------------
+// ------------------------------------------------------------------------------------
+Blockchain.prototype.prepareBlockCandidate = function(minerAddress, difficulty) {
     let balances = this.getAllBalances();
     let blockReward = Config.blockReward;
     let newBlockIndex = this.blocks.length;
-    
-    // 1. Deep clone all pending transactions
-    let transactions = clonedeep(this.getPendingTransactions());
-    transactions.sort((a, b) => b.fee - a.fee); // Sort the transactions by their fee descendingly
+    // let transactions = this.getPendingTransactions();
+
+    // 1. Deep clone pending transactions & Sort descending by fee
+    let transactions = cloneDeep(this.getPendingTransactions());
+    transactions.sort((a, b) => b.fee - a.fee);
 
     // 2. Transfer all pending transactions' fees
-    // 3. Execute all the transactions (transfer requested values <- validate sufficient balances)
+    // 3. Execute all the transactions
     for (let transaction of transactions) {
         let asSender = transaction.from;
         let asRecipient = transaction.to;
@@ -335,11 +358,11 @@ Blockchain.prototype.prepareBlockCandidate = function(minerAddress) {
         if (balances[asSender] >= transaction.fee) {
             transaction.minedInBlockIndex = newBlockIndex;
 
-            // Transaction sender pays processing fee (adds to the coinbaseTransaction blockReward)
+            // Transaction sender pays processing fee
             balances[asSender] -= transaction.fee;
-            blockReward += transaction.fee;
+            blockReward += transaction.fee; // adds to blockReward
 
-            // Execute the transfer of value from sender -> recipient (validate sufficient balance)
+            // Execute the transfer from sender -> recipient (validate balance)
             if(balances[asSender] >= transaction.value) {
                 balances[asSender] -= transaction.value;
                 balances[asRecipient] += transaction.value;
@@ -349,8 +372,9 @@ Blockchain.prototype.prepareBlockCandidate = function(minerAddress) {
                 transaction.transferSuccessful = false;
             }
         } else {
-            // Transaction cannot be mined due to insufficient balance to pay the transaction fee
-            // Drop the transaction
+            // Insufficient balance to pay the transaction fee
+            // Transaction cannot be mined
+            // Drop txn from pendingTxns and this txn list
             this.removePendingTransactions([transaction]);
             transactions = transactions.filter(txn => txn !== transaction);
         }
@@ -367,14 +391,14 @@ Blockchain.prototype.prepareBlockCandidate = function(minerAddress) {
         undefined                 // senderPrivKey:
     );
 
-    // 5. Prepend the coinbase transaction with its updated (reward +fees) to the transactions list
+    // 5. Prepend the coinbase txn with updated (reward + fees) to txn list
     transactions.unshift(coinbaseTransaction);
 
     // 6. Prepare the new block candidate
     const newBlockCandidate = new Block(
         this.blocks.length,                            // block index
-        this.pendingTransactions,                      // transactions in waiting pool
-        this.currentDifficulty,                        // difficulty
+        transactions,                                  // validated/updated transactions
+        difficulty,                                    // difficulty
         this.blocks[this.blocks.length - 1].blockHash, // previous block hash
         minerAddress,                                  // mined by
         0,                                             // nonce
@@ -388,9 +412,58 @@ Blockchain.prototype.prepareBlockCandidate = function(minerAddress) {
 }
 
 
+// ----------------------------------------------------------------------------------
+// ---------------------- SUBMIT MINED BLOCK TO NODE --------------------------------
+// ----------------------------------------------------------------------------------
+Blockchain.prototype.submitMinedBlockToNode = function(blockDataHash, dateCreated, nonce, blockHash, difficulty) {
+    // Get targeted block candidate by hash
+    let newBlock = this.miningJobs[blockDataHash];
+    if (!newBlock) return { errorMsg: "Block not found or already mined" };
+    
+    newBlock.dateCreated = dateCreated;
+    newBlock.nonce = nonce;
+    newBlock.calculateBlockHash();
+    
+    if (newBlock.blockHash !== blockHash) return { errorMsg: "Incorrect block hash calculation"};
+    if (newBlock.blockHash.substring(0, difficulty).length !== newBlock.difficulty) {
+        return { errorMsg: "Block hash does not match the block difficulty"};
+    }
+    
+    newBlock = this.addMinedBlockToChain(newBlock);
+
+    return newBlock;
+}
+
+// ----------------------------------------------------------------------------------
+// ----------- ADD MINED BLOCK TO THE CHAIN / EXTEND THE BLOCKCHAIN -----------------
+// ----------------------------------------------------------------------------------
+Blockchain.prototype.addMinedBlockToChain = function(newBlock) {
+    // New Block Validation
+    if (newBlock.index !== this.blocks.length) return { errorMsg: "Block already mined by another"};
+
+    const previousBlock = this.blocks[this.blocks.length - 1];
+    const previousBlockHash = previousBlock.blockHash;
+    if (previousBlockHash !== newBlock.prevBlockHash) {
+        return { errorMsg: "Incorrect previous block hash"};
+    }
+
+    // Add new block
+    this.blocks.push(newBlock);
+    // Remove all other mining jobs for new block
+    this.miningJobs = {};
+    // Remove new block's transactions from transaction pool
+    this.removePendingTransactions(newBlock.transactions);
+
+    return newBlock;
+}
 
 
-// PEER NODE DATA =====================================================================
+// ********************************************************************************
+// ************************ PEERS / SYNCHRONIZATION *******************************
+// ********************************************************************************
+// --------------------------------------------------------------------------------
+// ---------------------------- GET PEER DATA -------------------------------------
+// --------------------------------------------------------------------------------
 Blockchain.prototype.getPeersData = function() {
     const peers = this.networkNodes.entries();
 
@@ -401,8 +474,10 @@ Blockchain.prototype.getPeersData = function() {
     return peerObj;
 };
 
-// RESET THE BLOCKCHAIN ==================================================================
-// =======================================================================================
+
+// --------------------------------------------------------------------------------
+// -------------------------- RESET THE BLOCKCHAIN --------------------------------
+// --------------------------------------------------------------------------------
 Blockchain.prototype.resetChain = function() {
     this.pendingTransactions = [];
     this.blocks = [this.blocks[0]];

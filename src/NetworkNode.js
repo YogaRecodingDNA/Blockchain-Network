@@ -1,16 +1,10 @@
 const express = require("express");
-const Block = require("./Block");
 const Blockchain = require("./Blockchain");
-const Transaction = require("./Transaction");
-const CryptoHashUtils = require("./utils/CryptoHashUtils");
 const Config = require("./utils/Config");
-// const uuid = require("uuid/v1");
 const RP = require("request-promise");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const { StatusCodes } = require("http-status-codes");
-const { json } = require("express");
-// const PORT = process.argv[2];
 
 // Create Express app
 const app = express();
@@ -18,12 +12,19 @@ app.use(bodyParser.json()); // Enable JSON data in the HTTP request body
 app.use(bodyParser.urlencoded({ extended: false}));
 app.use(cors()); // Enable Cross-Origin Resource Sharing (CORS)
 
-const vinyasa = new Blockchain();
+const vinyasa = new Blockchain(); // CREATE NEW BLOCKCHAIN INSTANCE
 
-// ENDPOINTS - BUILDING THE BLOCKCHAIN NODE  ========================================
-// ==================================================================================
+/** RESTful API KEY
+ STARS = ******** SECTION **********
+ DASHES = -------- ENDPOINT --------
+ */
 
-// HOME
+// ****************************************************************************
+// ***************************** CONTENTS *************************************
+// ****************************************************************************
+// ----------------------------------------------------------------------------
+// -------------- HOME / SIMPLE NAV ENDPOINT LINKS PAGE -----------------------
+// ----------------------------------------------------------------------------
 app.get("/", (req, res) => {
     if (!res) {
         res.status(StatusCodes.NOT_FOUND).json({errorMsg: "Page not found."})
@@ -32,17 +33,23 @@ app.get("/", (req, res) => {
         let endpoints = ExpressListEndpoints(app);
         let listEndpoints = endpoints.map( endpoint => 
             `<li>${endpoint.methods} <a href="${endpoint.path}">${endpoint.path}</a></li>`).join("");
+            
+            res.status(StatusCodes.OK)
+            .send(
+                "<h1>VinyasaChain - A simple unified blockchain network</h1>" +
+                `<ul>${listEndpoints}</ul>`
+                );
+            }
+        });
 
-        res.status(StatusCodes.OK)
-        .send(
-            "<h1>VinyasaChain - A simple unified blockchain network</h1>" +
-            `<ul>${listEndpoints}</ul>`
-        );
-    }
-});
-
-// INFO - Nodes may provide additional info by choice
-app.get("/info", (req, res) => {
+        
+// ****************************************************************************
+// ***************************** TEST/DEBUG ***********************************
+// ****************************************************************************
+// ----------------------------------------------------------------------------
+// -------------------------- BLOCKCHAIN INFO ---------------------------------
+// ----------------------------------------------------------------------------
+app.get("/info", (req, res) => { // Nodes may provide additional info by choice
     res.status(StatusCodes.OK)
     .json({
         "about": "VinyasaChain",
@@ -59,7 +66,10 @@ app.get("/info", (req, res) => {
     });
 });
 
-// // DEBUG - Debug Info (All Node Data)
+
+// ----------------------------------------------------------------------------
+// ----------------------------- NODED INFO -----------------------------------
+// ----------------------------------------------------------------------------
 app.get("/debug", (req, res) => {
 
     res.status(StatusCodes.OK)
@@ -70,14 +80,17 @@ app.get("/debug", (req, res) => {
         "chain": vinyasa.blocks,
         "pendingTransactions": vinyasa.pendingTransactions,
         "currentDifficulty": vinyasa.currentDifficulty,
-        "miningJobs": null, // TODO:
+        "miningJobs": vinyasa.miningJobs,
         "confirmedBalances": null // TODO:
     });
 
 });
 
-// Debug/Reset Chain - For debugging/testing only. Should reset entire chain to its initial state.
-app.get("/debug/reset-chain", (req, res) => {
+
+// ----------------------------------------------------------------------------
+// ----------------------------- RESET CHAIN  ---------------------------------
+// ----------------------------------------------------------------------------
+app.get("/debug/reset-chain", (req, res) => { // Reset entire chain to its initial state.
     vinyasa.resetChain();
     const blocks = vinyasa.blocks;
 
@@ -96,14 +109,20 @@ app.get("/debug/reset-chain", (req, res) => {
 });
 
 
-// IMPLEMENTING BLOCKS ==============================================================
-// ==================================================================================
-// BLOCKS
+// ****************************************************************************
+// ******************************* BLOCKS *************************************
+// ****************************************************************************
+// ----------------------------------------------------------------------------
+// --------------------------- GET ALL BLOCKS ---------------------------------
+// ----------------------------------------------------------------------------
 app.get("/blocks", (req, res) => {
     res.status(StatusCodes.OK).json({ "blocks": vinyasa.blocks });
 });
 
-// BLOCK BY INDEX
+
+// ----------------------------------------------------------------------------
+// ------------------------- GET BLOCK BY INDEX -------------------------------
+// ----------------------------------------------------------------------------
 app.get("/blocks/:blockIndex", (req, res) => {
     const blockIndex = req.params.blockIndex;
     const block = vinyasa.blocks[blockIndex];
@@ -117,78 +136,12 @@ app.get("/blocks/:blockIndex", (req, res) => {
 });
 
 
-// IMPLEMENTING TRANSACTIONS ========================================================
-// ==================================================================================
-// GET PENDING TRANSACTIONS
-app.get("/transactions/pending", (req, res) => {
-    res.status(StatusCodes.OK).json({
-        "pending-transactions": vinyasa.pendingTransactions
-    });
-});
-
-// GET CONFIRMED TRANSACTIONS
-app.get("/transactions/confirmed", (req, res) => {
-    const confirmedTransactions = vinyasa.getConfirmedTransactions();
-    if (!confirmedTransactions.length >= 1) res.json({errorMsg: "Zero confirmed. There should always be a genesis transaction."});
-
-    res.status(StatusCodes.OK).json(confirmedTransactions);
-});
-
-// GET TRANSACTION BY HASH
-app.get("/transactions/:transactionHash", (req, res) => {
-    const transactionHash = req.params.transactionHash;
-    const transaction = vinyasa.findTransactionByDataHash(transactionHash);
-
-    if (!transaction) res.status(StatusCodes.NOT_FOUND).send("404 NOT FOUND");
-
-    res.status(StatusCodes.OK).json(transaction)
-});
-
-// LIST ALL ACCOUNT BALANCES
-app.get("/balances", (req, res) => {
-    const allBalances = vinyasa.getAllBalances();
-
-    res.status(StatusCodes.OK).json(allBalances);
-});
-
-// LIST TRANSACTIONS FOR ADDRESS
-app.get("/address/:address/transactions", (req, res) => {
-    const address = req.params.address;
-    const addressHistory = vinyasa.getAddressTransactionHistory(address);
-
-    if (!address) res.status(StatusCodes.NOT_FOUND).send("404 NOT FOUND");
-
-    res.status(StatusCodes.OK).json({
-        address,
-        addressHistory
-    });
-
-});
-
-// GET BALANCES FOR ADDRESS
-app.get("/address/:address/balance", (req, res) => {
-    const address = req.params.address;
-    const addressBalances = vinyasa.getBalancesForAddress(address);
-
-    if (!addressBalances) res.status(StatusCodes.NOT_FOUND).json({errorMsg: "Invalid address"});
-
-    res.status(StatusCodes.OK).json({addressBalances})
-});
-
-// // BALANCES INVALID FOR ADDRESS
-// app.get("/address/invalidAddress/balance", (req, res) => {
-
-// });
-
-app.post("/transaction", (req,res) => {
-    const transactionObject = req.body;
-    // Add transaction to transaction pool and receive next block's index
-    const nextBlock = vinyasa.addNewTransactionToPendingTransactions(transactionObject);
-
-    res.json({ message: `Transaction will be added to block ${nextBlock}`});
-})
-
-// SEND TRANSACTION
+// ****************************************************************************
+// ***************************** TRANSACTIONS *********************************
+// ****************************************************************************
+// ----------------------------------------------------------------------------
+// ----------------------- CREATE/SEND TRANSACTION ----------------------------
+// ----------------------------------------------------------------------------
 app.post("/transactions/send", (req, res) => {
     const requestBody = req.body;
     const newTransaction = vinyasa.createNewTransaction(requestBody);
@@ -202,7 +155,7 @@ app.post("/transactions/send", (req, res) => {
         let requestPromises = [];
         vinyasa.networkNodes.forEach(peer => {
             const requestOptions = {
-                uri: peer + "/transaction",
+                uri: peer + "/addToPendingTransactions",
                 method: "POST",
                 body: newTransaction,
                 json: true
@@ -224,18 +177,116 @@ app.post("/transactions/send", (req, res) => {
     } else res.status(StatusCodes.BAD_REQUEST).json(newTransaction);
 });
 
+// ----------------------------------------------------------------------------
+// ---------------------- ADD TRANSACTION TO PENDING --------------------------
+// ----------------------------------------------------------------------------
+app.post("/addToPendingTransactions", (req,res) => {
+    const transactionObject = req.body;
+    // Add transaction to transaction pool and receive next block's index
+    const nextBlock = vinyasa.addNewTransactionToPendingTransactions(transactionObject);
+
+    res.json({ message: `Transaction will be added to block ${nextBlock}`});
+})
 
 
-// // IMPLEMENTING MINING ========================================================
-// // ============================================================================
-// GET MINING JOB
+// ----------------------------------------------------------------------------
+// ----------------------- GET PENDING TRANSACTIONS ---------------------------
+// ----------------------------------------------------------------------------
+app.get("/transactions/pending", (req, res) => {
+    res.status(StatusCodes.OK).json({
+        "pending-transactions": vinyasa.pendingTransactions
+    });
+});
+
+
+// ----------------------------------------------------------------------------
+// ---------------------- GET CONFIRMED TRANSACTIONS --------------------------
+// ----------------------------------------------------------------------------
+app.get("/transactions/confirmed", (req, res) => {
+    const confirmedTransactions = vinyasa.getConfirmedTransactions();
+    if (!confirmedTransactions.length >= 1) res.json({errorMsg: "Zero confirmed. There should always be a genesis transaction."});
+
+    res.status(StatusCodes.OK).json(confirmedTransactions);
+});
+
+
+// ----------------------------------------------------------------------------
+// ---------------------- GET TRANSACTION BY HASH -----------------------------
+// ----------------------------------------------------------------------------
+app.get("/transactions/:transactionHash", (req, res) => {
+    const transactionHash = req.params.transactionHash;
+    const transaction = vinyasa.findTransactionByDataHash(transactionHash);
+
+    if (!transaction) res.status(StatusCodes.NOT_FOUND).send("404 NOT FOUND");
+
+    res.status(StatusCodes.OK).json(transaction)
+});
+
+
+// ----------------------------------------------------------------------------
+// -------------------- LIST TRANSACTIONS FOR ADDRESS -------------------------
+// ----------------------------------------------------------------------------
+app.get("/address/:address/transactions", (req, res) => {
+    const address = req.params.address;
+    const addressHistory = vinyasa.getAddressTransactionHistory(address);
+
+    if (!address) res.status(StatusCodes.NOT_FOUND).send("404 NOT FOUND");
+
+    res.status(StatusCodes.OK).json({
+        address,
+        addressHistory
+    });
+
+});
+
+
+
+// ****************************************************************************
+// ****************************** BALANCES ************************************
+// ****************************************************************************
+// ----------------------------------------------------------------------------
+// ---------------------- LIST ALL ACCOUNT BALANCES ---------------------------
+// ----------------------------------------------------------------------------
+app.get("/balances", (req, res) => {
+    const allBalances = vinyasa.getAllBalances();
+
+    res.status(StatusCodes.OK).json(allBalances);
+});
+
+
+// ----------------------------------------------------------------------------
+// ---------------------- GET BALANCES BY ADDRESS -----------------------------
+// ----------------------------------------------------------------------------
+app.get("/address/:address/balance", (req, res) => {
+    const address = req.params.address;
+    const addressBalances = vinyasa.getBalancesForAddress(address);
+
+    if (!addressBalances) res.status(StatusCodes.NOT_FOUND).json({errorMsg: "Invalid address"});
+
+    res.status(StatusCodes.OK).json({addressBalances})
+});
+
+
+// ----------------------------------------------------------------------------
+// ------------------ GET INVALID BALANCES BY ADDRESS -------------------------
+// ----------------------------------------------------------------------------
+// // BALANCES INVALID FOR ADDRESS
+// app.get("/address/invalidAddress/balance", (req, res) => {
+// });
+
+
+// ****************************************************************************
+// *****************************  MINING **************************************
+// ****************************************************************************
+// ----------------------------------------------------------------------------
+// --------------------------- GET MINING JOB ---------------------------------
+// ----------------------------------------------------------------------------
 app.get("/mining/get-mining-job", (req, res) => {
     // Miner puts in request for block candidate
     // Node prepares block candidate, coinbase tx, rewards/fees...
     // Miners mine and submit the mined block to the node
-
-    // const minerAddress = req.params.minerAddress;
     const minerAddress = Config.currentNodeId;
+    // const minerAddress = req.params.minerAddress;
 
     const blockCandidate = vinyasa.prepareBlockCandidate(minerAddress);
 
@@ -249,15 +300,26 @@ app.get("/mining/get-mining-job", (req, res) => {
     });
 });
 
-// // SUBMIT MINED BLOCK | IMPLEMENTING MINING (validate)
-// app.post("/mining/submit-mined-block", (req, res) => {
 
-// });
+// ----------------------------------------------------------------------------
+// ----------------------- SUBMIT MINED BLOCK ---------------------------------
+// ----------------------------------------------------------------------------
+app.post("/mining/submit-mined-block", (req, res) => {
 
-// // DEBUG -> MINE A BLOCK
-// app.get("/debug/mine/:minerAddress/:difficulty", (req, res) => {
+});
 
-// });
+
+// ----------------------------------------------------------------------------
+// ------------------- TEST/DEBUG -> MINE A BLOCK -----------------------------
+// ----------------------------------------------------------------------------
+app.get("/debug/mine/:minerAddress/:difficulty", (req, res) => {
+    const minerAddress = req.params.minerAddress;
+    const difficulty = req.params.difficulty;
+
+    const newBlock = vinyasa.mineNewBlock(minerAddress, +difficulty);
+
+    res.status(StatusCodes.OK).json({ newBlock })
+});
 
 
 // // PEERS AND SYNCHRONIZATION ========================================================
