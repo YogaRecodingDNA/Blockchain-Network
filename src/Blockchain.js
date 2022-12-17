@@ -1,14 +1,11 @@
 const Block = require("./Block");
 const Transaction = require("./Transaction");
-const CryptoHashUtils = require("./utils/CryptoHashUtils");
 const ValidationUtils = require("./utils/ValidationUtils");
 const Config = require("./utils/Config");
-// const cloneDeep = require("lodash.clonedeep");
 var cloneDeep = require('lodash.clonedeep');
-const res = require("express/lib/response");
 
 // ********************************************************************************
-// *********************** BLOCKCHAIN CONSTRUCTOR *********************************
+// ************************* BLOCKCHAIN CONSTRUCTOR *******************************
 // ********************************************************************************
 function Blockchain() {
     this.blocks = [Block.genesisBlock()]; // Array of blocks in the chain
@@ -25,7 +22,10 @@ function Blockchain() {
 }
 
 
-/** CALCULATE CUMULATIVE DIFFICULTY
+// -----------------------------------------------------------------------------------
+// --------------------- CALCULATE CUMULATIVE DIFFICULTY -----------------------------
+// -----------------------------------------------------------------------------------
+/**
  * @notice - Calculates the total mining difficulty of the chain
  * @returns - Integer: Total mining difficulty of the chain
  */
@@ -38,16 +38,21 @@ Blockchain.prototype.calculateCumulativeDifficulty = function() {
 };
 
 
-// GET LAST BLOCK ON THE BLOCKCHAIN
+// -----------------------------------------------------------------------------------
+// ---------------------- GET LAST BLOCK ON THE BLOCKCHAIN ---------------------------
+// -----------------------------------------------------------------------------------
 Blockchain.prototype.getLastBlockOnChain = function() {
     return this.blocks[this.blocks.length - 1];
 };
 
 
 // ***********************************************************************************
-// ***************************** TRANSACTIONS ****************************************
+// ******************************** TRANSACTIONS *************************************
 // ***********************************************************************************
-/** GET CONFIRMED TRANSACTIONS
+// -----------------------------------------------------------------------------------
+// ------------------------- GET CONFIRMED TRANSACTIONS ------------------------------
+// -----------------------------------------------------------------------------------
+/** 
  * @notice - Locates all confirmed transactions within the blockchain
  * @returns - An array the total confirmed transactions of each block in the chain 
 */
@@ -60,7 +65,9 @@ Blockchain.prototype.getConfirmedTransactions = function() {
 };
 
 
-// GET ALL TRANSACTIONS
+// -----------------------------------------------------------------------------------
+// ----------------------------- GET ALL TRANSACTIONS --------------------------------
+// -----------------------------------------------------------------------------------
 Blockchain.prototype.getAllTransactions = function() {
     let transactions = this.getConfirmedTransactions();
     transactions.push.apply(transactions, this.pendingTransactions);
@@ -69,7 +76,9 @@ Blockchain.prototype.getAllTransactions = function() {
 }
 
 
-// FIND TRANSACTION BY DATA HASH
+// -----------------------------------------------------------------------------------
+// ------------------------- FIND TRANSACTION BY DATA HASH ---------------------------
+// -----------------------------------------------------------------------------------
 Blockchain.prototype.findTransactionByDataHash = function(hash) {
     const allTransactions = this.getAllTransactions();
     let targetTransaction = allTransactions.filter((transaction) => 
@@ -79,7 +88,9 @@ Blockchain.prototype.findTransactionByDataHash = function(hash) {
 }
 
 
-// CREATE NEW TRANSACTION
+// -----------------------------------------------------------------------------------
+// --------------------------- CREATE NEW TRANSACTION --------------------------------
+// -----------------------------------------------------------------------------------
 Blockchain.prototype.createNewTransaction = function(transactionData) {
     // CHECKS for missing property fields keys
     const missingFields = ValidationUtils.isMissing_FieldKeys(transactionData);
@@ -145,20 +156,26 @@ Blockchain.prototype.createNewTransaction = function(transactionData) {
 };
 
 
-// ADD NEW TRANSACTION TO TRANSACTION POOL [pendingTransactions]
+// -----------------------------------------------------------------------------------
+// ---------------- ADD NEW TRANSACTION TO PENDING TRANSACTIONS ----------------------
+// -----------------------------------------------------------------------------------
 Blockchain.prototype.addNewTransactionToPendingTransactions = function(transactionObject) {
     this.pendingTransactions.push(transactionObject); // Add to pending transactions pool 
     return this.getLastBlockOnChain().index + 1; // Return index of the next block on blockchain
 };
 
 
-// GET ALL PENDING TRANSACTIONS
+// -----------------------------------------------------------------------------------
+// ----------------------- GET ALL PENDING TRANSACTIONS ------------------------------
+// -----------------------------------------------------------------------------------
 Blockchain.prototype.getPendingTransactions = function() {
     return this.pendingTransactions;
 }
 
 
-// REMOVE PENDING TRANSACTIONS
+// -----------------------------------------------------------------------------------
+// ----------------------- REMOVE PENDING TRANSACTIONS -------------------------------
+// -----------------------------------------------------------------------------------
 Blockchain.prototype.removePendingTransactions = function(transactionsToRemove) {
     let transactionHashesToRemove = new Set();
 
@@ -172,8 +189,9 @@ Blockchain.prototype.removePendingTransactions = function(transactionsToRemove) 
         transaction => !transactionHashesToRemove.has(transaction.transactionDataHash));
 }
 
-
-// GET ADDRESS TRANSACTION HISTORY
+// -----------------------------------------------------------------------------------
+// ---------------------- GET ADDRESS TRANSACTION HISTORY ----------------------------
+// -----------------------------------------------------------------------------------
 Blockchain.prototype.getAddressTransactionHistory = function(address) {
     if (!ValidationUtils.isValidAddress(address)) return { errorMsg: "Invalid address"};
 
@@ -186,8 +204,9 @@ Blockchain.prototype.getAddressTransactionHistory = function(address) {
     return targetedAddressTransactions;
 }
 
-
-// GET ADDRESS BALANCES
+// -----------------------------------------------------------------------------------
+// ---------------------------- GET ADDRESS BALANCES ---------------------------------
+// -----------------------------------------------------------------------------------
 Blockchain.prototype.getBalancesForAddress = function(address) {
     if (!ValidationUtils.isValidAddress(address)) return { errorMsg: "Invalid address"};
 
@@ -198,6 +217,7 @@ Blockchain.prototype.getBalancesForAddress = function(address) {
     }
 
     const transactionHistory = this.getAddressTransactionHistory(address);
+
     for (let transaction of transactionHistory) {
         let confirmationsCount = 0;
         if (transaction.minedInBlockIndex) {// Match the confirmations count
@@ -240,42 +260,13 @@ Blockchain.prototype.getBalancesForAddress = function(address) {
             }
         }
 
-        return balance;
     }
-
-
-
-    function getAddressBalances(address, transactions) {
-        // let addressHistory = transactions.filter(transaction => transaction.to === address || transaction.from === address);
-
-        let balance = 0;
-        addressHistory.forEach(transfer => {
-            if (transfer.from === address) {
-                balance -= transfer.value;
-                balance -= transfer.fee;
-            } else if (transfer.to === address) {
-                balance += transfer.value;
-            }
-        });
-
-        return balance;
-    }
-
-    const confirmedTotalBalance = getAddressBalances(address, allConfirmedTrans);
-    const pendingTotalBalance = getAddressBalances(address, allPendingTrans);
-
-    console.log("confirmedTotalBalance", confirmedTotalBalance);
-    console.log("pendingTotalBalance", pendingTotalBalance);
-    
-    return { 
-        address,
-        confirmedTotalBalance,
-        pendingTotalBalance
-    };
+    return balance;
 }
 
-
-// GET ALL BALANCES
+// -----------------------------------------------------------------------------------
+// ------------------------------ GET ALL BALANCES -----------------------------------
+// -----------------------------------------------------------------------------------
 Blockchain.prototype.getAllBalances = function() {
     const confirmedTransactions = this.getConfirmedTransactions();
     let balances = {};
@@ -493,17 +484,6 @@ Blockchain.prototype.resetChain = function() {
 
     return isReset;
 };
-
-
-// Blockchain.prototype.addNewBlock = function(newBlock) {
-
-// };
-// Blockchain.prototype.addNewBlock = function(newBlock) {
-
-// };
-// Blockchain.prototype.addNewBlock = function(newBlock) {
-
-// };
 
 
 module.exports = Blockchain;
