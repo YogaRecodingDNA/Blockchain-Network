@@ -6,6 +6,11 @@
   "scripts": {
     "test": "jest --watchAll",
     "node_1": "nodemon --watch src -e js src/NetworkNode.js 5555 http://localhost:5555",
+    "node_2": "nodemon --watch src -e js src/NetworkNode.js 5556 http://localhost:5556",
+    "node_3": "nodemon --watch src -e js src/NetworkNode.js 5557 http://localhost:5557",
+    "node_4": "nodemon --watch src -e js src/NetworkNode.js 5558 http://localhost:5558",
+    "node_5": "nodemon --watch src -e js src/NetworkNode.js 5559 http://localhost:5559",
+    "node_6": "nodemon --watch src -e js src/NetworkNode.js 5560 http://localhost:5560",
     "start": "lets.js"
   },
   "repository": {

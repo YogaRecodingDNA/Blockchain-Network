@@ -38,9 +38,9 @@ app.get("/", (req, res) => {
             .send(
                 "<h1>VinyasaChain - A simple unified blockchain network</h1>" +
                 `<ul>${listEndpoints}</ul>`
-                );
-            }
-        });
+            );
+    }
+});
 
         
 // ****************************************************************************
@@ -68,7 +68,7 @@ app.get("/info", (req, res) => { // Nodes may provide additional info by choice
 
 
 // ----------------------------------------------------------------------------
-// ----------------------------- NODED INFO -----------------------------------
+// ----------------------------- NODE INFO -----------------------------------
 // ----------------------------------------------------------------------------
 app.get("/debug", (req, res) => {
 
@@ -322,19 +322,97 @@ app.get("/debug/mine/:minerAddress/:difficulty", (req, res) => {
 });
 
 
-// // PEERS AND SYNCHRONIZATION ========================================================
-// // ==================================================================================
-// // LIST ALL PEERS
-// app.get("/peers", (req, res) => {
-    // TODO:
-// });
+// ****************************************************************************
+// *****************************  MINING **************************************
+// ****************************************************************************
+// ----------------------------------------------------------------------------
+// -------------------------- LIST ALL PEERS ----------------------------------
+// ----------------------------------------------------------------------------
+app.get("/peers", (req, res) => {
+    const peers = vinyasa.getPeersData();
 
-// // CONNECT A PEER (validate)
-// app.post("/peers/connect", (req, res) => {
-    // TODO:
-// });
+    res.status(StatusCodes.OK).json(peers);
+});
 
-// // NOTIFY PEERS ABOUT NEW BLOCK
+
+// ****************************************************************************
+// ************************ PEERS / SYNCHRONIZATION ***************************
+// ****************************************************************************
+// ----------------------------------------------------------------------------
+// -------------------------- CONNECT A PEER ----------------------------------
+// ----------------------------------------------------------------------------
+app.post("/peers/connect", (req, res) => {
+    const peerNodeUrl = req.body.peerUrl;
+    
+    if (peerNodeUrl === undefined) {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+            errorMsg: "The request body is missing the 'peerUrl:' value"
+        });
+    }
+
+    // Get peer info -> Validate -> Add Peer
+    fetch(peerNodeUrl + "/info")
+        .then( response => {
+            return response.json();
+        })
+        .then( data => {
+            const peer = data;
+            const peerNodeId = peer.nodeId;
+            const peerNodeUrl = peer.nodeUrl;
+                    // Avoid connecting to self
+            if (peerNodeId === Config.currentNodeId) {
+                res.status(StatusCodes.CONFLICT).json({
+                    errorMsg: "Cannot to connect to self."
+                })  // Chain ID's must match
+            } else if (peer.chainId !== vinyasa.blocks[0].blockHash) {
+                res.status(StatusCodes.BAD_REQUEST).json({
+                    errorMsg: "Chain ID's must match"
+                })  // Avoid double-connecting to same peer
+            } else if (vinyasa.networkNodes.has(peerNodeId)) {
+                res.status(StatusCodes.CONFLICT).json({
+                    errorMsg: `Already connected to peer: ${peerNodeUrl}`
+                });
+            } else {
+                // Remove any peer with the same URL
+                vinyasa.networkNodes.forEach( (peerUrl, peerId) => {
+                    if (peerUrl === peerNodeUrl) {
+                        vinyasa.networkNodes.delete(peerId);
+                    }
+                });
+                
+                // Add new peer
+                vinyasa.networkNodes.set(peerNodeId, peerNodeUrl);
+
+                // Peer attempts to connect to this node
+                fetch(peerNodeUrl + "/peers/connect", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ peerUrl: Config.currentNodeURL }),
+                })
+                .then( response => response.json())
+                .then( data => {
+                    console.log('Successful Bi-directional connection:', data);
+                    // data should be {errorMsg: `Already connected to peer: http://...`} meaning the original attempt was successful
+                })
+                .catch( error => console.error('Error:', error) );
+
+                // Response message
+                res.status(StatusCodes.OK).json({
+                    message: `Successfully connected to peer: ${peerNodeUrl}`
+                });
+            }
+        })
+        .catch( (err) => {
+            res.status(StatusCodes.BAD_REQUEST).json({
+                errorMsg: `Cannot connect to peer: ${peerNodeUrl}`
+            });
+        });
+});
+
+
+// ----------------------------------------------------------------------------
+// ------------------- NOTIFY PEERS ABOUT NEW BLOCK ---------------------------
+// ----------------------------------------------------------------------------
 // app.post("/peers/notify-new-block", (req, res) => {
     
 // });
@@ -357,3 +435,9 @@ app.get("/debug/mine/:minerAddress/:difficulty", (req, res) => {
 app.listen(Config.defaultServerPort, function() {
     console.log(`Success! Listening on port ${Config.defaultServerPort}...`);
 });
+
+
+module.exports = {
+    app,
+    vinyasa
+};

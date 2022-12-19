@@ -462,8 +462,18 @@ Blockchain.prototype.getPeersData = function() {
     for (const [key, value] of peers) {
         peerObj[`${key}`] = value;
     }
+    console.log("THIS NODE URL ==> ", this.networkNodes.get(Config.currentNodeId));
     return peerObj;
 };
+
+
+// // --------------------------------------------------------------------------------
+// // --------------------------- CONNECTING PEERS -----------------------------------
+// // --------------------------------------------------------------------------------
+// Blockchain.prototype.connectToPeers = function(peer) {
+
+// }
+
 
 
 // --------------------------------------------------------------------------------
