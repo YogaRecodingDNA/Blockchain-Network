@@ -50,6 +50,7 @@ app.get("/", (req, res) => {
 // -------------------------- BLOCKCHAIN INFO ---------------------------------
 // ----------------------------------------------------------------------------
 app.get("/info", (req, res) => { // Nodes may provide additional info by choice
+
     res.status(StatusCodes.OK)
     .json({
         "about": "VinyasaChain",
@@ -281,22 +282,17 @@ app.get("/address/:address/balance", (req, res) => {
 // ----------------------------------------------------------------------------
 // --------------------------- GET MINING JOB ---------------------------------
 // ----------------------------------------------------------------------------
-app.get("/mining/get-mining-job", (req, res) => {
-    // Miner puts in request for block candidate
-    // Node prepares block candidate, coinbase tx, rewards/fees...
-    // Miners mine and submit the mined block to the node
-    const minerAddress = Config.currentNodeId;
-    // const minerAddress = req.params.minerAddress;
-
-    const blockCandidate = vinyasa.prepareBlockCandidate(minerAddress);
+app.get("/mining/get-mining-job/:minerAddress", (req, res) => {
+    const minerAddress = req.params.minerAddress || Config.currentNodeId;
+    const newBlock = vinyasa.mineNewBlock(minerAddress);
 
     res.status(StatusCodes.OK).json({ 
-        index: blockCandidate.index,
-        transactionsIncluded: blockCandidate.transactions,
-        difficulty: blockCandidate.difficulty,
-        expectedReward: blockCandidate.transactions[0].value,
-        rewardAddress: blockCandidate.transactions[0].to,
-        blockDataHash: blockCandidate.blockdataHash
+        index: newBlock.index,
+        transactionsIncluded: newBlock.transactions,
+        difficulty: newBlock.difficulty,
+        expectedReward: newBlock.transactions[0].value,
+        rewardAddress: newBlock.transactions[0].to,
+        blockDataHash: newBlock.blockdataHash
     });
 });
 
@@ -304,9 +300,9 @@ app.get("/mining/get-mining-job", (req, res) => {
 // ----------------------------------------------------------------------------
 // ----------------------- SUBMIT MINED BLOCK ---------------------------------
 // ----------------------------------------------------------------------------
-app.post("/mining/submit-mined-block", (req, res) => {
+// app.post("/mining/submit-mined-block", (req, res) => {
 
-});
+// });
 
 
 // ----------------------------------------------------------------------------
@@ -323,7 +319,7 @@ app.get("/debug/mine/:minerAddress/:difficulty", (req, res) => {
 
 
 // ****************************************************************************
-// *****************************  MINING **************************************
+// ************************ PEERS / SYNCHRONIZATION ***************************
 // ****************************************************************************
 // ----------------------------------------------------------------------------
 // -------------------------- LIST ALL PEERS ----------------------------------
@@ -335,9 +331,6 @@ app.get("/peers", (req, res) => {
 });
 
 
-// ****************************************************************************
-// ************************ PEERS / SYNCHRONIZATION ***************************
-// ****************************************************************************
 // ----------------------------------------------------------------------------
 // -------------------------- CONNECT A PEER ----------------------------------
 // ----------------------------------------------------------------------------
@@ -356,15 +349,15 @@ app.post("/peers/connect", (req, res) => {
             return response.json();
         })
         .then( data => {
-            const peer = data;
-            const peerNodeId = peer.nodeId;
-            const peerNodeUrl = peer.nodeUrl;
+            const peerInfo = data;
+            const peerNodeId = peerInfo.nodeId;
+            const peerNodeUrl = peerInfo.nodeUrl;
                     // Avoid connecting to self
             if (peerNodeId === Config.currentNodeId) {
                 res.status(StatusCodes.CONFLICT).json({
                     errorMsg: "Cannot to connect to self."
                 })  // Chain ID's must match
-            } else if (peer.chainId !== vinyasa.blocks[0].blockHash) {
+            } else if (peerInfo.chainId !== vinyasa.blocks[0].blockHash) {
                 res.status(StatusCodes.BAD_REQUEST).json({
                     errorMsg: "Chain ID's must match"
                 })  // Avoid double-connecting to same peer
@@ -396,6 +389,11 @@ app.post("/peers/connect", (req, res) => {
                 })
                 .catch( error => console.error('Error:', error) );
 
+                // Synchronize the chains
+                vinyasa.synchronizeTheChain(peerInfo);
+                vinyasa.synchronizePendingTransactions(peerInfo);
+
+                console.log(peerInfo);
                 // Response message
                 res.status(StatusCodes.OK).json({
                     message: `Successfully connected to peer: ${peerNodeUrl}`

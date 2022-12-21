@@ -5,7 +5,7 @@ const CryptoHashUtils = require("./utils/CryptoHashUtils");
 // ===================================================================================
 // ============================= BLOCK CONSTRUCTOR ===================================
 // ===================================================================================
-function Block(index, transactions, difficulty, prevBlockHash, minedBy, nonce, dateCreated) {
+function Block(index, transactions, difficulty, prevBlockHash, minedBy, dateCreated) {
     this.index = index;
     this.transactions = transactions;
     this.difficulty = difficulty;

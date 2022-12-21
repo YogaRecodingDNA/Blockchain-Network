@@ -3,10 +3,14 @@ const Transaction = require("./Transaction");
 const ValidationUtils = require("./utils/ValidationUtils");
 const Config = require("./utils/Config");
 var cloneDeep = require('lodash.clonedeep');
+const res = require("express/lib/response");
 
-// ********************************************************************************
-// ************************* BLOCKCHAIN CONSTRUCTOR *******************************
-// ********************************************************************************
+// ***********************************************************************************
+// ***************************** BLOCKCHAIN / BLOCKS *********************************
+// ***********************************************************************************
+// -----------------------------------------------------------------------------------
+// --------------------------- BLOCKCHAIN CONSTRUCTOR --------------------------------
+// -----------------------------------------------------------------------------------
 function Blockchain() {
     this.blocks = [Block.genesisBlock()]; // Array of blocks in the chain
     this.pendingTransactions = []; // array of pending transactions
@@ -23,6 +27,94 @@ function Blockchain() {
 
 
 // -----------------------------------------------------------------------------------
+// ------------------------------ VALIDATE BLOCK -------------------------------------
+// -----------------------------------------------------------------------------------
+Blockchain.prototype.validateBlock = function(peerBlock) {
+    const transactions = peerBlock.transactions;
+
+    // CHECKS for missing property fields keys
+    const missingFields = ValidationUtils.isMissing_FieldKeys(peerBlock);
+    if (missingFields) return {  errorMsg: missingFields };
+
+    // CHECKS for invalid property fields keys
+    const invalidFields = ValidationUtils.isValid_FieldKeys(peerBlock);
+    if (invalidFields) return {  errorMsg: invalidFields };
+
+    // VALIDATE INDEX
+    const previousBlockIndex = this.blocks[peerBlock.index - 1].index;
+    const isValidBlockIndex = ValidationUtils.isValidBlockIndex(peerBlock.index, previousBlockIndex);
+    if (!isValidBlockIndex) return { errorMsg: "Block index invalid" };
+
+    // VALIDATE DIFFICULTY
+    const isValidDifficulty = ValidationUtils.isValidDifficulty(peerBlock.difficulty);
+    if (!isValidDifficulty) return { errorMsg: "Difficulty invalid" };
+
+    // VALIDATE PREVIOUS BLOCK HASH
+    const previousBlockHash = this.blocks[peerBlock.index - 1].blockHash;
+    if (peerBlock.prevBlockHash !== previousBlockHash) return { errorMsg: "Previous block hash does not match" };
+
+    // VALIDATE BLOCK DATA HASH
+    if (peerBlock.blockDataHash !== peerBlock.calculateBlockDataHash()) return { errorMsg: "Invalid lock data hash" };
+
+    // VALIDATE NONCE
+    const isValidNonce = ValidationUtils.isValidNonce(peerBlock.nonce);
+    if (!isValidNonce) return { errorMsg: "Invalid nonce" };
+
+    // VALIDATE DATE CREATED
+    const isValidDate = ValidationUtils.isValidDate(peerBlock.dateCreated);
+    if (!isValidDate) return { errorMsg: "Invalid date" };
+
+    // VALIDATE BLOCK HASH
+    if (peerBlock.blockHash !== peerBlock.calculateBlockHash()) return { errorMsg: "Invalid block hash" };
+
+    transactions.forEach(transaction => {
+        const isValidTransaction = this.validateTransaction(transaction);
+
+        if (isValidTransaction.errorMsg) {
+            return { errorMsg: isValidTransaction.errorMsg + `in Block ${transaction.minedInBlockIndex} for transaction: ${transaction.transactionDataHash}` };
+        }
+
+        let balances = this.getAllBalances();
+        let newBlockIndex = this.blocks.length;
+
+        let asSender = transaction.from;
+        let asRecipient = transaction.to;
+
+        balances[asSender] = balances[asSender] || 0;
+        balances[asRecipient] = balances[asRecipient] || 0;
+
+        if (balances[asSender] >= transaction.fee) {
+            transaction.minedInBlockIndex = newBlockIndex;
+
+            // Transaction sender pays processing fee
+            balances[asSender] -= transaction.fee;
+            // blockReward += transaction.fee; // adds to blockReward
+
+            // Execute the transfer from sender -> recipient (validate balance)
+            if(balances[asSender] >= transaction.value) {
+                balances[asSender] -= transaction.value;
+                balances[asRecipient] += transaction.value;
+
+                transaction.transferSuccessful = true;
+            } else {
+                transaction.transferSuccessful = false;
+            }
+        }
+    })
+
+    return true;
+}
+
+
+// -----------------------------------------------------------------------------------
+// ---------------------- GET LAST BLOCK ON THE BLOCKCHAIN ---------------------------
+// -----------------------------------------------------------------------------------
+Blockchain.prototype.getLastBlockOnChain = function() {
+    return this.blocks[this.blocks.length - 1];
+};
+
+
+// -----------------------------------------------------------------------------------
 // --------------------- CALCULATE CUMULATIVE DIFFICULTY -----------------------------
 // -----------------------------------------------------------------------------------
 /**
@@ -35,14 +127,6 @@ Blockchain.prototype.calculateCumulativeDifficulty = function() {
         difficulty += 16 ** block.difficulty;
     }
     return difficulty;
-};
-
-
-// -----------------------------------------------------------------------------------
-// ---------------------- GET LAST BLOCK ON THE BLOCKCHAIN ---------------------------
-// -----------------------------------------------------------------------------------
-Blockchain.prototype.getLastBlockOnChain = function() {
-    return this.blocks[this.blocks.length - 1];
 };
 
 
@@ -89,68 +173,98 @@ Blockchain.prototype.findTransactionByDataHash = function(hash) {
 
 
 // -----------------------------------------------------------------------------------
+// ---------------------------- VALIDATE TRANSACTION ---------------------------------
+// -----------------------------------------------------------------------------------
+Blockchain.prototype.validateTransaction = function(transactionData) {
+
+    // ******* TO VALIDATE BOTH *********
+    // 1. ALREADY EXISTING TRANSACTIONS OR..
+    // 2. THE INPUT DATA PRIOR TO NEW TRANSACTION CREATION
+
+    // CHECKS for missing property fields keys
+    const missingFields = ValidationUtils.isMissing_FieldKeys(transactionData);
+    if (missingFields) return {  errorMsg: missingFields };
+
+    // CHECKS for invalid property fields keys
+    const invalidFields = ValidationUtils.isValid_FieldKeys(transactionData);
+    if (invalidFields) return {  errorMsg: invalidFields };
+
+    // VALIDATE recipient address
+    const isValidRecipient = ValidationUtils.isValidAddress(transactionData.to);
+    if (!isValidRecipient) return { errorMsg: "Invalid Recipient Address" };
+
+    // VALIDATE value
+    const isValidTransferValue = ValidationUtils.isValidTransferValue(transactionData.value);
+    if (!isValidTransferValue) return { errorMsg: "Invalid transfer value" };
+
+    // VALIDATE fee
+    const isValidTransferFee = ValidationUtils.isValidTransferFee(transactionData.fee);
+    if (!isValidTransferFee) return { errorMsg: "Invalid transfer fee" };
+    
+    // VALIDATE public key
+    const isValidPublicKey = ValidationUtils.isValidPublicKey(transactionData.senderPubKey);
+    if (!isValidPublicKey) return { errorMsg: "Invalid Public Key" };
+
+    if (!transactionData.transactionDataHash) {
+        // VALIDATE private key
+        const isValidPrivateKey = ValidationUtils.isValidPrivateKey(transactionData.senderPrivKey);
+        if (!isValidPrivateKey) return { errorMsg: "Invalid Private Key" };
+    }
+
+
+    // **** SPECIFIC ONLY TO EXISTING TRANSACTIONS *****
+    if (transactionData.transactionDataHash) { 
+        // VALIDATE sender address
+        const isValidSender = ValidationUtils.isValidAddress(transactionData.from);
+        if (!isValidSender) return { errorMsg: "Invalid Sender Address" };
+
+        // VALIDATE and Verify signature
+        const signature = transactionData.senderSignature;
+        const isValidSignature = ValidationUtils.isValidSignature(signature);
+        if (!isValidSignature) return { errorMsg: "Invalid Signature" };
+        
+        if (!transactionData.verifySignature()) {
+            console.log("VERIFY SIG ", transactionData.verifySignature());
+            console.log(transactionData);
+            return { errorMsg: `Invalid signature: ${signature}` };
+        }
+
+        // CHECK FOR COLLISIONS -> skip duplicated transactions
+        const transactionDataHash = transactionData.transactionDataHash;
+        const checkForCollisions = this.findTransactionByDataHash(transactionDataHash);
+        if (checkForCollisions) {
+            return { errorMsg: `Duplicate transaction: ${transactionDataHash}`};
+        }
+    }
+
+    return true;
+
+}
+
+
+// -----------------------------------------------------------------------------------
 // --------------------------- CREATE NEW TRANSACTION --------------------------------
 // -----------------------------------------------------------------------------------
 Blockchain.prototype.createNewTransaction = function(transactionData) {
-    // CHECKS for missing property fields keys
-    const missingFields = ValidationUtils.isMissing_FieldKeys(transactionData);
-    if (missingFields) {return {  errorMsg: missingFields}};
-    // CHECKS for invalid property fields keys
-    const invalidFields = ValidationUtils.isValid_FieldKeys(transactionData);
-    if (invalidFields) {return {  errorMsg: invalidFields}};
-    // VALIDATE address
-    const isValidAddress = ValidationUtils.isValidAddress(transactionData.to);
-    if (!isValidAddress) { return { errorMsg: "Invalid Recipient Address"} };
-    // VALIDATE public key
-    const isValidPublicKey = ValidationUtils.isValidPublicKey(transactionData.senderPubKey);
-    if (!isValidPublicKey) { return { errorMsg: "Invalid Public Key"} };
-    // VALIDATE private key
-    const isValidPrivateKey = ValidationUtils.isValidPrivateKey(transactionData.senderPrivKey);
-    if (!isValidPrivateKey) { return { errorMsg: "Invalid Private Key"} };
-    // VALIDATE value
-    const isValidTransferValue = ValidationUtils.isValidTransferValue(transactionData.value);
-    if (!isValidTransferValue) { return { errorMsg: "Invalid transfer value"} };
-    // VALIDATE fee
-    const isValidTransferFee = ValidationUtils.isValidTransferFee(transactionData.fee);
-    if (!isValidTransferFee) { return { errorMsg: "Invalid transfer fee"} };
-    // CHECKS that sender account balance >= "value" + "fee"
-    const sender = transactionData.from;
-    const senderBalances = this.getBalancesForAddress(sender);
-    if (senderBalances.confirmedBalance < transactionData.value + transactionData.fee ) {
-        return { errorMsg: `Insufficient funds from sender's address ${sender}`};
-    }
+
+    const isValidTransaction = this.validateTransaction(transactionData);
+    if (isValidTransaction.errorMsg) return isValidTransaction;
 
     // Create newTransaction params (to, value, fee, dateCreated, data, senderPubKey, senderPrivKey)
     const newTransaction = new Transaction(
-        transactionData.to,
-        transactionData.value,
-        transactionData.fee,
-        new Date().toISOString(),
-        transactionData.data,
-        transactionData.senderPubKey,
-        transactionData.senderPrivKey
-    );
+            transactionData.to,
+            transactionData.value,
+            transactionData.fee,
+            new Date().toISOString(),
+            transactionData.data,
+            transactionData.senderPubKey,
+            transactionData.senderPrivKey
+        );
 
-    // Validate and Verify signature
-    try {
-        const isValidSignature = ValidationUtils.isValidSignature(newTransaction.senderSignature);
-        if (!isValidSignature) return { errorMsg: "Invalid Signature" };
-        
-        if (!newTransaction.verifySignature()) {
-            console.log("VERIFY SIG ", newTransaction.verifySignature());
-            console.log(newTransaction);
-            return { errorMsg: `Invalid signature: ${newTransaction.senderSignature}` };
-        }
-    } catch (error) {
-        res.json({ catchError: error });
-    }
+    console.log("TRANSACTION DATA HASH", newTransaction.transactionDataHash);
 
-    // Checks for collisions -> skip duplicated transactions
-    const transactionDataHash = newTransaction.transactionDataHash;
-    const checkForCollisions = this.findTransactionByDataHash(transactionDataHash);
-    if (checkForCollisions) {
-        return { errorMsg: `Duplicate transaction: ${transactionDataHash}`};
-    }
+    const isValidNewTransaction = this.validateTransaction(newTransaction);
+    if (isValidNewTransaction.errorMsg) return isValidNewTransaction;
 
     return newTransaction;
 };
@@ -189,6 +303,7 @@ Blockchain.prototype.removePendingTransactions = function(transactionsToRemove) 
         transaction => !transactionHashesToRemove.has(transaction.transactionDataHash));
 }
 
+
 // -----------------------------------------------------------------------------------
 // ---------------------- GET ADDRESS TRANSACTION HISTORY ----------------------------
 // -----------------------------------------------------------------------------------
@@ -203,6 +318,7 @@ Blockchain.prototype.getAddressTransactionHistory = function(address) {
 
     return targetedAddressTransactions;
 }
+
 
 // -----------------------------------------------------------------------------------
 // ---------------------------- GET ADDRESS BALANCES ---------------------------------
@@ -264,6 +380,7 @@ Blockchain.prototype.getBalancesForAddress = function(address) {
     return balance;
 }
 
+
 // -----------------------------------------------------------------------------------
 // ------------------------------ GET ALL BALANCES -----------------------------------
 // -----------------------------------------------------------------------------------
@@ -299,30 +416,54 @@ Blockchain.prototype.getAllBalances = function() {
 // -----------------------------------------------------------------------------------
 // ----------------------------- MINE NEW BLOCK --------------------------------------
 // -----------------------------------------------------------------------------------
-Blockchain.prototype.mineNewBlock = function(minerAddress, difficulty) {
-    // PROOF OF WORK
+Blockchain.prototype.mineNewBlock = function(minerAddress) {
+    let difficulty = (this.currentDifficulty - 3);
+    const minimumDifficulty = 4;
+
     let blockCandidate = this.prepareBlockCandidate(minerAddress, difficulty);
     blockCandidate.calculateBlockHash();
-    console.log(("0").repeat(difficulty));
+    
+    // PROOF OF WORK
+    let miningStartTime = performance.now();
+    // console.time("miner");
 
+    // While amount of leading zeros doesn't match the difficulty, recalculate block hash
     while(blockCandidate.blockHash.substring(0, difficulty) !== ("0").repeat(difficulty)) {
-        console.log(blockCandidate.nonce);
         blockCandidate.nonce++;
+        blockCandidate.difficulty = difficulty;
         blockCandidate.dateCreated = new Date().toISOString();
         blockCandidate.calculateBlockHash();
-        console.log(blockCandidate.blockHash);
+        
+        // If correct hash is found under 9 seconds, increase difficulty
+        if (((performance.now() - miningStartTime) < 10000) && (blockCandidate.blockHash.substring(0, difficulty) === ("0").repeat(difficulty))) {
+            difficulty += 1;
+        }
+        
+        // If correct hash isn't found in 11 seconds, reduce difficulty by 1
+        if (((performance.now() - miningStartTime) > 11000) && difficulty > minimumDifficulty) {
+            difficulty -= 1;
+        }
+
+        // console.log(blockCandidate.blockHash);
+        // console.log("DIFFICULTY ====> ", difficulty);
+        // console.log("NONCE =========> ", blockCandidate.nonce);
+        // console.timeLog("miner");
     }
 
+    // console.timeEnd("miner");
+    
+    // SUBMIT MINED BLOCK
     const newBlock = this.submitMinedBlockToNode(
         blockCandidate.blockDataHash,
         blockCandidate.dateCreated,
         blockCandidate.nonce,
         blockCandidate.blockHash,
-        difficulty
+        blockCandidate.difficulty
     );
 
     return newBlock;
 };
+
 
 // ------------------------------------------------------------------------------------
 // ------------------- PREPARE THE BLOCK CANDIDATE FOR MINING -------------------------
@@ -331,7 +472,6 @@ Blockchain.prototype.prepareBlockCandidate = function(minerAddress, difficulty) 
     let balances = this.getAllBalances();
     let blockReward = Config.blockReward;
     let newBlockIndex = this.blocks.length;
-    // let transactions = this.getPendingTransactions();
 
     // 1. Deep clone pending transactions & Sort descending by fee
     let transactions = cloneDeep(this.getPendingTransactions());
@@ -425,6 +565,7 @@ Blockchain.prototype.submitMinedBlockToNode = function(blockDataHash, dateCreate
     return newBlock;
 }
 
+
 // ----------------------------------------------------------------------------------
 // ----------- ADD MINED BLOCK TO THE CHAIN / EXTEND THE BLOCKCHAIN -----------------
 // ----------------------------------------------------------------------------------
@@ -467,13 +608,104 @@ Blockchain.prototype.getPeersData = function() {
 };
 
 
-// // --------------------------------------------------------------------------------
-// // --------------------------- CONNECTING PEERS -----------------------------------
-// // --------------------------------------------------------------------------------
-// Blockchain.prototype.connectToPeers = function(peer) {
+// --------------------------------------------------------------------------------
+// ------------------------- SYNCHRONIZE THE CHAIN --------------------------------
+// --------------------------------------------------------------------------------
+Blockchain.prototype.synchronizeTheChain = async function(peerChainInfo) {
+    let peerChainBlocks;
+    // CALCULATE & COMPARE CUMULATIVE DIFFICULTIES
+    let currentChainCumulativeDifficulty = this.calculateCumulativeDifficulty();
+    let peerChainCumulativeDifficulty = peerChainInfo.cumulativeDifficulty;
 
-// }
+    // IF PEER CHAIN IS LONGER, VALIDATE AND SWITCH OVER
+    if (peerChainCumulativeDifficulty > currentChainCumulativeDifficulty) {
+        try {
+            // Get peer chain blocks
+            peerChainBlocks = await fetch(peerChainInfo.nodeUrl + "/blocks")
+            .then( res => res.json() )
+            .then( blocks => blocks )
+            .catch((error) => console.error(`Error: ${error}`));
+    
+            console.log(`Synchro peer Chain BLOCKS ===> ${peerChainBlocks}`);
+            // 
+            const isValid = this.validateChain(peerChainBlocks);
+            if (!isValid) return { errorMsg: "Peer Chain Invalid" };
+            
+            // Recalculate cumulative difficulties
+            currentChainCumulativeDifficulty = this.calculateCumulativeDifficulty();
+            peerChainCumulativeDifficulty = peerChainInfo.cumulativeDifficulty;
+            if (peerChainCumulativeDifficulty > currentChainCumulativeDifficulty) {
+                this.blocks = peerChainBlocks;
+                this.miningJobs = {};
+            }
+        } catch (error) {
+            console.error(`Error: ${error}`);
+        };
+    }
+}
+/*
+const peerChainInfo = {
+    about: 'VinyasaChain',
+    nodeId: '18528b0960f877bb7047dab',
+    nodeUrl: 'http://localhost:5555',
+    peersTotal: 2,
+    peersMap: {
+      '18528b0960f877bb7047dab': 'http://localhost:5555',
+      '18528b09621ce11672fdba02': 'http://localhost:5556'
+    },
+    currentDifficulty: 5,
+    blocksCount: 1,
+    cumulativeDifficulty: 1,
+    confirmedTransactions: 1,
+    pendingTransactions: 0
+  }
+*/
 
+
+// --------------------------------------------------------------------------------
+// -------------------- SYNCHRONIZE PENDING TRANSACATIONS -------------------------
+// --------------------------------------------------------------------------------
+Blockchain.prototype.synchronizePendingTransactions = async function(peerChainInfo) {
+    try {
+        if (peerChainInfo.pendingTransactions > 0) {
+
+            let transactions = await fetch(peerChainInfo.nodeUrl + "/transactions/pending")
+            .then(res => res.json())
+            .then(data => data)
+            .catch(error => console.error("ERROR: ", error));
+
+            transactions.forEach(transaction => {
+                let transactionAdded = this.createNewTransaction(transaction);
+                // TODO:
+            });
+        }
+    } catch (error) {
+        return console.error("ERROR: ", error);
+    }
+}
+
+
+// --------------------------------------------------------------------------------
+// ----------------------------- VALIDATE CHAIN -----------------------------------
+// --------------------------------------------------------------------------------
+Blockchain.prototype.validateChain = function(peerChainBlocks) {
+
+    peerChainBlocks.forEach( (block, index) => {
+
+        if (index === 0 ) {
+            console.log("Peer Genesis =====> ", block);
+            console.log("This Genesis =====> ", this.blocks[0]);
+        }
+
+        if (block[0] !== this.blocks[0]) return { errorMsg: "Invalid Chain. Genesis blocks must match" };
+
+        const isValidBlock = this.validateBlock(block);
+        if (isValidBlock.errorMsg) return isValidBlock.errorMsg;
+    });
+
+    return true;
+
+};
 
 
 // --------------------------------------------------------------------------------

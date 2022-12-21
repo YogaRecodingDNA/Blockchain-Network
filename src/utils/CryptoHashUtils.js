@@ -3,19 +3,6 @@ const CryptoJS = require("crypto-js");
 const EC = require('elliptic').ec;
 const secp256k1 = new EC('secp256k1');
 
-// Pseudo values for GENESIS / COINBASE TRANSACTIONS ===============================
-const nullValues = {
-    from: "0000000000000000000000000000000000000000",
-    senderPubKey: "00000000000000000000000000000000000000000000000000000000000000000",
-    senderSignature: [
-        "0000000000000000000000000000000000000000000000000000000000000000",
-        "0000000000000000000000000000000000000000000000000000000000000000"
-    ],
-    senderPrivKey: "0000000000000000000000000000000000000000000000000000000000000000",
-    minedInBlockIndex: 0,
-    transferSuccessful: true
-}
-
 // SHA-256
 function sha256(data) {
     return CryptoJS.SHA256(data).toString();
