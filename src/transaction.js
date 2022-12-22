@@ -1,10 +1,10 @@
 const Config = require("./utils/Config");
-const { genesisDummyData } = require("./utils/Config");
 const CryptoHashUtils = require("./utils/CryptoHashUtils");
 
 // ===============================================================================
 // ======================= TRANSACTION CONSTRUCTOR ===============================
 // ===============================================================================
+// !!!Sending Private Key for testing purposes only!!!!!!
 function Transaction(to, value, fee, dateCreated, data, senderPubKey, senderPrivKey) {
     this.from = CryptoHashUtils.getAddressFromPublicKey(senderPubKey);// address from PubKey
     this.to = to;                       // Recipient address - 40 hex digits
@@ -22,7 +22,7 @@ function Transaction(to, value, fee, dateCreated, data, senderPubKey, senderPriv
     this.transferSuccessful = undefined;// Determined at Mining Process
 
     // Block index and transferSuccesful settings for Genesis Transaction
-    if (this.data === genesisDummyData) {
+    if (this.data === Config.genesisDummyData) {
         this.minedInBlockIndex = 0;
         this.transferSuccessful = true;
     }
