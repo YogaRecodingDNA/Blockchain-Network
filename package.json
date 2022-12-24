@@ -2,16 +2,16 @@
   "name": "blockchain-network",
   "version": "1.0.0",
   "description": "",
-  "main": "lets.js",
+  "main": "NetworkNode.js",
   "scripts": {
+    "start": "node src/NetworkNode.js",
     "test": "jest --watchAll",
     "node_1": "nodemon --watch src -e js src/NetworkNode.js 5555 http://localhost:5555",
     "node_2": "nodemon --watch src -e js src/NetworkNode.js 5556 http://localhost:5556",
     "node_3": "nodemon --watch src -e js src/NetworkNode.js 5557 http://localhost:5557",
     "node_4": "nodemon --watch src -e js src/NetworkNode.js 5558 http://localhost:5558",
     "node_5": "nodemon --watch src -e js src/NetworkNode.js 5559 http://localhost:5559",
-    "node_6": "nodemon --watch src -e js src/NetworkNode.js 5560 http://localhost:5560",
-    "start": "lets.js"
+    "node_6": "nodemon --watch src -e js src/NetworkNode.js 5560 http://localhost:5560"
   },
   "repository": {
     "type": "git",
@@ -36,9 +36,9 @@
     "express": "^4.18.2",
     "express-list-endpoints": "^6.0.0",
     "http-status-codes": "^2.2.0",
-    "latest-version": "^7.0.0",
     "lodash.clonedeep": "^4.5.0",
     "nodemon": "^2.0.20",
+    "request": "^2.88.2",
     "request-promise": "^4.2.6",
     "uuid": "^9.0.0"
   }

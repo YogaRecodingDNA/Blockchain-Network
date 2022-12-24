@@ -13,7 +13,7 @@ const isValidPublicKey = (publicKey) => {
 }
 
 const isValidPrivateKey = (privateKey) => {
-    if (typeof (privateKey) !== "string") return false;
+    if (typeof privateKey !== "string") return false;
     const isValid = /[A-Fa-f0-9]{64}/g.test(privateKey);
     return isValid;
 }
@@ -108,7 +108,7 @@ const isMissing_FieldKeys = (dataObject) => {
         calculateMissingFields(expectedFields);
         
     } else {
-        const expectedFields = ["to", "value", "fee", "data", "senderPubKey", "senderPrivKey"];
+        const expectedFields = ["to", "value", "fee", "dateCreated", "data", "senderPubKey", "transactionDataHash", "senderSignature", "senderPrivKey"];
         
         calculateMissingFields(expectedFields);
         
@@ -116,21 +116,6 @@ const isMissing_FieldKeys = (dataObject) => {
 }
 
 const isValid_FieldKeys = (dataObject) => {
-    if (dataObject.blockHash) {
-        const validFields = ["index", "transactions", "difficulty", "prevBlockHash", "minedBy", "blockDataHash", "nonce", "dateCreated", "blockHash"];
-
-        calculateValidFields(validFields);
-        
-    } else if (dataObject.transactionDataHash) {
-        const validFields = ["from", "to", "value", "fee", "dateCreated", "data", "senderPubKey", "transactionDataHash", "senderSignature", "minedInBlockIndex", "transferSuccessful"];
-        
-        calculateValidFields(validFields);
-        
-    } else {
-        const validFields = ["to", "value", "fee", "data", "senderPubKey", "senderPrivKey"];
-
-        calculateValidFields(validFields);
-    }
 
     function calculateValidFields(validFields) {
         let incomingFields = [];
@@ -152,6 +137,23 @@ const isValid_FieldKeys = (dataObject) => {
             return false;
         }
     }
+
+    if (dataObject.blockHash) {
+        const validFields = ["index", "transactions", "difficulty", "prevBlockHash", "minedBy", "blockDataHash", "nonce", "dateCreated", "blockHash"];
+
+        calculateValidFields(validFields);
+        
+    } else if (dataObject.transactionDataHash) {
+        const validFields = ["from", "to", "value", "fee", "dateCreated", "data", "senderPubKey", "transactionDataHash", "senderSignature", "minedInBlockIndex", "transferSuccessful"];
+        
+        calculateValidFields(validFields);
+        
+    } else {
+        const validFields = ["to", "value", "fee", "dateCreated", "data", "senderPubKey", "transactionDataHash", "senderSignature", "senderPrivKey"];
+
+        calculateValidFields(validFields);
+    }
+
 }
 
 module.exports = {

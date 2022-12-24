@@ -1,23 +1,21 @@
 const Config = require("./utils/Config");
 const CryptoHashUtils = require("./utils/CryptoHashUtils");
 
+
 // ===============================================================================
 // ======================= TRANSACTION CONSTRUCTOR ===============================
 // ===============================================================================
 // !!!Sending Private Key for testing purposes only!!!!!!
-function Transaction(to, value, fee, dateCreated, data, senderPubKey, senderPrivKey) {
-    this.from = CryptoHashUtils.getAddressFromPublicKey(senderPubKey);// address from PubKey
+function Transaction(to, value, fee, dateCreated, data, senderPubKey, transactionDataHash, senderSignature, senderPrivKey) {
+    this.from = CryptoHashUtils.getAddressFromPublicKey(senderPubKey); // address from PubKey
     this.to = to;                       // Recipient address - 40 hex digits
     this.value = value;                 // Positive integer
     this.fee = fee;                     // Fee for miner (positive integer)
-    this.dateCreated = dateCreated;     // ISO8601 UTC datetime string (to avoid replay attacks)
+    this.dateCreated = dateCreated || new Date().toISOString();
     this.data = data;                   // Transaction data (payload/comments) - optional string
     this.senderPubKey = senderPubKey;   // Sender public key – 65 hex digits
-    if (senderPubKey === undefined) {
-        this.senderPubKey = Config.nullPublicKey;
-    }
-    this.transactionDataHash = this.calculateDataHash(); 
-    this.senderSignature = this.signTransaction(senderPrivKey);
+    this.transactionDataHash = transactionDataHash || this.calculateDataHash();
+    this.senderSignature = senderSignature || this.signTransaction(senderPrivKey);
     this.minedInBlockIndex = undefined; // Determined at Mining Process
     this.transferSuccessful = undefined;// Determined at Mining Process
 
@@ -52,7 +50,7 @@ Transaction.prototype.calculateDataHash = function() {
 // ========================= Sign A Transaction ==================================
 // ===============================================================================
 Transaction.prototype.signTransaction = function(privateKey) {
-    if (privateKey === undefined) privateKey = Config.nullPrivateKey; ;
+    // if (privateKey === undefined) privateKey = Config.nullPrivateKey; ;
     return CryptoHashUtils.signData(this.calculateDataHash(), privateKey);
 };
 
@@ -76,7 +74,9 @@ Transaction.genesisFaucetTransaction = function() {
         10,                         // mining fee
         Config.genesisDate,         // date created
         Config.genesisDummyData,    // data
-        Config.nullPublicKey,       //senderPubKey
+        Config.nullPublicKey,       // senderPubKey
+        "",                         // transactionDataHash
+        "",                         // senderSignature
         Config.nullPrivateKey       // private key
     );
 };

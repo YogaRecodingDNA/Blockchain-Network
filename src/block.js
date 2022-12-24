@@ -2,19 +2,21 @@ const Config = require("./utils/Config");
 const Transaction = require("./Transaction");
 const CryptoHashUtils = require("./utils/CryptoHashUtils");
 
+
 // ===================================================================================
 // ============================= BLOCK CONSTRUCTOR ===================================
 // ===================================================================================
-function Block(index, transactions, difficulty, prevBlockHash, minedBy, dateCreated) {
+function Block(index, transactions, difficulty, prevBlockHash, minedBy, nonce, dateCreated, blockHash) {
     this.index = index;
     this.transactions = transactions;
     this.difficulty = difficulty;
     this.prevBlockHash = prevBlockHash;
     this.minedBy = minedBy;
     this.blockDataHash = this.calculateBlockDataHash();
-    this.nonce = 0;
-    this.dateCreated = dateCreated;
-    this.blockHash = undefined;
+    this.nonce = nonce;
+    this.dateCreated = dateCreated || new Date().toISOString();
+    this.blockHash = blockHash;
+    if (!blockHash) this.calculateBlockHash();
 }
 
 
@@ -64,15 +66,21 @@ Block.prototype.calculateBlockHash = function() {
 // ========================== GENESIS BLOCK ==========================================
 // ===================================================================================
 Block.genesisBlock = function() {
-    return new Block(
-        0,                                      // index
-        [Transaction.genesisFaucetTransaction()], // transactions
-        0,                                      // difficulty
-        undefined,                              // prevBlockHash
-        Config.nullMinerAddress,                // minedBy
-        0,                                      // nonce
-        Config.genesisDate                      // dateCreated
-     );
+    if (Config.currentNodeURL === Config.genesisNodeURL) {
+        const genesisBlock = new Block(
+            0,                                          // index
+            [Transaction.genesisFaucetTransaction()],   // transactions
+            0,                                          // difficulty
+            0,                                         // prevBlockHash
+            Config.nullMinerAddress,                    // minedBy
+            0,                                          // nonce
+            Config.genesisDate,                         // dateCreated
+            0                                          // blockHash
+         );
+        return [genesisBlock];
+    } else {
+        return [];
+    }
 };
 
 

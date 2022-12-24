@@ -12,7 +12,8 @@ const res = require("express/lib/response");
 // --------------------------- BLOCKCHAIN CONSTRUCTOR --------------------------------
 // -----------------------------------------------------------------------------------
 function Blockchain() {
-    this.blocks = [Block.genesisBlock()]; // Array of blocks in the chain
+    // Array of blocks in the chain
+    this.blocks = Block.genesisBlock();
     this.pendingTransactions = []; // array of pending transactions
     this.networkNodes = new Map(); // Array of nodes in the network
     if(this.networkNodes.size === 0) {
@@ -21,8 +22,8 @@ function Blockchain() {
     this.currentNodeURL = Config.currentNodeURL; // URL
     this.currentDifficulty = Config.initialDifficulty; // Integer of number of leading zeros
     this.miningJobs = {}; // A map map(blockDataHash -> Block) of blocks mined by this network node
-    console.log("BLOCKS", this.blocks);
-    console.log("PENDING TRANSACTIONS", this.pendingTransactions);
+    // console.log("BLOCKS", this.blocks);
+    // console.log("PENDING TRANSACTIONS", this.pendingTransactions);
 }
 
 
@@ -110,7 +111,7 @@ Blockchain.prototype.validateBlock = function(peerBlock) {
 // ---------------------- GET LAST BLOCK ON THE BLOCKCHAIN ---------------------------
 // -----------------------------------------------------------------------------------
 Blockchain.prototype.getLastBlockOnChain = function() {
-    return this.blocks[this.blocks.length - 1];
+    return this.blocks.length - 1;
 };
 
 
@@ -238,7 +239,6 @@ Blockchain.prototype.validateTransaction = function(transactionData) {
     }
 
     return true;
-
 }
 
 
@@ -246,23 +246,23 @@ Blockchain.prototype.validateTransaction = function(transactionData) {
 // --------------------------- CREATE NEW TRANSACTION --------------------------------
 // -----------------------------------------------------------------------------------
 Blockchain.prototype.createNewTransaction = function(transactionData) {
-
+    
     const isValidTransaction = this.validateTransaction(transactionData);
     if (isValidTransaction.errorMsg) return isValidTransaction;
-
+    
     // Create newTransaction params (to, value, fee, dateCreated, data, senderPubKey, senderPrivKey)
     const newTransaction = new Transaction(
-            transactionData.to,
-            transactionData.value,
-            transactionData.fee,
-            new Date().toISOString(),
-            transactionData.data,
-            transactionData.senderPubKey,
-            transactionData.senderPrivKey
+        transactionData.to,
+        transactionData.value,
+        transactionData.fee,
+        transactionData.dateCreated,
+        transactionData.data,
+        transactionData.senderPubKey,
+        transactionData.transactionDataHash,
+        transactionData.senderSignature,
+        transactionData.senderPrivKey
         );
-
-    console.log("TRANSACTION DATA HASH", newTransaction.transactionDataHash);
-
+        
     const isValidNewTransaction = this.validateTransaction(newTransaction);
     if (isValidNewTransaction.errorMsg) return isValidNewTransaction;
 
@@ -274,6 +274,10 @@ Blockchain.prototype.createNewTransaction = function(transactionData) {
 // ---------------- ADD NEW TRANSACTION TO PENDING TRANSACTIONS ----------------------
 // -----------------------------------------------------------------------------------
 Blockchain.prototype.addNewTransactionToPendingTransactions = function(transactionObject) {
+    console.log("ADD NEW TRANSACTION TO PENDING TRANSACTIONS", transactionObject);
+    let lastBLock = this.getLastBlockOnChain();
+    console.log("LAST BLOCK", this.getLastBlockOnChain())
+    // console.log("LAST BLOCK", lastBLock)
     this.pendingTransactions.push(transactionObject); // Add to pending transactions pool 
     return this.getLastBlockOnChain().index + 1; // Return index of the next block on blockchain
 };
@@ -418,35 +422,35 @@ Blockchain.prototype.getAllBalances = function() {
 // -----------------------------------------------------------------------------------
 Blockchain.prototype.mineNewBlock = function(minerAddress) {
     let difficulty = (this.currentDifficulty - 3);
-    const minimumDifficulty = 4;
+    // const minimumDifficulty = 4;
 
     let blockCandidate = this.prepareBlockCandidate(minerAddress, difficulty);
     blockCandidate.calculateBlockHash();
     
     // PROOF OF WORK
-    let miningStartTime = performance.now();
+    // let miningStartTime = performance.now();
     // console.time("miner");
 
     // While amount of leading zeros doesn't match the difficulty, recalculate block hash
     while(blockCandidate.blockHash.substring(0, difficulty) !== ("0").repeat(difficulty)) {
         blockCandidate.nonce++;
-        blockCandidate.difficulty = difficulty;
+        // blockCandidate.difficulty = difficulty;
         blockCandidate.dateCreated = new Date().toISOString();
         blockCandidate.calculateBlockHash();
         
-        // If correct hash is found under 9 seconds, increase difficulty
-        if (((performance.now() - miningStartTime) < 10000) && (blockCandidate.blockHash.substring(0, difficulty) === ("0").repeat(difficulty))) {
-            difficulty += 1;
-        }
+        // // If correct hash is found under 9 seconds, increase difficulty
+        // if (((performance.now() - miningStartTime) < 10000) && (blockCandidate.blockHash.substring(0, difficulty) === ("0").repeat(difficulty))) {
+        //     difficulty += 1;
+        // }
         
-        // If correct hash isn't found in 11 seconds, reduce difficulty by 1
-        if (((performance.now() - miningStartTime) > 11000) && difficulty > minimumDifficulty) {
-            difficulty -= 1;
-        }
+        // // If correct hash isn't found in 11 seconds, reduce difficulty by 1
+        // if (((performance.now() - miningStartTime) > 11000) && difficulty > minimumDifficulty) {
+        //     difficulty -= 1;
+        // }
 
-        // console.log(blockCandidate.blockHash);
-        // console.log("DIFFICULTY ====> ", difficulty);
-        // console.log("NONCE =========> ", blockCandidate.nonce);
+        console.log(blockCandidate.blockHash);
+        console.log("DIFFICULTY ====> ", difficulty);
+        console.log("NONCE =========> ", blockCandidate.nonce);
         // console.timeLog("miner");
     }
 
@@ -513,13 +517,15 @@ Blockchain.prototype.prepareBlockCandidate = function(minerAddress, difficulty) 
 
     // 4. Create coinbase transaction collects/transfers all tx fees + block reward
     const coinbaseTransaction = new Transaction(
-        minerAddress,             // to: address
-        blockReward,              // value: miner's reward
-        0,                        // fee: mining fee
-        new Date().toISOString(), // dateCreated: ISO format
-        "coinbase tx",            // data: payload / comments
-        undefined,                // senderPubKey: 
-        undefined                 // senderPrivKey:
+        minerAddress,               // to: address
+        blockReward,                // value: miner's reward
+        0,                          // fee: mining fee
+        new Date().toISOString(),   // dateCreated: ISO format
+        "coinbase tx",              // data: payload / comments
+        Config.nullPublicKey,       // senderPubKey
+        undefined,                  // transactionDataHash
+        Config.nullSenderSignature, // senderSignature
+        Config.nullPrivateKey       // senderPrivKey
     );
 
     // 5. Prepend the coinbase txn with updated (reward + fees) to txn list
@@ -556,6 +562,7 @@ Blockchain.prototype.submitMinedBlockToNode = function(blockDataHash, dateCreate
     newBlock.calculateBlockHash();
     
     if (newBlock.blockHash !== blockHash) return { errorMsg: "Incorrect block hash calculation"};
+
     if (newBlock.blockHash.substring(0, difficulty).length !== newBlock.difficulty) {
         return { errorMsg: "Block hash does not match the block difficulty"};
     }
@@ -612,7 +619,7 @@ Blockchain.prototype.getPeersData = function() {
 // ------------------------- SYNCHRONIZE THE CHAIN --------------------------------
 // --------------------------------------------------------------------------------
 Blockchain.prototype.synchronizeTheChain = async function(peerChainInfo) {
-    let peerChainBlocks;
+
     // CALCULATE & COMPARE CUMULATIVE DIFFICULTIES
     let currentChainCumulativeDifficulty = this.calculateCumulativeDifficulty();
     let peerChainCumulativeDifficulty = peerChainInfo.cumulativeDifficulty;
@@ -621,13 +628,11 @@ Blockchain.prototype.synchronizeTheChain = async function(peerChainInfo) {
     if (peerChainCumulativeDifficulty > currentChainCumulativeDifficulty) {
         try {
             // Get peer chain blocks
-            peerChainBlocks = await fetch(peerChainInfo.nodeUrl + "/blocks")
+            const peerChainBlocks = await fetch(peerChainInfo.nodeUrl + "/blocks")
             .then( res => res.json() )
-            .then( blocks => blocks )
+            .then( blocks => blocks)
             .catch((error) => console.error(`Error: ${error}`));
     
-            console.log(`Synchro peer Chain BLOCKS ===> ${peerChainBlocks}`);
-            // 
             const isValid = this.validateChain(peerChainBlocks);
             if (!isValid) return { errorMsg: "Peer Chain Invalid" };
             
@@ -639,27 +644,10 @@ Blockchain.prototype.synchronizeTheChain = async function(peerChainInfo) {
                 this.miningJobs = {};
             }
         } catch (error) {
-            console.error(`Error: ${error}`);
+            console.error(`Error synchronizing the chain: ${error}`);
         };
     }
 }
-/*
-const peerChainInfo = {
-    about: 'VinyasaChain',
-    nodeId: '18528b0960f877bb7047dab',
-    nodeUrl: 'http://localhost:5555',
-    peersTotal: 2,
-    peersMap: {
-      '18528b0960f877bb7047dab': 'http://localhost:5555',
-      '18528b09621ce11672fdba02': 'http://localhost:5556'
-    },
-    currentDifficulty: 5,
-    blocksCount: 1,
-    cumulativeDifficulty: 1,
-    confirmedTransactions: 1,
-    pendingTransactions: 0
-  }
-*/
 
 
 // --------------------------------------------------------------------------------
@@ -668,20 +656,37 @@ const peerChainInfo = {
 Blockchain.prototype.synchronizePendingTransactions = async function(peerChainInfo) {
     try {
         if (peerChainInfo.pendingTransactions > 0) {
-
+            
             let transactions = await fetch(peerChainInfo.nodeUrl + "/transactions/pending")
             .then(res => res.json())
             .then(data => data)
             .catch(error => console.error("ERROR: ", error));
-
+            
             transactions.forEach(transaction => {
                 let transactionAdded = this.createNewTransaction(transaction);
-                // TODO:
+                
+                // If it has a data hash, broadcast it to all peers
+                if (transactionAdded.transactionDataHash) {
+                    this.broadcastTransactionToPeers(transactionAdded);
+                }
             });
         }
     } catch (error) {
-        return console.error("ERROR: ", error);
+        return console.error("ERROR loading the pending transactions: ", error);
     }
+}
+
+Blockchain.prototype.broadcastTransactionToPeers = async function(transaction) {
+    this.networkNodes.forEach( peerNodeUrl => {
+        fetch(peerNodeUrl + "/transactions/send", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(transaction)
+        })
+        .then(res => res.json())
+        .then(data => console.log("Broadcast transaction data", data))
+        .catch(error => console.error("ERROR:", error));
+    })
 }
 
 
@@ -689,19 +694,21 @@ Blockchain.prototype.synchronizePendingTransactions = async function(peerChainIn
 // ----------------------------- VALIDATE CHAIN -----------------------------------
 // --------------------------------------------------------------------------------
 Blockchain.prototype.validateChain = function(peerChainBlocks) {
+    console.log("validateChain", peerChainBlocks);
 
-    peerChainBlocks.forEach( (block, index) => {
+    for (const [index, block] in peerChainBlocks) {
 
         if (index === 0 ) {
             console.log("Peer Genesis =====> ", block);
             console.log("This Genesis =====> ", this.blocks[0]);
         }
-
+    
         if (block[0] !== this.blocks[0]) return { errorMsg: "Invalid Chain. Genesis blocks must match" };
-
+    
         const isValidBlock = this.validateBlock(block);
         if (isValidBlock.errorMsg) return isValidBlock.errorMsg;
-    });
+
+    }
 
     return true;
 
@@ -729,3 +736,23 @@ Blockchain.prototype.resetChain = function() {
 
 
 module.exports = Blockchain;
+
+
+
+/*
+const peerChainInfo = {
+    about: 'VinyasaChain',
+    nodeId: '18528b0960f877bb7047dab',
+    nodeUrl: 'http://localhost:5555',
+    peersTotal: 2,
+    peersMap: {
+      '18528b0960f877bb7047dab': 'http://localhost:5555',
+      '18528b09621ce11672fdba02': 'http://localhost:5556'
+    },
+    currentDifficulty: 5,
+    blocksCount: 1,
+    cumulativeDifficulty: 1,
+    confirmedTransactions: 1,
+    pendingTransactions: 0
+  }
+*/
