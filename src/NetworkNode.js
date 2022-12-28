@@ -408,111 +408,50 @@ app.post("/peers/connect", (req, res) => {
 // ----------------------------------------------------------------------------
 // --------------- BROADCAST/REGISTER NEW PEER TO NETWORK ---------------------
 // ----------------------------------------------------------------------------
-app.post("/broadcast-register-peer", (req, res) => {
-    const peerUrl = req.body.peerUrl;
-    const peerId = req.body.peerId;
-    const peerNotPreExisting = !vinyasa.networkNodes.has(peerId);
-    const notCurrentNode = vinyasa.currentNodeURL !== peerUrl;
+// app.post("/broadcast-register-peer", (req, res) => {
+//     const peerUrl = req.body.peerUrl;
+//     const peerId = req.body.peerId;
+//     const peerNotPreExisting = !vinyasa.networkNodes.has(peerId);
+//     const notCurrentNode = vinyasa.currentNodeURL !== peerUrl;
     
-    if (peerNotPreExisting && notCurrentNode) {
-        vinyasa.networkNodes.set(peerId, peerUrl);
-        res.json({
-            message: "Registered new peer node successfully"
-        })
-        return vinyasa.networkNodes;
-    }
+//     if (peerNotPreExisting && notCurrentNode) {
+//         vinyasa.networkNodes.set(peerId, peerUrl);
+//         res.json({
+//             message: "Registered new peer node successfully"
+//         })
+//         return vinyasa.networkNodes;
+//     }
     
-    res.json({
-        message: "Registered new peer node successfully"
-    })
-    return false;
+//     res.json({
+//         message: "Registered new peer node successfully"
+//     })
+//     return false;
 
-});
+// });
 
 
 // ----------------------------------------------------------------------------
 // ---------------------- REGISTER NETWORK TO PEER ----------------------------
 // ----------------------------------------------------------------------------
-app.post("/register-network-to-peer", (req, res) => {
-    const allPeers = vinyasa.networkNodes;
-    const pendingTransactions = vinyasa.pendingTransactions;
+// app.post("/register-network-to-peer", (req, res) => {
+//     const allPeers = vinyasa.networkNodes;
+//     const pendingTransactions = vinyasa.pendingTransactions;
     
-    console.log("ALL PEERS @ /register-network-to-peer", req.body);
-
-    allPeers.forEach((peerUrl, peerId) => {
-        const peerNotPreExisting = !vinyasa.networkNodes.has(peerId);
-        const notCurrentNode = vinyasa.currentNodeURL !== peerUrl;
+//     allPeers.forEach((peerUrl, peerId) => {
+//         const peerNotPreExisting = !vinyasa.networkNodes.has(peerId);
+//         const notCurrentNode = vinyasa.currentNodeURL !== peerUrl;
         
-        if (peerNotPreExisting && notCurrentNode) {
-            vinyasa.networkNodes.set(peerId, peerUrl);
-        }
-    });
-    
-    vinyasa.pendingTransactions = pendingTransactions;
-    
-    console.log("REGISTERED NETWORK TO THE PEER @ /register-network-to-peer", peerUrl, peerId);
-
-    res.json({
-        message: "Successfully registered network nodes to new peer"
-    })
-});
-
-
-// function broadcastAndRegisterPeer(peerNodeUrl) {
-//     console.log("peerNodeUrl ======================================================", peerNodeUrl)
-
-//     const registeredPeerPromises = [];
-//     vinyasa.networkNodes.forEach( (peerUrl, peerId) => {
-//         console.log('vinyasa.networkNodes.forEach( (peerUrl, peerId) =======>', peerUrl, peerId);
-//         // const request = axios.post(peerUrl + "/broadcast-register-peer", { peerId, peerUrl });
-//         const requestOptions = {
-//             uri: peerUrl + "/broadcast-register-peer",
-//             method:"POST",
-//             body: {
-//                 peerId,
-//                 peerUrl
-//             },
-//             json: true
-//         };
-
-//         registeredPeerPromises.push(RP(requestOptions));
+//         if (peerNotPreExisting && notCurrentNode) {
+//             vinyasa.networkNodes.set(peerId, peerUrl);
+//         }
 //     });
-
-//     // 4. Register network nodes to new peer
-//     Promise.all(registeredPeerPromises)
-//     .then(peerInfo => {
-//         // peerInfo = peerInfo.data;
-//         console.log("registeredPeerPromises DATA ========== ", peerInfo)
-//         console.log("vinyasa.networkNodes BEFORE ================================== ", vinyasa.networkNodes);
-//         vinyasa.networkNodes.set(peerInfo.peerId, peerInfo.peerUrl);
-//         console.log("vinyasa.networkNodes AFTER ================================== ", vinyasa.networkNodes);
-        
-//         const bulkRegisterOptions = {
-//             uri: peerNodeUrl + "/register-network-to-peer",
-//             method: "POST",
-//             body: {
-//                 allPeersInNetwork: vinyasa.networkNodes,
-//                 pendingTransactions: vinyasa.pendingTransactions,
-//             },
-//             json: true
-//         };
-        
-//         return RP(bulkRegisterOptions);
+    
+//     vinyasa.pendingTransactions = pendingTransactions;
+    
+//     res.json({
+//         message: "Successfully registered network nodes to new peer"
 //     })
-//     .then(data => {
-//         console.log("bulkRegisterOptions DATA ========== ", data)
-//         // res.json({
-//         //     message: "Successfully registered new peer to network"
-//         // });
-//         return true;
-//     })
-//     .catch( error => {
-//         console.error({ errorMsg: error });
-//         // res.status(StatusCodes.BAD_REQUEST).json({ errorMsg: error });
-//         return false;
-//     });
-
-// }
+// });
 
 
 // ----------------------------------------------------------------------------
