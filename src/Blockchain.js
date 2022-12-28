@@ -4,6 +4,7 @@ const ValidationUtils = require("./utils/ValidationUtils");
 const Config = require("./utils/Config");
 var cloneDeep = require('lodash.clonedeep');
 const res = require("express/lib/response");
+const { default: axios } = require("axios");
 
 // ***********************************************************************************
 // ***************************** BLOCKCHAIN / BLOCKS *********************************
@@ -613,6 +614,20 @@ Blockchain.prototype.getPeersData = function() {
     console.log("THIS NODE URL ==> ", this.networkNodes.get(Config.currentNodeId));
     return peerObj;
 };
+
+
+Blockchain.prototype.notifyPeersAboutNewBlock = function() {
+    const notification = {
+        blocksCount: this.blocks.length,
+        cumulativeDifficulty: this.cumulativeDifficulty(),
+        nodeUrl: this.currentNodeURL,
+    }
+
+    this.networkNodes.forEach( (peerUrl) => {
+        axios.post(peerUrl + "/peers/notify-new-block", notification)
+        .then(function(){}).catch(function(){});
+    })
+}
 
 
 // --------------------------------------------------------------------------------

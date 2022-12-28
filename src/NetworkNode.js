@@ -305,9 +305,23 @@ app.get("/mining/get-mining-job/:minerAddress", (req, res) => {
 // ----------------------------------------------------------------------------
 // ----------------------- SUBMIT MINED BLOCK ---------------------------------
 // ----------------------------------------------------------------------------
-// app.post("/mining/submit-mined-block", (req, res) => {
+app.post("/mining/submit-mined-block", (req, res) => {
+    const blockDataHash = req.body.blockDataHash;
+    const dateCreated = req.body.dateCreated;
+    const nonce = req.body.nonce;
+    const blockHash = req.body.blockHash;
+    const difficulty = req.body.difficulty;
 
-// });
+    const submitted = vinyasa.submitMinedBlockToNode(blockDataHash, dateCreated, nonce, blockHash, difficulty);
+
+    if (submitted.errorMsg) {
+        res.status(StatusCodes.BAD_REQUEST).json(submitted);
+    } else {
+        res.json({ message: `Block accepted to chain, rewarded: ${submmitted.transactions[0].value} microcoins`});
+
+        vinyasa.notifyPeersAboutNewBlock();
+    }
+});
 
 
 // ----------------------------------------------------------------------------
@@ -402,6 +416,15 @@ app.post("/peers/connect", (req, res) => {
             });
         });
 
+});
+
+
+// ----------------------------------------------------------------------------
+// ---------------------- NOTIFY PEERS ABOUT NEW BLOCK ------------------------
+// ----------------------------------------------------------------------------
+app.post("/peers/notify-new-block", (req, res) => {
+    vinyasa.synchronizeTheChain(req.body);
+    res.status(StatusCodes.OK).json({ message: "Notification successful"});
 });
 
 
@@ -505,22 +528,8 @@ app.get("/consensus", (req, res) => {
 
 
 // ----------------------------------------------------------------------------
-// ---------------------- NOTIFY PEERS ABOUT NEW BLOCK ------------------------
+// -------------------------- DELETE LOST PEERS  ------------------------------
 // ----------------------------------------------------------------------------
-// app.post("/peers/notify-new-block", (req, res) => {
-    
-// });
-
-// REGISTER NEW NODES - Network Node Data Structure:
-// networkNode = {
-//     NodeId: "", // unique_string - Current Node's unique identifier
-//     SelfUri: "", // URL - Base URL of REST endpoints
-//     Peers: {}, // Map map(nodeId -> URL) of peers connected to this node
-//     Chain: new Blockchain(), // The Blockchain (Blocks, Transactions, Balances, Mining jobs)
-//     chainID: "" // Genesis Block Hash identifies the chain
-// };
-
-// DELETE LOST PEERS    // TODO:
 // If a peer is contacted and does not respond, delete it from the connected peers
 
 
@@ -541,16 +550,12 @@ app.get("/blockchain", (req, res) => {
 
 // REGISTER A NODE WITH THE NETWORK
 app.listen(Config.defaultServerPort, async function() {
-
     if (vinyasa.currentNodeURL !== Config.genesisNodeURL) {
         // All new nodes add genesisNode to peers Map (networkNodes)
         await axios.get(Config.genesisNodeURL + "/info")
         .then( info => {
             info = info.data;
             vinyasa.networkNodes.set(info.nodeId, info.nodeUrl);
-            // console.log("INFO ", info);
-            // console.log("Aync genesis", vinyasa.networkNodes);
-            // console.log("Genesis HASH", info.chainId);
         })
         .catch( error => console.error("ERROR: ", error));
 
