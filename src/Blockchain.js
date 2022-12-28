@@ -676,6 +676,7 @@ Blockchain.prototype.synchronizePendingTransactions = async function(peerChainIn
     }
 }
 
+
 Blockchain.prototype.broadcastTransactionToPeers = async function(transaction) {
     this.networkNodes.forEach( peerNodeUrl => {
         fetch(peerNodeUrl + "/transactions/send", {

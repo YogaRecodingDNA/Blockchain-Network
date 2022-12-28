@@ -1,11 +1,11 @@
 const express = require("express");
 const Blockchain = require("./Blockchain");
 const Config = require("./utils/Config");
+const axios = require('axios');
 const RP = require("request-promise");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const { StatusCodes } = require("http-status-codes");
-const { request } = require("express");
 
 // Create Express app
 const app = express();
@@ -342,28 +342,26 @@ app.get("/peers", (req, res) => {
 // ----------------------------------------------------------------------------
 // 1. Get peer info + error handle conflicts / bad requests
 // 2. Register new peer with current node
-// 3. Current node broadcasts newly registered peer to all nodes
-// 4. Register netowrk with new peer --> updating new peer's list of network nodes
-// 5. Synchronize chains and transactions
+// 3. Synchronize chains and transactions
 app.post("/peers/connect", (req, res) => {
-    const peerNodeUrl = req.body.peerUrl;
+    const peer = req.body.peerUrl;
+    let peerNodeId;
+    let peerNodeUrl;
     
-    if (peerNodeUrl === undefined) {
+    if (peer === undefined) {
         return res.status(StatusCodes.BAD_REQUEST).json({
             errorMsg: "The request body is missing the 'peerUrl:' value"
         });
     }
 
     // 1. Get peer info -> Validate
-    fetch(peerNodeUrl + "/info")
-        .then( response => {
-            return response.json();
-        })
-        .then( peerInfo => {
-            const peerNodeId = peerInfo.nodeId;
-            const peerNodeUrl = peerInfo.nodeUrl;
+    axios.get(peer + "/info")
+        .then( async function(peerInfo) {
+            peerInfo = peerInfo.data;
+            peerNodeId = peerInfo.nodeId;
+            peerNodeUrl = peerInfo.nodeUrl;
                     // Avoid connecting to self
-            if (peerNodeId === Config.currentNodeId) {
+            if (peerNodeUrl === Config.currentNodeURL) {
                 res.status(StatusCodes.CONFLICT).json({
                     errorMsg: "Cannot to connect to self."
                 });  // Chain ID's must match
@@ -386,92 +384,49 @@ app.post("/peers/connect", (req, res) => {
                 // 2. Register new peer with current node
                 vinyasa.networkNodes.set(peerNodeId, peerNodeUrl);
 
-                // Peer attempts to connect back to this node (Bi-directional connection)-------
-                fetch(peerNodeUrl + "/peers/connect", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ peerUrl: Config.currentNodeURL })
-                })
-                .then( response => response.json())
-                .then( data => {
-                    console.log('Successful Bi-directional connection:', data);
-                })
-                .catch( error => console.error('Error:', error) );//-----------------------------
-
-                // 3. Current node broadcasts newly registered peer to all nodes
-                const registeredPeerPromises = [];
-                vinyasa.networkNodes.forEach( (peerUrl, peerId) => {
-                    const requestOptions = {
-                        uri: peerUrl + "/register-new-peer",
-                        method:"POST",
-                        body: {
-                            peerId,
-                            peerUrl
-                        },
-                        json: true
-                    };
-
-                    registeredPeerPromises.push(RP(requestOptions));
-                });
-
-                // 4. Register network nodes to new peer
-                Promises.all(registeredPeerPromises)
-                .then(data => {
-                    vinyasa.networkNodes.set(vinyasa.currentNodeId, vinyasa.currentNodeURL);
-
-                    const bulkRegisterOptions = {
-                        uri: peerNodeUrl + "/register-network-to-peer",
-                        method: "POST",
-                        body: {
-                            allPeersInNetwork: vinyasa.networkNodes,
-                            pendingTransactions: vinyasa.pendingTransactions,
-                        },
-                        json: true
-                    };
-
-                    return RP(bulkRegisterOptions);
-                })
-                .then(data => {
-                    res.json({
-                        message: "Successfully registered new peer to network"
-                    });
-                })
-                .catch( error => res.status(StatusCodes.BAD_REQUEST).json({ errorMsg: error }));
-
-                // 5. Synchronize chains and transactions
+        
+                // 3. Synchronize chains and transactions
                 vinyasa.synchronizeTheChain(peerInfo);
                 vinyasa.synchronizePendingTransactions(peerInfo);
-
+        
                 res.status(StatusCodes.OK).json({
                     message: `Successfully connected to peer: ${peerNodeUrl}`
                 });
+
             }
         })
-        .catch( (err) => {
+        .catch( function(error) {
+            console.log(error.message);
             res.status(StatusCodes.BAD_REQUEST).json({
-                errorMsg: `Cannot connect to peer: ${peerNodeUrl}`
+                errorMsg: `Cannot connect to peer: ${peer}`
             });
         });
+
 });
 
 
 // ----------------------------------------------------------------------------
 // --------------- BROADCAST/REGISTER NEW PEER TO NETWORK ---------------------
 // ----------------------------------------------------------------------------
-app.post("/broadcast-new-peer", (req, res) => {
+app.post("/broadcast-register-peer", (req, res) => {
     const peerUrl = req.body.peerUrl;
     const peerId = req.body.peerId;
-    
     const peerNotPreExisting = !vinyasa.networkNodes.has(peerId);
     const notCurrentNode = vinyasa.currentNodeURL !== peerUrl;
     
     if (peerNotPreExisting && notCurrentNode) {
         vinyasa.networkNodes.set(peerId, peerUrl);
+        res.json({
+            message: "Registered new peer node successfully"
+        })
+        return vinyasa.networkNodes;
     }
     
     res.json({
         message: "Registered new peer node successfully"
     })
+    return false;
+
 });
 
 
@@ -479,19 +434,23 @@ app.post("/broadcast-new-peer", (req, res) => {
 // ---------------------- REGISTER NETWORK TO PEER ----------------------------
 // ----------------------------------------------------------------------------
 app.post("/register-network-to-peer", (req, res) => {
-    const allPeers = req.body.allPeersInNetwork;
-    const pendingTransactions = req.body.pendingTransactions;
+    const allPeers = vinyasa.networkNodes;
+    const pendingTransactions = vinyasa.pendingTransactions;
+    
+    console.log("ALL PEERS @ /register-network-to-peer", req.body);
 
     allPeers.forEach((peerUrl, peerId) => {
         const peerNotPreExisting = !vinyasa.networkNodes.has(peerId);
         const notCurrentNode = vinyasa.currentNodeURL !== peerUrl;
-
+        
         if (peerNotPreExisting && notCurrentNode) {
             vinyasa.networkNodes.set(peerId, peerUrl);
         }
-    })
-
+    });
+    
     vinyasa.pendingTransactions = pendingTransactions;
+    
+    console.log("REGISTERED NETWORK TO THE PEER @ /register-network-to-peer", peerUrl, peerId);
 
     res.json({
         message: "Successfully registered network nodes to new peer"
@@ -499,9 +458,115 @@ app.post("/register-network-to-peer", (req, res) => {
 });
 
 
+// function broadcastAndRegisterPeer(peerNodeUrl) {
+//     console.log("peerNodeUrl ======================================================", peerNodeUrl)
+
+//     const registeredPeerPromises = [];
+//     vinyasa.networkNodes.forEach( (peerUrl, peerId) => {
+//         console.log('vinyasa.networkNodes.forEach( (peerUrl, peerId) =======>', peerUrl, peerId);
+//         // const request = axios.post(peerUrl + "/broadcast-register-peer", { peerId, peerUrl });
+//         const requestOptions = {
+//             uri: peerUrl + "/broadcast-register-peer",
+//             method:"POST",
+//             body: {
+//                 peerId,
+//                 peerUrl
+//             },
+//             json: true
+//         };
+
+//         registeredPeerPromises.push(RP(requestOptions));
+//     });
+
+//     // 4. Register network nodes to new peer
+//     Promise.all(registeredPeerPromises)
+//     .then(peerInfo => {
+//         // peerInfo = peerInfo.data;
+//         console.log("registeredPeerPromises DATA ========== ", peerInfo)
+//         console.log("vinyasa.networkNodes BEFORE ================================== ", vinyasa.networkNodes);
+//         vinyasa.networkNodes.set(peerInfo.peerId, peerInfo.peerUrl);
+//         console.log("vinyasa.networkNodes AFTER ================================== ", vinyasa.networkNodes);
+        
+//         const bulkRegisterOptions = {
+//             uri: peerNodeUrl + "/register-network-to-peer",
+//             method: "POST",
+//             body: {
+//                 allPeersInNetwork: vinyasa.networkNodes,
+//                 pendingTransactions: vinyasa.pendingTransactions,
+//             },
+//             json: true
+//         };
+        
+//         return RP(bulkRegisterOptions);
+//     })
+//     .then(data => {
+//         console.log("bulkRegisterOptions DATA ========== ", data)
+//         // res.json({
+//         //     message: "Successfully registered new peer to network"
+//         // });
+//         return true;
+//     })
+//     .catch( error => {
+//         console.error({ errorMsg: error });
+//         // res.status(StatusCodes.BAD_REQUEST).json({ errorMsg: error });
+//         return false;
+//     });
+
+// }
+
 
 // ----------------------------------------------------------------------------
-// ------------------- NOTIFY PEERS ABOUT NEW BLOCK ---------------------------
+// -------------------------- CONSENSUS ALGORITHM -----------------------------
+// ----------------------------------------------------------------------------
+app.get("/consensus", (req, res) => {
+    const requestPromises = [];
+
+    vinyasa.networkNodes.forEach( peerUrl => {
+        const requestOptions = {
+            uri: peerUrl + "/blockchain",
+            method: "GET",
+            json: true
+        };
+        requestPromises.push(RP(requestOptions));
+    });
+
+    Promise.all(requestPromises)
+    .then( blockchains => {
+        let currentChainLength = vinyasa.blocks.length;
+        let longestChain = null;
+        let updatedPendingTransactions = null;
+        
+        blockchains.forEach( chain => {
+            if (chain.blocks.length > currentChainLength) {
+                currentChainLength = chain.blocks.length;
+                longestChain = chain.blocks;
+                updatedPendingTransactions = chain.pendingTransactions;
+            }
+        });
+
+        if (!longestChain) {
+            res.json({
+                message: "Blockchain consensus resulted in the current chain not being replaced",
+                blockchain: vinyasa.blocks
+            })
+            return "!longestChain";
+        } else {
+            vinyasa.blocks = longestChain;
+            vinyasa.pendingTransactions = updatedPendingTransactions;
+
+            res.status(StatusCodes.OK).json({
+                message: "Current chain has been replaced by a longer chain",
+                blockchain: vinyasa.blocks
+            });
+            return vinyasa.blocks;
+        }
+    })
+    .catch( error => res.status(StatusCodes.BAD_REQUEST).json({ errorMsg: error.message }));
+});
+
+
+// ----------------------------------------------------------------------------
+// ---------------------- NOTIFY PEERS ABOUT NEW BLOCK ------------------------
 // ----------------------------------------------------------------------------
 // app.post("/peers/notify-new-block", (req, res) => {
     
@@ -520,9 +585,42 @@ app.post("/register-network-to-peer", (req, res) => {
 // If a peer is contacted and does not respond, delete it from the connected peers
 
 
+// ****************************************************************************
+// *************************** BLOCK EXPLORER *********************************
+// ****************************************************************************
+
+// ----------------------------------------------------------------------------
+// -------------------------- GET BLOCKCHAIN ----------------------------------
+// ----------------------------------------------------------------------------
+app.get("/blockchain", (req, res) => {
+    res.send(vinyasa);
+    
+})
+
+
+
 
 // REGISTER A NODE WITH THE NETWORK
-app.listen(Config.defaultServerPort, function() {
+app.listen(Config.defaultServerPort, async function() {
+
+    if (vinyasa.currentNodeURL !== Config.genesisNodeURL) {
+        // All new nodes add genesisNode to peers Map (networkNodes)
+        await axios.get(Config.genesisNodeURL + "/info")
+        .then( info => {
+            info = info.data;
+            vinyasa.networkNodes.set(info.nodeId, info.nodeUrl);
+            // console.log("INFO ", info);
+            // console.log("Aync genesis", vinyasa.networkNodes);
+            // console.log("Genesis HASH", info.chainId);
+        })
+        .catch( error => console.error("ERROR: ", error));
+
+        // Run consensus to sync with genesisNode's blockchain
+        await axios.get(vinyasa.currentNodeURL + "/consensus")
+        .then(data => data )
+        .catch(error => console.error("ERROR: ", error));
+    }
+
     console.log(`Success! Listening on port ${Config.defaultServerPort}...`);
 });
 
