@@ -6,6 +6,7 @@ const RP = require("request-promise");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const { StatusCodes } = require("http-status-codes");
+const { request } = require("express");
 
 // Create Express app
 const app = express();
@@ -21,8 +22,11 @@ const vinyasa = new Blockchain(); // CREATE NEW BLOCKCHAIN INSTANCE
  */
 
 // ****************************************************************************
+// ****************************************************************************
 // ***************************** CONTENTS *************************************
 // ****************************************************************************
+// ****************************************************************************
+
 // ----------------------------------------------------------------------------
 // -------------- HOME / SIMPLE NAV ENDPOINT LINKS PAGE -----------------------
 // ----------------------------------------------------------------------------
@@ -43,10 +47,16 @@ app.get("/", (req, res) => {
     }
 });
 
+
+
+
         
+// ****************************************************************************
 // ****************************************************************************
 // ***************************** TEST/DEBUG ***********************************
 // ****************************************************************************
+// ****************************************************************************
+
 // ----------------------------------------------------------------------------
 // -------------------------- BLOCKCHAIN INFO ---------------------------------
 // ----------------------------------------------------------------------------
@@ -60,7 +70,7 @@ app.get("/info", (req, res) => { // Nodes may provide additional info by choice
         "chainId": chainId,
         "nodeUrl": Config.currentNodeURL,
         "peersTotal": vinyasa.networkNodes.size, // Number of peers in network
-        "peersMap": vinyasa.getPeersData(), // Number of peers in network
+        "peersMap": vinyasa.getPeersData(), // List of Peers
         "currentDifficulty": vinyasa.currentDifficulty,
         "blocksCount": vinyasa.blocks.length,
         "cumulativeDifficulty": vinyasa.calculateCumulativeDifficulty(),
@@ -68,7 +78,6 @@ app.get("/info", (req, res) => { // Nodes may provide additional info by choice
         "pendingTransactions": vinyasa.pendingTransactions.length
     });
 });
-
 
 // ----------------------------------------------------------------------------
 // ----------------------------- NODE INFO -----------------------------------
@@ -88,7 +97,6 @@ app.get("/debug", (req, res) => {
     });
 
 });
-
 
 // ----------------------------------------------------------------------------
 // ----------------------------- RESET CHAIN  ---------------------------------
@@ -112,16 +120,21 @@ app.get("/debug/reset-chain", (req, res) => { // Reset entire chain to its initi
 });
 
 
+
+
+
+// ****************************************************************************
 // ****************************************************************************
 // ******************************* BLOCKS *************************************
 // ****************************************************************************
+// ****************************************************************************
+
 // ----------------------------------------------------------------------------
 // --------------------------- GET ALL BLOCKS ---------------------------------
 // ----------------------------------------------------------------------------
 app.get("/blocks", (req, res) => {
-    res.status(StatusCodes.OK).json({ "blocks": vinyasa.blocks });
+    res.status(StatusCodes.OK).json(vinyasa.blocks);
 });
-
 
 // ----------------------------------------------------------------------------
 // ------------------------- GET BLOCK BY INDEX -------------------------------
@@ -139,8 +152,13 @@ app.get("/blocks/:blockIndex", (req, res) => {
 });
 
 
+
+
+
+// ****************************************************************************
 // ****************************************************************************
 // ***************************** TRANSACTIONS *********************************
+// ****************************************************************************
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -154,30 +172,22 @@ app.post("/transactions/send", (req, res) => {
         res.json(newTransaction.errorMsg);
         return;
     }
-
+    
     if (newTransaction.transactionDataHash) {
-        let requestPromises = [];
-        vinyasa.networkNodes.forEach(peer => {
-            const requestOptions = {
-                uri: peer + "/addToPendingTransactions",
-                method: "POST",
-                body: newTransaction,
-                json: true
-            };
-
-            requestPromises.push(RP(requestOptions));
-        });
-
-        Promise.all(requestPromises)
+        // ADD NEW TRANSACTION TO PENDING TRANSACTIONS
+        axios.post(vinyasa.currentNodeURL + "/addToPendingTransactions", newTransaction)
         .then(() => {
-            res.status(StatusCodes.CREATED).json({ 
-                message: "Transaction created and successfully broadcast.",
-                transactionID: newTransaction.transactionDataHash,
-                transaction: newTransaction
-            });
+            // BROADCAST TRANSACTION TO PEERS
+            vinyasa.broadcastTransactionToPeers(newTransaction);
         })
-        .catch(err => res.status(400).json({ errorMsg: err}));
-
+        .catch((error) => console.log("Error::", error));
+        
+        res.status(StatusCodes.CREATED).json({ 
+            message: "Transaction created/broadcast successfully.",
+            transactionID: newTransaction.transactionDataHash,
+            transaction: newTransaction
+        });
+        
     } else res.status(StatusCodes.BAD_REQUEST).json(newTransaction);
 });
 
@@ -186,22 +196,29 @@ app.post("/transactions/send", (req, res) => {
 // ----------------------------------------------------------------------------
 app.post("/addToPendingTransactions", (req,res) => {
     const transactionObject = req.body;
-    // Add transaction to transaction pool and receive next block's index
-    const nextBlock = vinyasa.addNewTransactionToPendingTransactions(transactionObject);
+    const pendingTransactions = vinyasa.getPendingTransactions();
+    let duplicateTransactionCount = 0;
 
-    res.json({ message: `Transaction will be added to block ${nextBlock}`});
-})
+    pendingTransactions.forEach( transaction => {
+        if (transaction.transactionDataHash === transactionObject.transactionDataHash){
+            duplicateTransactionCount += 1;
+        }
+    });
 
+    if (duplicateTransactionCount === 0) {
+        // Add transaction to transaction pool and receive next block's index
+        const nextBlock = vinyasa.addNewTransactionToPendingTransactions(transactionObject);
+
+        res.json({ message: `Transaction will be added to block ${nextBlock}`});
+    }
+});
 
 // ----------------------------------------------------------------------------
 // ----------------------- GET PENDING TRANSACTIONS ---------------------------
 // ----------------------------------------------------------------------------
 app.get("/transactions/pending", (req, res) => {
-    res.status(StatusCodes.OK).json({
-        "pending-transactions": vinyasa.pendingTransactions
-    });
+    res.status(StatusCodes.OK).json(vinyasa.pendingTransactions);
 });
-
 
 // ----------------------------------------------------------------------------
 // ---------------------- GET CONFIRMED TRANSACTIONS --------------------------
@@ -212,7 +229,6 @@ app.get("/transactions/confirmed", (req, res) => {
 
     res.status(StatusCodes.OK).json(confirmedTransactions);
 });
-
 
 // ----------------------------------------------------------------------------
 // ---------------------- GET TRANSACTION BY HASH -----------------------------
@@ -225,7 +241,6 @@ app.get("/transactions/:transactionHash", (req, res) => {
 
     res.status(StatusCodes.OK).json(transaction)
 });
-
 
 // ----------------------------------------------------------------------------
 // -------------------- LIST TRANSACTIONS FOR ADDRESS -------------------------
@@ -245,8 +260,12 @@ app.get("/address/:address/transactions", (req, res) => {
 
 
 
+
+
+// ****************************************************************************
 // ****************************************************************************
 // ****************************** BALANCES ************************************
+// ****************************************************************************
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -257,7 +276,6 @@ app.get("/balances", (req, res) => {
 
     res.status(StatusCodes.OK).json(allBalances);
 });
-
 
 // ----------------------------------------------------------------------------
 // ---------------------- GET BALANCES BY ADDRESS -----------------------------
@@ -271,17 +289,20 @@ app.get("/address/:address/balance", (req, res) => {
     res.status(StatusCodes.OK).json({addressBalances})
 });
 
-
 // ----------------------------------------------------------------------------
 // ------------------ GET INVALID BALANCES BY ADDRESS -------------------------
 // ----------------------------------------------------------------------------
 // // BALANCES INVALID FOR ADDRESS
-// app.get("/address/invalidAddress/balance", (req, res) => {
+// app.get("/address/:invalidAddress/balance", (req, res) => {
 // });
 
 
+
+
+// ****************************************************************************
 // ****************************************************************************
 // *****************************  MINING **************************************
+// ****************************************************************************
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -301,7 +322,6 @@ app.get("/mining/get-mining-job/:minerAddress", (req, res) => {
     });
 });
 
-
 // ----------------------------------------------------------------------------
 // ----------------------- SUBMIT MINED BLOCK ---------------------------------
 // ----------------------------------------------------------------------------
@@ -317,12 +337,11 @@ app.post("/mining/submit-mined-block", (req, res) => {
     if (submitted.errorMsg) {
         res.status(StatusCodes.BAD_REQUEST).json(submitted);
     } else {
-        res.json({ message: `Block accepted to chain, rewarded: ${submmitted.transactions[0].value} microcoins`});
-
+        res.json({ message: `Block accepted to chain, rewarded: ${submitted.transactions[0].value} microcoins`});
+        // Notify all peers of newly mined and submitted block
         vinyasa.notifyPeersAboutNewBlock();
     }
 });
-
 
 // ----------------------------------------------------------------------------
 // ------------------- TEST/DEBUG -> MINE A BLOCK -----------------------------
@@ -337,8 +356,12 @@ app.get("/debug/mine/:minerAddress/:difficulty", (req, res) => {
 });
 
 
+
+
+// ****************************************************************************
 // ****************************************************************************
 // ************************ PEERS / SYNCHRONIZATION ***************************
+// ****************************************************************************
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -356,7 +379,9 @@ app.get("/peers", (req, res) => {
 // ----------------------------------------------------------------------------
 // 1. Get peer info + error handle conflicts / bad requests
 // 2. Register new peer with current node
-// 3. Synchronize chains and transactions
+// 3. Register current node with new peer (bi-directional connection)
+// 4. Broadcast and register peer to all network nodes
+// 5. Synchronize chains and transactions
 app.post("/peers/connect", (req, res) => {
     const peer = req.body.peerUrl;
     let peerNodeId;
@@ -364,22 +389,24 @@ app.post("/peers/connect", (req, res) => {
     
     if (peer === undefined) {
         return res.status(StatusCodes.BAD_REQUEST).json({
-            errorMsg: "The request body is missing the 'peerUrl:' value"
+            errorMsg: "Request body missing the 'peerUrl:' value"
         });
     }
-
+    
     // 1. Get peer info -> Validate
     axios.get(peer + "/info")
-        .then( async function(peerInfo) {
+    .then( async function(peerInfo) {
             peerInfo = peerInfo.data;
             peerNodeId = peerInfo.nodeId;
             peerNodeUrl = peerInfo.nodeUrl;
-                    // Avoid connecting to self
+            // Avoid connecting to self
             if (peerNodeUrl === Config.currentNodeURL) {
                 res.status(StatusCodes.CONFLICT).json({
                     errorMsg: "Cannot to connect to self."
                 });  // Chain ID's must match
             } else if (peerInfo.chainId !== vinyasa.blocks[0].blockHash) {
+                // console.log("CHAIN ID PEER", peerInfo.chainId);
+                // console.log("CHAIN ID CURRENT", vinyasa.blocks[0].blockHash);
                 res.status(StatusCodes.BAD_REQUEST).json({
                     errorMsg: "Chain ID's must match"
                 });  // Avoid double-connecting to same peer
@@ -398,24 +425,92 @@ app.post("/peers/connect", (req, res) => {
                 // 2. Register new peer with current node
                 vinyasa.networkNodes.set(peerNodeId, peerNodeUrl);
 
-        
-                // 3. Synchronize chains and transactions
-                vinyasa.synchronizeTheChain(peerInfo);
-                vinyasa.synchronizePendingTransactions(peerInfo);
-        
+                // 3. Register current node with new peer (bi-directional connection)
+                await axios.post(peerNodeUrl + "/peers/connect", { peerUrl: vinyasa.currentNodeURL }).then(function(){}).catch(function(){});
+
+                let endpoints = [];
+                vinyasa.networkNodes.forEach(peerUrl => {
+                    endpoints.push(peerUrl + "/broadcast-register-peer");
+                });
+                
+                // 4. Broadcast and register peer to all network nodes
+                await Promise.all(endpoints.map(endpoint => axios.post(endpoint, { peerNodeId, peerNodeUrl })))
+                .then( () => {
+                    // 5. Synchronize chains and transactions
+                    vinyasa.synchronizeTheChain(peerInfo);
+                    vinyasa.synchronizePendingTransactions(peerInfo);
+                })
+                .catch(function(error){ console.log("Peer registration error", error)});
+
+                // const allPeers = vinyasa.networkNodes;
+                // const thisHereNode = vinyasa.currentNodeURL;
+                // console.log("ALL PEERS ============== ", allPeers);
+                // console.log("THIS HERE NODE ============== ", thisHereNode);
+                axios.post(peerNodeUrl + "/register-network-to-peer")
+                .then(function(){}).catch(function(){});
+                
                 res.status(StatusCodes.OK).json({
                     message: `Successfully connected to peer: ${peerNodeUrl}`
                 });
-
             }
         })
-        .catch( function(error) {
-            console.log(error.message);
+        .catch( error => {
             res.status(StatusCodes.BAD_REQUEST).json({
                 errorMsg: `Cannot connect to peer: ${peer}`
             });
         });
 
+});
+
+// --------------------------------------------------------------------------------
+// ----------------- {{{BROADCAST/REGISTER}}} NEW PEER TO NETWORK -----------------
+// --------------------------------------------------------------------------------
+app.post("/broadcast-register-peer", (req, res) => {
+    const peerId = req.body.peerNodeId;
+    const peerUrl = req.body.peerNodeUrl;
+
+    const peerNotPreExisting = !vinyasa.networkNodes.has(peerId);
+    const notCurrentNode = vinyasa.currentNodeURL !== peerUrl;
+    
+    if (peerNotPreExisting && notCurrentNode) {
+        vinyasa.networkNodes.set(peerId, peerUrl);
+    }
+
+    res.json({message: "Peer already registered"});
+});
+
+// --------------------------------------------------------------------------------
+// ------------------ {{{REGISTER NETWORK}}} TO THE PEER --------------------------
+// --------------------------------------------------------------------------------
+app.post("/register-network-to-peer", (req, res) => {
+    const allPeers = vinyasa.networkNodes;
+    
+    allPeers.forEach((peerUrl) => {
+
+        axios.get(peerUrl + "/info")
+        .then( data => {
+            const peerInfo = data.data;
+            const peers = peerInfo.peersMap;
+
+            for ( let data in peers) {
+                const id = data;
+                const url = peers[id];
+                const peerNotPreExisting = !vinyasa.networkNodes.has(id);
+                const notCurrentNode = vinyasa.currentNodeURL !== url;
+                
+                if (peerNotPreExisting && notCurrentNode) {
+                    // vinyasa.networkNodes.set(id, url);
+                    axios.post(vinyasa.currentNodeURL + "/peers/connect", { peerUrl: peerInfo.nodeUrl }).then(function(){}).catch(function(){});
+                }
+            }
+        })
+        .catch( error => console.log("ERROR:", error));
+
+    });
+    
+    // vinyasa.pendingTransactions = pendingTransactions;
+    
+    res.json({ message: "Successfully registered network nodes to new peer" });
 });
 
 
@@ -426,55 +521,6 @@ app.post("/peers/notify-new-block", (req, res) => {
     vinyasa.synchronizeTheChain(req.body);
     res.status(StatusCodes.OK).json({ message: "Notification successful"});
 });
-
-
-// ----------------------------------------------------------------------------
-// --------------- BROADCAST/REGISTER NEW PEER TO NETWORK ---------------------
-// ----------------------------------------------------------------------------
-// app.post("/broadcast-register-peer", (req, res) => {
-//     const peerUrl = req.body.peerUrl;
-//     const peerId = req.body.peerId;
-//     const peerNotPreExisting = !vinyasa.networkNodes.has(peerId);
-//     const notCurrentNode = vinyasa.currentNodeURL !== peerUrl;
-    
-//     if (peerNotPreExisting && notCurrentNode) {
-//         vinyasa.networkNodes.set(peerId, peerUrl);
-//         res.json({
-//             message: "Registered new peer node successfully"
-//         })
-//         return vinyasa.networkNodes;
-//     }
-    
-//     res.json({
-//         message: "Registered new peer node successfully"
-//     })
-//     return false;
-
-// });
-
-
-// ----------------------------------------------------------------------------
-// ---------------------- REGISTER NETWORK TO PEER ----------------------------
-// ----------------------------------------------------------------------------
-// app.post("/register-network-to-peer", (req, res) => {
-//     const allPeers = vinyasa.networkNodes;
-//     const pendingTransactions = vinyasa.pendingTransactions;
-    
-//     allPeers.forEach((peerUrl, peerId) => {
-//         const peerNotPreExisting = !vinyasa.networkNodes.has(peerId);
-//         const notCurrentNode = vinyasa.currentNodeURL !== peerUrl;
-        
-//         if (peerNotPreExisting && notCurrentNode) {
-//             vinyasa.networkNodes.set(peerId, peerUrl);
-//         }
-//     });
-    
-//     vinyasa.pendingTransactions = pendingTransactions;
-    
-//     res.json({
-//         message: "Successfully registered network nodes to new peer"
-//     })
-// });
 
 
 // ----------------------------------------------------------------------------
@@ -526,15 +572,19 @@ app.get("/consensus", (req, res) => {
     .catch( error => res.status(StatusCodes.BAD_REQUEST).json({ errorMsg: error.message }));
 });
 
-
 // ----------------------------------------------------------------------------
 // -------------------------- DELETE LOST PEERS  ------------------------------
 // ----------------------------------------------------------------------------
 // If a peer is contacted and does not respond, delete it from the connected peers
 
 
+
+
+
+// ****************************************************************************
 // ****************************************************************************
 // *************************** BLOCK EXPLORER *********************************
+// ****************************************************************************
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -550,26 +600,41 @@ app.get("/blockchain", (req, res) => {
 
 // REGISTER A NODE WITH THE NETWORK
 app.listen(Config.defaultServerPort, async function() {
-    if (vinyasa.currentNodeURL !== Config.genesisNodeURL) {
-        // All new nodes add genesisNode to peers Map (networkNodes)
-        await axios.get(Config.genesisNodeURL + "/info")
-        .then( info => {
-            info = info.data;
-            vinyasa.networkNodes.set(info.nodeId, info.nodeUrl);
+    if (vinyasa.currentNodeURL !== Config.genesisNodeURL) { // New nodes receive genesis block
+        await axios.get(Config.genesisNodeURL + "/blocks")
+        .then( genesisChain => {
+            genesisChain = genesisChain.data;
+            vinyasa.blocks.push(genesisChain[0]);
         })
         .catch( error => console.error("ERROR: ", error));
-
-        // Run consensus to sync with genesisNode's blockchain
-        await axios.get(vinyasa.currentNodeURL + "/consensus")
-        .then(data => data )
-        .catch(error => console.error("ERROR: ", error));
     }
 
     console.log(`Success! Listening on port ${Config.defaultServerPort}...`);
 });
 
 
-module.exports = {
-    app,
-    vinyasa
-};
+module.exports = vinyasa;
+
+
+
+
+// if (peerInfo.pendingTransactions > 0) {
+                    
+//     axios.get(peerNodeUrl + "/transactions/pending")
+//     .then( data => {
+//         const transactions = data.data;
+
+//         transactions.forEach(transaction => {
+                
+//                 const transactionAdded = vinyasa.createNewTransaction(transaction);
+//                 // If it has a data hash, broadcast it to all peers
+//                 if (transactionAdded.transactionDataHash) {
+//                     console.log("====================== 34 =========================")
+//                     // this.pendingTransactions.push(transaction);
+//                     vinyasa.broadcastTransactionToPeers(transaction);
+//                 }
+//             });
+//     })
+//     .catch( error => console.log("ERROR::", error));
+
+// }

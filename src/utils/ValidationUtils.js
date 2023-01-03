@@ -22,11 +22,8 @@ const isValidSignature = (signature) => {
     if (!Array.isArray(signature)) return false;
     if (signature.length !== 2) return false;
     const isValid_0 = /[A-Fa-f0-9]{64}/g.test(signature[0]);
-    console.log("Signature isValid_0 ====== ", isValid_0);
     const isValid_1 = /[A-Fa-f0-9]{64}/g.test(signature[1]);
-    console.log("Signature isValid_1 ====== ", isValid_1);
     const isValid = isValid_0 && isValid_1;
-    console.log("Signature isValid ====== ", isValid);
     return isValid;
 }
 
@@ -36,10 +33,10 @@ const isValidBlockIndex = (index, previousBlockIndex) => {
     return index === previousBlockIndex + 1;
 }
 
-const isValidDifficulty = (difficulty, previousDifficulty) => {
+const isValidDifficulty = (difficulty) => {
     if (typeof difficulty !== "number") return false;
-    if (!Number.isInteger(difficulty)) return false;
-    return difficulty >= 5;
+    Number.isInteger(difficulty) ? true : false;
+    return difficulty >= 2;
 }
 
 const isValidNonce = (nonce) => {

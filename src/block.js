@@ -6,13 +6,14 @@ const CryptoHashUtils = require("./utils/CryptoHashUtils");
 // ===================================================================================
 // ============================= BLOCK CONSTRUCTOR ===================================
 // ===================================================================================
-function Block(index, transactions, difficulty, prevBlockHash, minedBy, nonce, dateCreated, blockHash) {
+function Block(index, transactions, difficulty, prevBlockHash, minedBy, blockDataHash, nonce, dateCreated, blockHash) {
     this.index = index;
     this.transactions = transactions;
     this.difficulty = difficulty;
     this.prevBlockHash = prevBlockHash;
     this.minedBy = minedBy;
-    this.blockDataHash = this.calculateBlockDataHash();
+    this.blockDataHash = blockDataHash;
+    if(!blockDataHash) this.calculateBlockDataHash();
     this.nonce = nonce;
     this.dateCreated = dateCreated || new Date().toISOString();
     this.blockHash = blockHash;
@@ -49,7 +50,7 @@ Block.prototype.calculateBlockDataHash = function() {
 
     const blockDataJSON = JSON.stringify(blockData).split(" ").join("");
 
-    return CryptoHashUtils.sha256(blockDataJSON).toString();
+    this.blockDataHash = CryptoHashUtils.sha256(blockDataJSON).toString();
 };
 
 
@@ -71,11 +72,12 @@ Block.genesisBlock = function() {
             0,                                          // index
             [Transaction.genesisFaucetTransaction()],   // transactions
             0,                                          // difficulty
-            0,                                         // prevBlockHash
+            0,                                          // prevBlockHash
             Config.nullMinerAddress,                    // minedBy
+            0,                                          // blockDataHash
             0,                                          // nonce
             Config.genesisDate,                         // dateCreated
-            0                                          // blockHash
+            0                                           // blockHash
          );
         return [genesisBlock];
     } else {

@@ -6,8 +6,8 @@ const CryptoHashUtils = require("./utils/CryptoHashUtils");
 // ======================= TRANSACTION CONSTRUCTOR ===============================
 // ===============================================================================
 // !!!Sending Private Key for testing purposes only!!!!!!
-function Transaction(to, value, fee, dateCreated, data, senderPubKey, transactionDataHash, senderSignature, senderPrivKey) {
-    this.from = CryptoHashUtils.getAddressFromPublicKey(senderPubKey); // address from PubKey
+function Transaction(from, to, value, fee, dateCreated, data, senderPubKey, transactionDataHash, senderPrivKey, senderSignature) {
+    this.from = from || CryptoHashUtils.getAddressFromPublicKey(senderPubKey);// address from PubKey
     this.to = to;                       // Recipient address - 40 hex digits
     this.value = value;                 // Positive integer
     this.fee = fee;                     // Fee for miner (positive integer)
@@ -15,6 +15,7 @@ function Transaction(to, value, fee, dateCreated, data, senderPubKey, transactio
     this.data = data;                   // Transaction data (payload/comments) - optional string
     this.senderPubKey = senderPubKey;   // Sender public key – 65 hex digits
     this.transactionDataHash = transactionDataHash || this.calculateDataHash();
+    this.senderPrivKey = senderPrivKey; // Sender private key – 64 hex digits (FOR TESTING ONLY)
     this.senderSignature = senderSignature || this.signTransaction(senderPrivKey);
     this.minedInBlockIndex = undefined; // Determined at Mining Process
     this.transferSuccessful = undefined;// Determined at Mining Process
@@ -69,6 +70,7 @@ Transaction.prototype.verifySignature = function() {
 // ===============================================================================
 Transaction.genesisFaucetTransaction = function() {
     return new Transaction(
+        "",                         // from Address
         Config.faucetAddress,       // to Address
         1000000000000,              // Faucet value
         10,                         // mining fee
@@ -76,8 +78,8 @@ Transaction.genesisFaucetTransaction = function() {
         Config.genesisDummyData,    // data
         Config.nullPublicKey,       // senderPubKey
         "",                         // transactionDataHash
-        "",                         // senderSignature
-        Config.nullPrivateKey       // private key
+        Config.nullPrivateKey,      // private key
+        ""                          // senderSignature
     );
 };
 
