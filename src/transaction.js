@@ -32,18 +32,17 @@ function Transaction(from, to, value, fee, dateCreated, data, senderPubKey, tran
 // ====================== Calculate Transaction Data Hash ========================
 // ===============================================================================
 Transaction.prototype.calculateDataHash = function() {
-    const transactionData = {
-        from: this.from,
-        to: this.to,
-        value: this.value,
-        fee: this.fee,
-        dateCreated: this.dateCreated,
-        data: this.data,
-        senderPubKey: this.senderPubKey
-    };
-    if (!transactionData.data) delete transactionData.data;
-    const transactionDataJSON = JSON.stringify(transactionData).split(" ").join("");
-    return CryptoHashUtils.sha256(transactionDataJSON).toString();
+
+    return CryptoHashUtils.calcTransactionDataHash(
+        this.from,
+        this.to,
+        this.value,
+        this.fee,
+        this.dateCreated,
+        this.data,
+        this.senderPubKey
+    );
+    
 };
 
 
@@ -51,7 +50,6 @@ Transaction.prototype.calculateDataHash = function() {
 // ========================= Sign A Transaction ==================================
 // ===============================================================================
 Transaction.prototype.signTransaction = function(privateKey) {
-    // if (privateKey === undefined) privateKey = Config.nullPrivateKey; ;
     return CryptoHashUtils.signData(this.calculateDataHash(), privateKey);
 };
 

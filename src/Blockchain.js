@@ -29,24 +29,9 @@ function Blockchain() {
 }
 
 // -----------------------------------------------------------------------------------
-// --------------------------- {{{VALIDATE}}} BLOCK ---------------------------------
+// --------------------------- {{{VALIDATE}}} BLOCK ----------------------------------
 // -----------------------------------------------------------------------------------
 Blockchain.prototype.validateBlock = function(peerBlock) {
-    console.log("====================== 16 =========================")
-    // Create new Block instance of incoming peer block to recalculate hashes
-    const isValidBlock = new Block (
-        peerBlock.index,
-        peerBlock.transactions,
-        peerBlock.difficulty,
-        peerBlock.prevBlockHash,
-        peerBlock.minedBy,
-        0,                      // Recalculates blockDataHash for validation
-        peerBlock.nonce,
-        peerBlock.dateCreated,
-        0                       // Recalculates blockHash for validation
-    )
-    console.log("====================== 17 =========================")
-
     // CHECKS for missing property fields keys
     const missingFields = ValidationUtils.isMissing_FieldKeys(peerBlock);
     if (missingFields) return {  errorMsg: missingFields };
@@ -69,7 +54,15 @@ Blockchain.prototype.validateBlock = function(peerBlock) {
     if (peerBlock.prevBlockHash !== previousBlockHash) return { errorMsg: "Previous block hash does not match" };
 
     // VALIDATE BLOCK DATA HASH
-    if (peerBlock.blockDataHash !== isValidBlock.blockDataHash) return { errorMsg: "Invalid block data hash" };
+    const recalculatedBlockDataHash = CryptoHashUtils.calcBlockDataHash(
+        peerBlock.index,
+        peerBlock.transactions,
+        peerBlock.difficulty,
+        peerBlock.prevBlockHash,
+        peerBlock.minedBy
+    );
+
+    if (peerBlock.blockDataHash !== recalculatedBlockDataHash) return { errorMsg: "Invalid block data hash" };
 
     // VALIDATE NONCE
     const isValidNonce = ValidationUtils.isValidNonce(peerBlock.nonce);
@@ -80,15 +73,15 @@ Blockchain.prototype.validateBlock = function(peerBlock) {
     if (!isValidDate) return { errorMsg: "Invalid date" };
 
     // VALIDATE BLOCK HASH
-    if (peerBlock.blockHash !== isValidBlock.blockHash) return { errorMsg: "Invalid block hash" };
+    const recalculatedBlockHash = CryptoHashUtils.sha256(
+        peerBlock.blockDataHash + peerBlock.nonce + peerBlock.dateCreated).toString();
+    if (peerBlock.blockHash !== recalculatedBlockHash) return { errorMsg: "Invalid block hash" };
 
 
+    // VALIDATE TRANSACTIONS & DATA, AND RE-EXECUTE TRANSFERS
     const transactions = peerBlock.transactions;
-
     transactions.forEach(transaction => {
-        console.log("====================== 18 =========================")
         const isValidTransaction = this.validateTransaction(transaction);
-        console.log("====================== 20 =========================")
         
         if (isValidTransaction.errorMsg) {
             return { errorMsg: isValidTransaction.errorMsg + `in Block ${transaction.minedInBlockIndex} for transaction: ${transaction.transactionDataHash}` };
@@ -121,7 +114,6 @@ Blockchain.prototype.validateBlock = function(peerBlock) {
         }
     })
     
-    console.log("====================== 21 =========================")
     return true;
 }
 
@@ -207,7 +199,6 @@ Blockchain.prototype.findTransactionByDataHash = function(hash) {
 // ------------------------- {{{VALIDATE}}} TRANSACTION ------------------------------
 // -----------------------------------------------------------------------------------
 Blockchain.prototype.validateTransaction = function(transactionData) {
-
     // ******* TO VALIDATE BOTH *********
     // 1. ALREADY EXISTING TRANSACTIONS OR..
     // 2. THE INPUT DATA PRIOR TO NEW TRANSACTION CREATION
@@ -236,22 +227,22 @@ Blockchain.prototype.validateTransaction = function(transactionData) {
     const isValidPublicKey = ValidationUtils.isValidPublicKey(transactionData.senderPubKey);
     if (!isValidPublicKey) return { errorMsg: "Invalid Public Key" };
 
-    if (!transactionData.transactionDataHash) {
-        // VALIDATE private key
-        const isValidPrivateKey = ValidationUtils.isValidPrivateKey(transactionData.senderPrivKey);
-        if (!isValidPrivateKey) return { errorMsg: "Invalid Private Key" };
-    }
-
-
     // **** SPECIFIC ONLY TO EXISTING TRANSACTIONS *****
     if (transactionData.transactionDataHash) {
-        // // VALIDATE TRANSACTION DATA HASH
-        // const isValidHash = (
-        //     transactionData.transactionDataHash === transactionData.calculateDataHash() ?
-        //     true :
-        //     false
-        // );
-        // if (!isValidHash) return { errorMsg: "Invalid data hash" };
+        // VALIDATE TRANSACTION DATA HASH
+        const recalculatedDataHash = CryptoHashUtils.calcTransactionDataHash(
+            transactionData.from,
+            transactionData.to,
+            transactionData.value,
+            transactionData.fee,
+            transactionData.dateCreated,
+            transactionData.data,
+            transactionData.senderPubKey
+        );
+
+        if (transactionData.transactionDataHash !== recalculatedDataHash) {
+            return { errorMsg: "Invalid data hash" };
+        }
 
         // VALIDATE sender address
         const isValidSender = ValidationUtils.isValidAddress(transactionData.from);
@@ -277,7 +268,6 @@ Blockchain.prototype.validateTransaction = function(transactionData) {
             return { errorMsg: `Duplicate transaction: ${transactionDataHash}`};
         }
     }
-    console.log("====================== 19 =========================")
 
     return true;
 }
@@ -307,8 +297,6 @@ Blockchain.prototype.createNewTransaction = function(transactionData) {
     const isValidNewTransaction = this.validateTransaction(newTransaction);
     if (isValidNewTransaction.errorMsg) return isValidNewTransaction;
 
-    console.log("====================== 33 =========================")
-
     return newTransaction;
 };
 
@@ -316,10 +304,8 @@ Blockchain.prototype.createNewTransaction = function(transactionData) {
 // ---------------- {{{ADD NEW}}} TRANSACTION TO PENDING TRANSACTIONS ----------------
 // -----------------------------------------------------------------------------------
 Blockchain.prototype.addNewTransactionToPendingTransactions = function(transactionObject) {
-    console.log("ADD NEW TRANSACTION TO PENDING TRANSACTIONS", transactionObject);
-    console.log("====================== 39 =========================")
-
     this.pendingTransactions.push(transactionObject); // Add to pending transactions pool 
+
     return this.getLastBlockOnChain().index + 1; // Return index of the next block on blockchain
 };
 
@@ -453,7 +439,6 @@ Blockchain.prototype.getBalancesForAddress = function(address) {
                 }
             }
         }
-
     }
     return balance;
 };
@@ -479,34 +464,18 @@ Blockchain.prototype.mineNewBlock = function(minerAddress) {
     blockCandidate.calculateBlockHash();
     
     // PROOF OF WORK
-    // let miningStartTime = performance.now();
-    // console.time("miner");
-
-    // While amount of leading zeros doesn't match the difficulty, recalculate block hash
     while(blockCandidate.blockHash.substring(0, difficulty) !== ("0").repeat(difficulty)) {
+        // While the amount of leading zeros doesn't match the difficulty, recalculate block hash
         blockCandidate.nonce++;
         // blockCandidate.difficulty = difficulty;
         blockCandidate.dateCreated = new Date().toISOString();
         blockCandidate.calculateBlockHash();
         
-        // // If correct hash is found under 9 seconds, increase difficulty
-        // if (((performance.now() - miningStartTime) < 10000) && (blockCandidate.blockHash.substring(0, difficulty) === ("0").repeat(difficulty))) {
-        //     difficulty += 1;
-        // }
-        
-        // // If correct hash isn't found in 11 seconds, reduce difficulty by 1
-        // if (((performance.now() - miningStartTime) > 11000) && difficulty > minimumDifficulty) {
-        //     difficulty -= 1;
-        // }
-
         console.log(blockCandidate.blockHash);
         console.log("DIFFICULTY ====> ", difficulty);
         console.log("NONCE =========> ", blockCandidate.nonce);
-        // console.timeLog("miner");
     }
 
-    // console.timeEnd("miner");
-    
     // SUBMIT MINED BLOCK
     const newBlock = this.submitMinedBlockToNode(
         blockCandidate.blockDataHash,
@@ -522,6 +491,13 @@ Blockchain.prototype.mineNewBlock = function(minerAddress) {
 // ------------------------------------------------------------------------------------
 // ------------------- {{{PREPARE BLOCK CANDIDATE}}} FOR MINING -----------------------
 // ------------------------------------------------------------------------------------
+// 1. Deep clone pending transactions
+// 2. Transfer all pending transactions' fees
+// 3. Execute all the transactions
+// 4. Create coinbase transaction collecting and transfering all transaction fees + block reward
+// 5. Add the coinbase transaction to the transaction list
+// 6. Prepare the new block candidate
+// 7. Add new block candidate to mining pool to be mined
 Blockchain.prototype.prepareBlockCandidate = function(minerAddress, difficulty) {
     let balances = this.getAllBalances();
     let blockReward = Config.blockReward;
@@ -665,7 +641,6 @@ Blockchain.prototype.getPeersData = function() {
     for (const [key, value] of peers) {
         peerObj[`${key}`] = value;
     }
-    console.log("THIS NODE URL ==> ", this.networkNodes.get(Config.currentNodeId));
     return peerObj;
 };
 
@@ -674,22 +649,41 @@ Blockchain.prototype.getPeersData = function() {
 // --------------------------------------------------------------------------------
 Blockchain.prototype.registerBroadcastNewPeerToNetwork = async function(endpoints, peerNodeId, peerNodeUrl) {
     
-    console.log("ENDPOINTS", endpoints);
-    console.log("peerNodeId", peerNodeId);
-    console.log("peerNodeUrl", peerNodeUrl);
-    console.log("====================== 10 =========================")
-    await Promise.all(endpoints.map(endpoint => axios.post(endpoint, { peerNodeId, peerNodeUrl }))).then(function(){
-        console.log("=========== I'M INSIDE 10 PROMISE ===============")
-    }).catch(function(error){ console.log("Peer registration error", error)});
-    console.log("====================== 10 D =========================")
+    await Promise.all(endpoints.map(endpoint => axios.post(endpoint, { peerNodeId, peerNodeUrl }))).then(function(){}).catch(function(error){ console.log("Peer registration error", error)});
 };
 
 // --------------------------------------------------------------------------------
 // ------------------ {{{REGISTER ALL NODES}}} TO PEER ----------------------------
 // --------------------------------------------------------------------------------
-Blockchain.prototype.registerAllNodesToPeer = function(peerNodeId, peerNodeUrl) {
+Blockchain.prototype.registerAllNodesToPeer = async function(allPeers) {
     
+    allPeers.forEach((peerUrl) => {
 
+        axios.get(peerUrl + "/info")
+        .then( data => {
+            const peerInfo = data.data;
+            const peers = peerInfo.peersMap;
+
+            for (let data in peers) {
+                const id = data;
+                const url = peers[id];
+                const peerNotPreExisting = !this.networkNodes.has(id);
+                const notCurrentNode = this.currentNodeURL !== url;
+                
+                if (peerNotPreExisting && notCurrentNode) {
+                    axios.post(this.currentNodeURL + "/peers/connect", { peerUrl: peerInfo.nodeUrl }).then(function(){}).catch(function(){});
+
+                    return { message: "Successfully registered network nodes to new peer" };
+                }
+            }
+        })
+        .catch( error => {
+            console.log("ERROR:", error);
+
+            return { errorMsg: "Error registering network to new peer node." };
+        });
+
+    });
 };
 
 // --------------------------------------------------------------------------------
@@ -715,21 +709,17 @@ Blockchain.prototype.synchronizeTheChain = async function(peerChainInfo) {
     // CALCULATE & COMPARE CUMULATIVE DIFFICULTIES
     let currentChainCumulativeDifficulty = this.calculateCumulativeDifficulty();
     let peerChainCumulativeDifficulty = peerChainInfo.cumulativeDifficulty;
-    console.log("====================== 12 =========================")
     
     // IF PEER CHAIN IS LONGER, VALIDATE AND SWITCH OVER
     if (peerChainCumulativeDifficulty > currentChainCumulativeDifficulty) {
-        console.log("====================== 13 =========================")
         try {
             // Get peer blocks
             const peerChainBlocks = (await axios.get(peerChainInfo.nodeUrl + "/blocks")).data;
-            console.log("====================== 14 =========================")
 
             // Validate
             const isValid = this.validateChain(peerChainBlocks);
             if (isValid.errorMsg) return isValid;
 
-            console.log("====================== 23 =========================")
             
             // Recalculate cumulative difficulties
             currentChainCumulativeDifficulty = this.calculateCumulativeDifficulty();
@@ -737,17 +727,13 @@ Blockchain.prototype.synchronizeTheChain = async function(peerChainInfo) {
             
             // Sync to longer chain
             if (peerChainCumulativeDifficulty > currentChainCumulativeDifficulty) {
-                console.log("====================== 24 =========================")
                 this.blocks = peerChainBlocks;
                 this.miningJobs = {};
             }
             
-            console.log("====================== 25 =========================")
             this.removePendingTransactions(this.getConfirmedTransactions());
-            console.log("====================== 26 =========================")
             
             this.notifyPeersAboutNewBlock();
-            console.log("====================== 27 =========================")
 
         } catch (error) {
             console.error(`Error synchronizing the chain: ${error}`);
@@ -760,7 +746,6 @@ Blockchain.prototype.synchronizeTheChain = async function(peerChainInfo) {
 // ------------------------- {{{VALIDATE}}} CHAIN ---------------------------------
 // --------------------------------------------------------------------------------
 Blockchain.prototype.validateChain = function(peerChainBlocks) {
-    console.log("====================== 15 =========================")
     
     peerChainBlocks.forEach((block, index) => {
         if (index === 0 && block[index] !== this.blocks[0]) {
@@ -771,7 +756,6 @@ Blockchain.prototype.validateChain = function(peerChainBlocks) {
         if (isValidBlock.errorMsg) return isValidBlock;
 
     });
-    console.log("====================== 22 =========================")
     
     return true;
 };

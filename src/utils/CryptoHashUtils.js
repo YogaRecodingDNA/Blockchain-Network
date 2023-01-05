@@ -58,6 +58,50 @@ function verifySignature(data, publicKey, signature) {
     return valid;
 }
 
+// Transaction data hash
+function calcTransactionDataHash(from, to, value, fee, dateCreated, data, senderPubKey){
+    const transactionData = {
+        from,
+        to,
+        value,
+        fee,
+        dateCreated,
+        data,
+        senderPubKey
+    };
+    if (!transactionData.data) delete transactionData.data;
+    const transactionDataJSON = JSON.stringify(transactionData).split(" ").join("");
+    return sha256(transactionDataJSON).toString();
+}
+
+function calcBlockDataHash(index, transactions, difficulty, prevBlockHash, minedBy) {
+    let blockData = {
+        index,
+        transactions: transactions.map((transaction) => 
+            Object({
+                from: transaction.from,
+                to: transaction.to,
+                value: transaction.value,
+                fee: transaction.fee,
+                dateCreated: transaction.dateCreated,
+                data: transaction.data,
+                senderPubKey: transaction.senderPubKey,
+                transactionDataHash: transaction.transactionDataHash,
+                senderSignature: transaction.senderSignature,
+                minedInBlockIndex: transaction.minedInBlockIndex,
+                transferSuccessful: transaction.transferSuccessful
+            })
+        ),
+        difficulty,
+        prevBlockHash,
+        minedBy
+    };
+
+    const blockDataJSON = JSON.stringify(blockData).split(" ").join("");
+
+    return sha256(blockDataJSON).toString();
+}
+
 // Create unique ID
 function createId() {
     return (new Date()).getTime().toString(16) + Math.random().toString(16).substring(2);
@@ -71,5 +115,7 @@ module.exports = {
     getAddressFromPrivateKey,
     signData,
     verifySignature,
+    calcTransactionDataHash,
+    calcBlockDataHash,
     createId
 };
