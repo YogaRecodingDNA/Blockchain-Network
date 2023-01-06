@@ -706,6 +706,8 @@ Blockchain.prototype.notifyPeersAboutNewBlock = function() {
 // ------------------------ {{{SYNCHRONIZE}}} THE CHAIN ---------------------------
 // --------------------------------------------------------------------------------
 Blockchain.prototype.synchronizeTheChain = async function(peerChainInfo) {
+    console.log("peerChainInfo Sync Chain", peerChainInfo);
+    console.log("Cumulative Difficulty", peerChainInfo.cumulativeDifficulty);
     // CALCULATE & COMPARE CUMULATIVE DIFFICULTIES
     let currentChainCumulativeDifficulty = this.calculateCumulativeDifficulty();
     let peerChainCumulativeDifficulty = peerChainInfo.cumulativeDifficulty;
@@ -719,13 +721,12 @@ Blockchain.prototype.synchronizeTheChain = async function(peerChainInfo) {
             // Validate
             const isValid = this.validateChain(peerChainBlocks);
             if (isValid.errorMsg) return isValid;
-
             
             // Recalculate cumulative difficulties
             currentChainCumulativeDifficulty = this.calculateCumulativeDifficulty();
             peerChainCumulativeDifficulty = peerChainInfo.cumulativeDifficulty;
             
-            // Sync to longer chain
+            // Sync to peer if they have longer chain 
             if (peerChainCumulativeDifficulty > currentChainCumulativeDifficulty) {
                 this.blocks = peerChainBlocks;
                 this.miningJobs = {};
@@ -733,6 +734,7 @@ Blockchain.prototype.synchronizeTheChain = async function(peerChainInfo) {
             
             this.removePendingTransactions(this.getConfirmedTransactions());
             
+            // NOTIFY PEERS EVERY SYNC (when new block mined or received / longer chain arrival)
             this.notifyPeersAboutNewBlock();
 
         } catch (error) {
