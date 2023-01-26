@@ -2,11 +2,11 @@ const express = require("express");
 const Blockchain = require("./Blockchain");
 const Config = require("./utils/Config");
 const axios = require('axios');
-const RP = require("request-promise");
+// const RP = require("request-promise");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const { StatusCodes } = require("http-status-codes");
-const { request } = require("express");
+// const { request } = require("express");
 
 // Create Express app
 const app = express();
