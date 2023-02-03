@@ -1,0 +1,28 @@
+import guruMountain from "../assets/images/guruMountain.jpeg";
+import shootingStar from "../assets/images/shootingStar.jpg";
+
+const HomePage = () => {
+  // const mountainBackground = {
+  //   backgroundImage: `url("https://images.immediate.co.uk/production/volatile/sites/4/2021/08/mountains-7ddde89.jpg")`,
+  //   backgroundSize: "cover",
+  // }
+  return (
+    <div className="bg-cover w-full h-full" style={{ backgroundImage: `url(${shootingStar})`}}>
+      <div className="flex bg-gradient-to-b from-gray-900 via-transparent justify-center items-start w-full h-full text-white">
+        <div className="font-medium mt-20">
+          <h1 className="font-medium text-center text-3xl">
+            V I N Y A S A ~ C H A I N
+            <div className="pt-4">
+              <p className="text-lg">Welcome to the Vinyasa Blockchain.<br/>
+              A network designed to provide decentralized<br/>
+              opportunities for conscious awakening.
+              </p>
+            </div>
+          </h1>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default HomePage;

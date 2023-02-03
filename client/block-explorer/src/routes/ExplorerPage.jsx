@@ -1,7 +1,6 @@
-// DISPLAY SEARCHBAR | 5 LATEST BLOCKS & LATEST PENDING TRANSACTIONS
 import SearchBar from "../components/SearchBar";
 
-const HomePage = () => {
+const ExplorerPage = () => {
   return (
     <div>
       <h2>The Vinyasa Blockchain Explorer</h2>
@@ -10,7 +9,7 @@ const HomePage = () => {
   )
 }
 
-export default HomePage;
+export default ExplorerPage;
 
 /* Block Explorer functionality
 -View blocks
