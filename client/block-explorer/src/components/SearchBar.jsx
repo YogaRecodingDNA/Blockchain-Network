@@ -1,30 +1,24 @@
-import axios from "axios";
-import { useState } from "react";
+// import axios from "axios";
+// import { useState } from "react";
+import Button from "./Button";
+import { FaSearch } from 'react-icons/fa'
 
-const SearchBar = () => {
-  const [info, setInfo] = useState({});
+const SearchBar = ({ onSubmit }) => {
+  // const [info, setInfo] = useState({});
 
-  const handleClick = (event) => {
+  const handleFormSubmit = (event) => {
     event.preventDefault();
-    axios.get("http://localhost:5555/info")
-    .then( data => {
-      data = data.data;
-      const newInfo = {
-        ...info,
-        data
-      }
-      setInfo(newInfo);
-    }).catch( err => console.error(err));
+    onSubmit();
   }
-  console.log(info);
+  // console.log(info);
   
   return (
-    <div>
-      <form>
-        <input placeholder='Search by Address/Txn Hash/Block #' />
-        <span>
-          <button onClick={handleClick}>search</button>
-        </span>
+    <div className="w-full">
+      <form onSubmit={handleFormSubmit} className="flex justify-start items-stretch w-full h-11">
+        <input className="w-9/12 border-none rounded-l-lg text-sm text-gray-900" placeholder='  Search by Address/Txn Hash/Block #' />
+        <Button search >
+          <FaSearch />
+        </Button>
       </form>
     </div>
   )

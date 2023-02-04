@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Disclosure } from '@headlessui/react'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 import Logo from '../assets/images/chakraLogo.png';
@@ -15,7 +16,7 @@ function classNames(...classes) {
 }
 
 export default function Header() {
-  
+
   return (
     <Disclosure as="nav" className="bg-gray-900">
       {({ open }) => (

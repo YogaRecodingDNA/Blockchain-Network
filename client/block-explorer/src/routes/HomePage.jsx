@@ -1,5 +1,5 @@
-import guruMountain from "../assets/images/guruMountain.jpeg";
 import shootingStar from "../assets/images/shootingStar.jpg";
+import Button from "../components/Button";
 
 const HomePage = () => {
   // const mountainBackground = {
@@ -7,7 +7,7 @@ const HomePage = () => {
   //   backgroundSize: "cover",
   // }
   return (
-    <div className="bg-cover w-full h-full" style={{ backgroundImage: `url(${shootingStar})`}}>
+    <div className="bg-cover bg-fixed w-full h-full" style={{ backgroundImage: `url(${shootingStar})`}}>
       <div className="flex bg-gradient-to-b from-gray-900 via-transparent justify-center items-start w-full h-full text-white">
         <div className="font-medium mt-20">
           <h1 className="font-medium text-center text-3xl">
@@ -19,6 +19,9 @@ const HomePage = () => {
               </p>
             </div>
           </h1>
+          <div className="mt-5">
+            <Button className="mx-auto" primary>Explore Freely</Button>
+          </div>
         </div>
       </div>
     </div>
