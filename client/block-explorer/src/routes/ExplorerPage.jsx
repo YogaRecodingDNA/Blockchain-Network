@@ -5,6 +5,7 @@ import moonExplorer from "../assets/images/moonExplorer.jpeg";
 import SearchBar from "../components/SearchBar";
 // import DataTable from "../components/DataTable";
 import LatestBlocksDataTable from "../components/LatestBlocksDataTable";
+import LatestTransactionsDataTable from "../components/LatestTransactionsDataTable";
 
 
 const ExplorerPage = () => {
@@ -44,7 +45,7 @@ const ExplorerPage = () => {
             <LatestBlocksDataTable />
           </div>
           <div className="overflow-auto w-1/2 bg-gray-700/40 shadow-md sm:rounded-lg">
-            <LatestBlocksDataTable />
+            <LatestTransactionsDataTable />
           </div>
         </div>
       </div>
