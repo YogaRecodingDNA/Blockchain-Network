@@ -45,7 +45,7 @@ module.exports = {
     faucetPublicKey,
     faucetPrivateKey,
     initialDifficulty: 5,
-    blockReward: 50000000,
+    blockReward: 5000000, // 1 PRANA === 1,000 VI === 1,000,000 NYASA
     minimumTransactionFee: 10,
     safeConfirmations: 6
 };

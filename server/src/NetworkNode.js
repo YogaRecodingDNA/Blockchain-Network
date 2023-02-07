@@ -75,7 +75,8 @@ app.get("/info", (req, res) => { // Nodes may provide additional info by choice
         "blocksCount": vinyasa.blocks.length,
         "cumulativeDifficulty": vinyasa.calculateCumulativeDifficulty(),
         "confirmedTransactions": vinyasa.getConfirmedTransactions().length,
-        "pendingTransactions": vinyasa.pendingTransactions.length
+        "pendingTransactions": vinyasa.pendingTransactions.length,
+        "blockReward": Config.blockReward
     });
 });
 
