@@ -3,7 +3,6 @@ import useGetTime from '../hooks/use-getTime';
 import { Dna } from 'react-loader-spinner';
 import DataTable from './DataTable';
 
-
 const LatestBlocksDataTable = () => {
   const { data, error, isFetching } = useFetchBlocksQuery();
   const { getElapsed } = useGetTime();
@@ -34,14 +33,7 @@ const LatestBlocksDataTable = () => {
       const date = Date.now();
       const dateCreated = +new Date(block.dateCreated);
       const timeElapsed = getElapsed(date, dateCreated);
-      const transactions = block.transactions;
-      let reward = 5000000;
-
-      for (let tx of transactions) {
-        reward += tx.fee;
-      };
-
-      reward = reward / 1000000;
+      const reward = block.transactions[0].value / 1000000;// reward/fee value from mining reward Tx
 
       return (
         <DataTable key={block.index} blockNumber={block.index} minerAddress={block.minedBy} reward={reward} dateCreated={timeElapsed}/>
@@ -50,13 +42,12 @@ const LatestBlocksDataTable = () => {
     });
 
     blockData = blockData.reverse();
-    console.log(blockData);
 
   };
 
   return (
     <div>
-        <div className="sticky w-full pl-6 py-5 top-0 font-semibold bg-cyan-900">
+        <div className="sticky w-full pl-6 pt-2 h-16 top-0 font-semibold bg-gradient-to-b from-cyan-900 via-cyan-900">
             Latest Blocks
         </div>
         <table className="table-fixed w-full text-left text-sm text-white">

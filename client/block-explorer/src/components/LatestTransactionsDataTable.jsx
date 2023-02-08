@@ -49,7 +49,7 @@ const LatestTransactionsDataTable = () => {
 
   return (
     <div>
-        <div className="sticky w-full pl-6 py-5 top-0 font-semibold bg-cyan-900">
+        <div className="sticky w-full pl-6 pt-2 h-16 top-0 font-semibold bg-gradient-to-b from-cyan-900 via-cyan-900">
             Latest Transactions
         </div>
         <table className="table-fixed w-full text-left text-sm text-white">

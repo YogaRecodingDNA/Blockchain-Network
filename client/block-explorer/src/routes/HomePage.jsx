@@ -1,11 +1,14 @@
+import { useNavigate } from "react-router-dom";
 import shootingStar from "../assets/images/shootingStar.jpg";
 import Button from "../components/Button";
 
 const HomePage = () => {
-  // const mountainBackground = {
-  //   backgroundImage: `url("https://images.immediate.co.uk/production/volatile/sites/4/2021/08/mountains-7ddde89.jpg")`,
-  //   backgroundSize: "cover",
-  // }
+  const navigate = useNavigate();
+  
+  const handleClick = () => {
+    navigate("explorer");
+  }
+
   return (
     <div className="bg-cover bg-fixed w-full h-full" style={{ backgroundImage: `url(${shootingStar})`}}>
       <div className="flex bg-gradient-to-b from-gray-900 via-transparent justify-center items-start w-full h-full text-white">
@@ -20,7 +23,7 @@ const HomePage = () => {
             </div>
           </h1>
           <div className="mt-5">
-            <Button className="mx-auto" primary>Explore Freely</Button>
+            <Button className="mx-auto" primary onClick={handleClick}>Explore Freely</Button>
           </div>
         </div>
       </div>

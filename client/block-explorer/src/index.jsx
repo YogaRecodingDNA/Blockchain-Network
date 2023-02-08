@@ -1,12 +1,9 @@
 import './index.css';
-// import "./App.css";
 import React from 'react';
 import { createBrowserRouter, RouterProvider, Route, Outlet, createRoutesFromElements } from 'react-router-dom';
 import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
 import { store } from './store';
-// import App from './App';
-// import NavBar from './components/NavBar';
 import Header from './components/Header';
 import HomePage from './routes/HomePage';
 import ExplorerPage from './routes/ExplorerPage';

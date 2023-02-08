@@ -22,7 +22,7 @@ const transactionsApi = createApi({ // Autogenerate hooks \ slices \ thunks
       fetchPendingTransactions: builder.query({ // === useFetchPendingTransactionsQuery()
         query: () => {
           return {
-            url: '/transactions/pending',
+            url: '/transactions/confirmed',
             method: 'GET'
           };
         },
