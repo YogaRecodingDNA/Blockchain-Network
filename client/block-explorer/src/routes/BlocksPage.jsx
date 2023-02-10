@@ -1,6 +1,6 @@
-import Blocks from "../components/Blocks";
+import Blocks from "../components/blocks/Blocks";
 import moonExplorer from "../assets/images/moonExplorer.jpeg";
-import SearchBar from "../components/SearchBar";
+import SearchBar from "../components/navigation/SearchBar";
 
 const BlocksPage = () => {
 

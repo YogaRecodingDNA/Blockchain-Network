@@ -1,5 +1,5 @@
-import { useFetchBlocksQuery } from '../store';
-import useGetTime from '../hooks/use-getTime';
+import { useFetchBlocksQuery } from '../../store';
+import useGetTime from '../../hooks/use-getTime';
 import { Link } from 'react-router-dom';
 import { Dna } from 'react-loader-spinner';
 

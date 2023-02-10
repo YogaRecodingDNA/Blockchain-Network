@@ -1,6 +1,6 @@
 // import axios from "axios";
 // import { useState } from "react";
-import Button from "./Button";
+import Button from "../Button";
 import { FaSearch } from 'react-icons/fa'
 
 const SearchBar = ({ onSubmit }) => {

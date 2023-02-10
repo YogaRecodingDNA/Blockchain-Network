@@ -4,7 +4,7 @@ import { createBrowserRouter, RouterProvider, Route, Outlet, createRoutesFromEle
 import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
 import { store } from './store';
-import Header from './components/Header';
+import Header from './components/navigation/Header';
 import HomePage from './routes/HomePage';
 import ExplorerPage from './routes/ExplorerPage';
 import BlocksPage from './routes/BlocksPage';

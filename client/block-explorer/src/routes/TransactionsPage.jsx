@@ -1,4 +1,4 @@
-import ConfirmedTxns from "../components/ConfirmedTxns";
+import ConfirmedTxns from "../components/transactions/ConfirmedTxns";
 
 const TransactionsPage = () => {
   return (

@@ -1,5 +1,4 @@
-import Button from "./Button";
-import { FcDownload, FcList } from "react-icons/fc";
+import Button from "../Button";
 
 const LatestTxnsHeadingExplorer = ({ isConfirmedTxns, onToggleTxns }) => {
   return (

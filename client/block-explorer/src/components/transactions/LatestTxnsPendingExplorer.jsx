@@ -1,13 +1,12 @@
-import { useFetchConfirmedTransactionsQuery } from '../store';
-import useGetTime from '../hooks/use-getTime';
-import DataTable from './DataTable';
+import { useFetchPendingTransactionsQuery } from '../../store';
+import useGetTime from '../../hooks/use-getTime';
+import DataTable from '../DataTable';
 import { Dna } from 'react-loader-spinner';
 
-
-const LatestTxnsConfirmedExplorer = () => {
-  const { data,error,isFetching } = useFetchConfirmedTransactionsQuery();
+const LatestTxnsPendingExplorer = () => {
+  const { data,error,isFetching } = useFetchPendingTransactionsQuery();
   const { getElapsed } = useGetTime();
-    
+  
   let transactionData;
 
   if (isFetching) {
@@ -28,21 +27,23 @@ const LatestTxnsConfirmedExplorer = () => {
 
   } else if (error) {
     transactionData = <div>Error loading transactions.</div>;
-
   } else {
-    transactionData = data.map(tx => {
+    transactionData = data.map(txn => {
       const date = Date.now();
-      const dateCreated = +new Date(tx.dateCreated);
+      const dateCreated = +new Date(txn.dateCreated);
       const timeElapsed = getElapsed(date, dateCreated);
 
       return (
-        <DataTable key={tx.transactionDataHash} transaction={tx} dateCreated={timeElapsed}/>
+        <DataTable key={txn.transactionDataHash} transaction={txn} dateCreated={timeElapsed}/>
       );
 
     });
 
+    if (transactionData.length === 0) {
+      return <h1 className="px-5">There are no pending transactions.</h1>
+    }
+
     transactionData = transactionData.reverse();
-    console.log(transactionData);
 
   };
 
@@ -57,4 +58,4 @@ const LatestTxnsConfirmedExplorer = () => {
   )
 }
 
-export default LatestTxnsConfirmedExplorer;
+export default LatestTxnsPendingExplorer;

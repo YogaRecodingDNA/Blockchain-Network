@@ -1,7 +1,7 @@
-import { useFetchBlocksQuery } from '../store';
-import useGetTime from '../hooks/use-getTime';
+import { useFetchBlocksQuery } from '../../store';
+import useGetTime from '../../hooks/use-getTime';
+import DataTable from '../DataTable';
 import { Dna } from 'react-loader-spinner';
-import DataTable from './DataTable';
 
 const LatestBlocksDataTable = () => {
   const { data, error, isFetching } = useFetchBlocksQuery();
@@ -33,10 +33,10 @@ const LatestBlocksDataTable = () => {
       const date = Date.now();
       const dateCreated = +new Date(block.dateCreated);
       const timeElapsed = getElapsed(date, dateCreated);
-      const reward = block.transactions[0].value / 1000000;// reward/fee value from mining reward Tx
+      // const reward = block.transactions[0].value / 1000000;// reward/fee value from mining reward Tx
 
       return (
-        <DataTable key={block.index} block={block} reward={reward} dateCreated={timeElapsed}/>
+        <DataTable key={block.index} block={block} dateCreated={timeElapsed}/>
       );
 
     });

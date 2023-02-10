@@ -1,13 +1,11 @@
 import { useState } from "react";
 import moonExplorer from "../assets/images/moonExplorer.jpeg";
 import Panel from "../components/Panel";
-import SearchBar from "../components/SearchBar";
-import LatestBlocksDataTable from "../components/LatestBlocksDataTable";
-import LatestTxnsConfirmedExplorer from "../components/LatestTxnsConfirmedExplorer";
-import LatestTxnsPendingExplorer from "../components/LatestTxnsPendingExplorer";
-import LatestTxnsHeadingExplorer from "../components/LatestTxnsHeadingExplorer";
-// import Button from "../components/Button";
-// import { FcDownload } from 'react-icons/fc'
+import SearchBar from "../components/navigation/SearchBar";
+import LatestBlocksDataTable from "../components/blocks/LatestBlocksDataTable";
+import LatestTxnsConfirmedExplorer from "../components/transactions/LatestTxnsConfirmedExplorer";
+import LatestTxnsPendingExplorer from "../components/transactions/LatestTxnsPendingExplorer";
+import LatestTxnsHeadingExplorer from "../components/transactions/LatestTxnsHeadingExplorer";
 
 
 const ExplorerPage = () => {

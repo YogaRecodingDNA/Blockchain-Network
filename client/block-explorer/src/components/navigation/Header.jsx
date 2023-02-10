@@ -1,6 +1,6 @@
 import { Disclosure } from '@headlessui/react'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
-import Logo from '../assets/images/chakraLogo.png';
+import Logo from '../../assets/images/chakraLogo.png';
 
 const navigation = [
   { name: 'Home', path: '/', current: true },
