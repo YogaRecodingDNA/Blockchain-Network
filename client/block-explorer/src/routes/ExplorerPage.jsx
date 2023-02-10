@@ -1,10 +1,21 @@
+import { useState } from "react";
 import moonExplorer from "../assets/images/moonExplorer.jpeg";
+import Panel from "../components/Panel";
 import SearchBar from "../components/SearchBar";
 import LatestBlocksDataTable from "../components/LatestBlocksDataTable";
-import LatestTransactionsDataTable from "../components/LatestTransactionsDataTable";
+import LatestTxnsConfirmedExplorer from "../components/LatestTxnsConfirmedExplorer";
+import LatestTxnsPendingExplorer from "../components/LatestTxnsPendingExplorer";
+import LatestTxnsHeadingExplorer from "../components/LatestTxnsHeadingExplorer";
+// import Button from "../components/Button";
+// import { FcDownload } from 'react-icons/fc'
 
 
 const ExplorerPage = () => {
+  const [isConfirmedTxns, setIsConfirmedTxns] = useState(true);
+
+  const handleToggleTxns= () => {
+    setIsConfirmedTxns(!isConfirmedTxns);
+  }
 
   const handleSubmit = () => {
     console.log("Search Click");
@@ -21,22 +32,30 @@ const ExplorerPage = () => {
             <SearchBar onSubmit={handleSubmit} />
           </div>
         </div>
-        <div className="hidden w-full h-96 px-3 mt-20 mx-auto space-x-4 rounded-lg md:flex">
-          <div className="overflow-y-auto w-1/2 rounded-lg bg-gray-700/40 shadow-md">
+        <Panel containerExplorer className="hidden h-96 space-x-4 md:flex">
+          <Panel fullExplorer className="overflow-y-auto">
             <LatestBlocksDataTable />
-          </div>
-          <div className="overflow-auto w-1/2 rounded-lg bg-gray-700/40 shadow-md">
-            <LatestTransactionsDataTable />
-          </div>
-        </div>
-        <div className="w-full h-full px-3 mt-20 mx-auto space-y-4 rounded-lg md:hidden">
-          <div className="overflow-y-auto w-full h-96 rounded-lg bg-gray-700/40 shadow-md">
+          </Panel>
+          <Panel fullExplorer className="overflow-auto">
+            <LatestTxnsHeadingExplorer
+            onToggleTxns={handleToggleTxns}
+            isConfirmedTxns={isConfirmedTxns}
+          />
+            {isConfirmedTxns ? <LatestTxnsConfirmedExplorer /> : <LatestTxnsPendingExplorer />}
+          </Panel>
+        </Panel>
+        <Panel containerExplorer className="h-full space-y-4 md:hidden">
+          <Panel mobileExplorer className="overflow-y-auto">
             <LatestBlocksDataTable />
-          </div>
-          <div className="overflow-auto w-full h-96 rounded-lg bg-gray-700/40 shadow-md">
-            <LatestTransactionsDataTable />
-          </div>
-        </div>
+          </Panel>
+          <Panel mobileExplorer className="overflow-auto">
+            <LatestTxnsHeadingExplorer
+              onToggleTxns={handleToggleTxns}
+              isConfirmedTxns={isConfirmedTxns}
+            />
+            {isConfirmedTxns ? <LatestTxnsConfirmedExplorer /> : <LatestTxnsPendingExplorer />}
+          </Panel>
+        </Panel>
       </div>
     </div>
   )

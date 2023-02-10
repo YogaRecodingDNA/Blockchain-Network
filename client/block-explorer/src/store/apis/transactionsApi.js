@@ -19,10 +19,18 @@ const transactionsApi = createApi({ // Autogenerate hooks \ slices \ thunks
   }),
   endpoints(builder) {
     return { // CONFIGURATION
-      fetchPendingTransactions: builder.query({ // === useFetchPendingTransactionsQuery()
+      fetchConfirmedTransactions: builder.query({ // === useFetchConfirmedTransactionsQuery()
         query: () => {
           return {
             url: '/transactions/confirmed',
+            method: 'GET'
+          };
+        },
+      }),
+      fetchPendingTransactions: builder.query({ // === useFetchPendingTransactionsQuery()
+        query: () => {
+          return {
+            url: '/transactions/pending',
             method: 'GET'
           };
         },
@@ -38,5 +46,8 @@ const transactionsApi = createApi({ // Autogenerate hooks \ slices \ thunks
   },
 });
 
-export const { useFetchPendingTransactionsQuery } = transactionsApi;
+export const { 
+  useFetchConfirmedTransactionsQuery,
+  useFetchPendingTransactionsQuery
+} = transactionsApi;
 export { transactionsApi };

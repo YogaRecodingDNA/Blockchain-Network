@@ -1,6 +1,5 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query";
-// import { blocksReducer } from "./slices/blocksSlice";
 import { blocksApi } from "./apis/blocksApi";
 import { transactionsApi } from "./apis/transactionsApi";
 
@@ -20,4 +19,7 @@ export const store = configureStore({
 setupListeners(store.dispatch);
 
 export { useFetchBlocksQuery } from './apis/blocksApi';
-export { useFetchPendingTransactionsQuery } from "./apis/transactionsApi";
+export {
+  useFetchConfirmedTransactionsQuery,
+  useFetchPendingTransactionsQuery
+} from "./apis/transactionsApi";

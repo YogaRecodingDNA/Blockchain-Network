@@ -1,13 +1,13 @@
-import { useFetchPendingTransactionsQuery } from '../store';
+import { useFetchConfirmedTransactionsQuery } from '../store';
 import useGetTime from '../hooks/use-getTime';
-import { Dna } from 'react-loader-spinner';
 import DataTable from './DataTable';
+import { Dna } from 'react-loader-spinner';
 
 
-const LatestTransactionsDataTable = () => {
-  const { data, error, isFetching } = useFetchPendingTransactionsQuery();
+const LatestTxnsConfirmedExplorer = () => {
+  const { data,error,isFetching } = useFetchConfirmedTransactionsQuery();
   const { getElapsed } = useGetTime();
-
+    
   let transactionData;
 
   if (isFetching) {
@@ -34,10 +34,9 @@ const LatestTransactionsDataTable = () => {
       const date = Date.now();
       const dateCreated = +new Date(tx.dateCreated);
       const timeElapsed = getElapsed(date, dateCreated);
-      const amount = tx.value / 1000000;
 
       return (
-        <DataTable key={tx.transactionDataHash} txHash={tx.transactionDataHash} to={tx.to} from={tx.from} amount={amount} dateCreated={timeElapsed}/>
+        <DataTable key={tx.transactionDataHash} transaction={tx} dateCreated={timeElapsed}/>
       );
 
     });
@@ -49,9 +48,6 @@ const LatestTransactionsDataTable = () => {
 
   return (
     <div>
-        <div className="sticky w-full pl-6 pt-2 h-16 top-0 font-semibold bg-gradient-to-b from-cyan-900 via-cyan-900">
-            Latest Transactions
-        </div>
         <table className="table-fixed w-full text-left text-sm text-white">
             <tbody>
                 {transactionData}
@@ -61,4 +57,4 @@ const LatestTransactionsDataTable = () => {
   )
 }
 
-export default LatestTransactionsDataTable;
+export default LatestTxnsConfirmedExplorer;

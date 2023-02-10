@@ -36,7 +36,7 @@ const LatestBlocksDataTable = () => {
       const reward = block.transactions[0].value / 1000000;// reward/fee value from mining reward Tx
 
       return (
-        <DataTable key={block.index} blockNumber={block.index} minerAddress={block.minedBy} reward={reward} dateCreated={timeElapsed}/>
+        <DataTable key={block.index} block={block} reward={reward} dateCreated={timeElapsed}/>
       );
 
     });
