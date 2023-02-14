@@ -1,6 +1,6 @@
 import { useState } from "react";
 import moonExplorer from "../assets/images/moonExplorer.jpeg";
-import Panel from "../components/Panel";
+import ExplorerPanel from "../components/panels/ExplorerPanel";
 import SearchBar from "../components/navigation/SearchBar";
 import LatestBlocksDataTable from "../components/blocks/LatestBlocksDataTable";
 import LatestTxnsConfirmedExplorer from "../components/transactions/LatestTxnsConfirmedExplorer";
@@ -30,30 +30,30 @@ const ExplorerPage = () => {
             <SearchBar onSubmit={handleSubmit} />
           </div>
         </div>
-        <Panel containerExplorer className="hidden h-96 space-x-4 md:flex">
-          <Panel fullExplorer className="overflow-y-auto">
+        <ExplorerPanel containerExplorer className="hidden h-96 space-x-4 md:flex">
+          <ExplorerPanel fullExplorer className="overflow-y-auto">
             <LatestBlocksDataTable />
-          </Panel>
-          <Panel fullExplorer className="overflow-auto">
+          </ExplorerPanel>
+          <ExplorerPanel fullExplorer className="overflow-auto">
             <LatestTxnsHeadingExplorer
             onToggleTxns={handleToggleTxns}
             isConfirmedTxns={isConfirmedTxns}
           />
             {isConfirmedTxns ? <LatestTxnsConfirmedExplorer /> : <LatestTxnsPendingExplorer />}
-          </Panel>
-        </Panel>
-        <Panel containerExplorer className="h-full space-y-4 md:hidden">
-          <Panel mobileExplorer className="overflow-y-auto">
+          </ExplorerPanel>
+        </ExplorerPanel>
+        <ExplorerPanel containerExplorer className="h-full space-y-4 md:hidden">
+          <ExplorerPanel mobileExplorer className="overflow-y-auto">
             <LatestBlocksDataTable />
-          </Panel>
-          <Panel mobileExplorer className="overflow-auto">
+          </ExplorerPanel>
+          <ExplorerPanel mobileExplorer className="overflow-auto">
             <LatestTxnsHeadingExplorer
               onToggleTxns={handleToggleTxns}
               isConfirmedTxns={isConfirmedTxns}
             />
             {isConfirmedTxns ? <LatestTxnsConfirmedExplorer /> : <LatestTxnsPendingExplorer />}
-          </Panel>
-        </Panel>
+          </ExplorerPanel>
+        </ExplorerPanel>
       </div>
     </div>
   )

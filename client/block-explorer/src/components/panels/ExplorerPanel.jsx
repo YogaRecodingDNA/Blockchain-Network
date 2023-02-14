@@ -1,6 +1,6 @@
 import className from 'classnames';
 
-const Panel = ({ children, containerExplorer, fullExplorer, mobileExplorer, ...rest }) => {
+const ExplorerPanel = ({ children, containerExplorer, fullExplorer, mobileExplorer, ...rest }) => {
   const classes = className(rest.className, {
     "w-1/2 rounded-lg bg-gray-700/40 shadow-md": fullExplorer,
     "w-full h-96 rounded-lg bg-gray-700/40 shadow-md": mobileExplorer,
@@ -12,4 +12,4 @@ const Panel = ({ children, containerExplorer, fullExplorer, mobileExplorer, ...r
   )
 }
 
-export default Panel;
+export default ExplorerPanel;

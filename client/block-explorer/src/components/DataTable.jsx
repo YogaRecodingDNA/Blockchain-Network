@@ -41,18 +41,24 @@ const DataTable = ({ block, transaction, dateCreated }) => {
                         <FaPeopleArrows />
                     </div>
                     <span className="w-full pl-3 py-3 text-xs font-medium truncate">
-                        <HashLink to="/">{transaction.transactionDataHash}</HashLink>
+                        <HashLink to="/singleTxn" linkData={transaction.transactionDataHash}>
+                            {transaction.transactionDataHash}
+                        </HashLink>
                         <div className="text-xs font-normal truncate">
                             {dateCreated}
                         </div>
                     </span>
                 </th>
                 <td className="px-3 py-3 text-xs font-semibold truncate">
-                    From
-                    <HashLink to="/"> {transaction.from}</HashLink>
+                    From:
+                    <HashLink to="/userAddress" linkData={transaction.from}> 
+                        {" " + transaction.from}
+                    </HashLink>
                     <div>
-                        To
-                        <HashLink to="/"> {transaction.to}</HashLink>
+                        To:
+                        <HashLink to="/userAddress" linkData={transaction.to}> 
+                            {" " + transaction.to}
+                        </HashLink>
                     </div>
                 </td>
                 <td className="">

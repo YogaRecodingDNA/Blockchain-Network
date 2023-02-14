@@ -428,14 +428,14 @@ Blockchain.prototype.getBalancesForAddress = function(address) {
             if(confirmationsCount >= Config.safeConfirmations) {
                 balance.confirmedBalance -= transaction.fee;
                 if(transaction.transferSuccessful) {
-                    balance.confirmedBalance -= value;
+                    balance.confirmedBalance -= transaction.value;
                 }
             }
 
-            if (confirmationsCount >= 1 && transferSuccessful) {
-                balance.safeBalance -= fee;
+            if (confirmationsCount >= 1 && transaction.transferSuccessful) {
+                balance.safeBalance -= transaction.fee;
                 if(transaction.transferSuccessful) {
-                    balance.safeBalance -= value;
+                    balance.safeBalance -= transaction.value;
                 }
             }
         }
@@ -551,6 +551,8 @@ Blockchain.prototype.prepareBlockCandidate = function(minerAddress, difficulty) 
         Config.nullPrivateKey,      // senderPrivKey (FOR TESTING ONLY)
         Config.nullSenderSignature  // senderSignature 
     );
+
+    coinbaseTransaction.minedInBlockIndex = newBlockIndex;
 
     // 5. Prepend the coinbase txn with updated (reward + fees) to txn list
     transactions.unshift(coinbaseTransaction);

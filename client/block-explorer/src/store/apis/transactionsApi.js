@@ -35,6 +35,17 @@ const transactionsApi = createApi({ // Autogenerate hooks \ slices \ thunks
           };
         },
       }),
+      fetchTransactionByHash: builder.query({ // === useFetchTransactionByHashQuery()
+        query: (hash) => {
+          return {
+            url: `/transactions/${hash}`,
+            method: 'GET',
+            params: {
+              txnDataHash: hash
+            },
+          };
+        },
+      }),
       // fetchBlockByHash: builder.query({
       //   query: (hash) => {
       //     return {
@@ -48,6 +59,7 @@ const transactionsApi = createApi({ // Autogenerate hooks \ slices \ thunks
 
 export const { 
   useFetchConfirmedTransactionsQuery,
-  useFetchPendingTransactionsQuery
+  useFetchPendingTransactionsQuery,
+  useFetchTransactionByHashQuery
 } = transactionsApi;
 export { transactionsApi };

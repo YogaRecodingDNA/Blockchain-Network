@@ -5,10 +5,12 @@ import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
 import { store } from './store';
 import Header from './components/navigation/Header';
-import HomePage from './routes/HomePage';
-import ExplorerPage from './routes/ExplorerPage';
-import BlocksPage from './routes/BlocksPage';
-import TransactionsPage from './routes/TransactionsPage';
+import HomePage from './pages/HomePage';
+import ExplorerPage from './pages/ExplorerPage';
+import BlockchainPage from './pages/BlockchainPage';
+import TransactionsPage from './pages/TransactionsPage';
+import SingleTransactionPage from './pages/SingleTransactionPage';
+import AddressPage from './pages/AddressPage';
 
 const Layout = () => {
   return (
@@ -23,8 +25,10 @@ const router = createBrowserRouter(createRoutesFromElements(
     <Route element={<Layout />}>
       <Route path="/" element={<HomePage />} />
       <Route path="explorer" element={<ExplorerPage />} />
-      <Route path="blocks" element={<BlocksPage />} />
+      <Route path="blockchain" element={<BlockchainPage />} />
       <Route path="transactions" element={<TransactionsPage />} />
+      <Route path="singleTxn" element={<SingleTransactionPage />} />
+      <Route path="userAddress" element={<AddressPage />} />
     </Route>
 ));
 
