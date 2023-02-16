@@ -1,6 +1,9 @@
+// HOOKS
 import { useFetchBlocksQuery } from '../../store';
 import useGetTime from '../../hooks/use-getTime';
+// COMPONENTS
 import HashLink from '../navigation/HashLink';
+// ASSETS
 import { Dna } from 'react-loader-spinner';
 
 const truncateHash = (hash) => {
@@ -40,7 +43,7 @@ const Blocks = () => {
       return (
         <tr key={block.index} className="text-left text-white bg-transparent hover:bg-violet-400/50">
               <td className="px-12 py-4 items-center">
-                <HashLink to="/">{block.index}</HashLink>
+                <HashLink to="/userAddress" linkData={block.index}>{block.index}</HashLink>
               </td>
               <td className="px-10 py-4 text-xs font-semibold truncate">
                   {timeElapsed}
@@ -49,7 +52,9 @@ const Blocks = () => {
                   <HashLink to="/">{block.transactions.length}</HashLink>
               </td>
               <td className="px-10 py-4 truncate">
-                  <HashLink to="/">{truncateHash(block.minedBy)}</HashLink>
+                  <HashLink to="/userAddress" linkData={block.minedBy}>
+                    {truncateHash(block.minedBy)}
+                  </HashLink>
               </td>
               <td className="px-10 text-xs text-shadow-md">
                   {reward + " PRANA"}

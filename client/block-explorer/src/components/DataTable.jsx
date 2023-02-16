@@ -1,5 +1,5 @@
-import { FaBuromobelexperte, FaPeopleArrows } from "react-icons/fa";
 import HashLink from "./navigation/HashLink";
+import { FaBuromobelexperte, FaPeopleArrows } from "react-icons/fa";
 
 const DataTable = ({ block, transaction, dateCreated }) => {
     
@@ -23,7 +23,7 @@ const DataTable = ({ block, transaction, dateCreated }) => {
                 </th>
                 <td className="px-3 py-3 text-xs font-semibold truncate">
                     Fee Recipient
-                    <HashLink to="/"> {block.minedBy}</HashLink>
+                    <HashLink to="/userAddress" linkData={block.minedBy}> {block.minedBy}</HashLink>
                 </td>
                 <td className="">
                     <div className="mr-3 pr-3 text-right text-xs rounded-full bg-gradient-to-l from-gray-500/75">

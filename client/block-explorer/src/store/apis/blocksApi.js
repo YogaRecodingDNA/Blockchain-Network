@@ -27,16 +27,17 @@ const blocksApi = createApi({ // Autogenerate hooks \ slices \ thunks
           };
         },
       }),
-      // fetchBlockByHash: builder.query({
-      //   query: (hash) => {
-      //     return {
-      //       url: ''
-      //     }
-      //   }
-      // }),
+      fetchBlockByIndex: builder.query({ // === useFetchBlockByIndexQuery()
+        query: (blockIndex) => {
+          return {
+            url: `/blocks/${blockIndex}`,
+            method: 'GET'
+          }
+        }
+      }),
     };
   },
 });
 
-export const { useFetchBlocksQuery } = blocksApi;
+export const { useFetchBlocksQuery, useFetchBlockByIndexQuery } = blocksApi;
 export { blocksApi };

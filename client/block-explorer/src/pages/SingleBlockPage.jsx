@@ -1,6 +1,6 @@
 // HOOKS
 import { useLocation } from "react-router-dom";
-import { useFetchTransactionByHashQuery } from "../store";
+import { useFetchBlocksQuery } from "../store";
 import useGetTime from "../hooks/use-getTime";
 // COMPONENTS
 import SearchBar from "../components/navigation/SearchBar";
@@ -12,19 +12,14 @@ import StatusPending from "../components/StatusPending";
 import moonExplorer from "../assets/images/moonExplorer.jpeg"
 import { Dna } from 'react-loader-spinner';
 
-const SingleTransactionPage = () => {
+const SingleBlockPage = () => {
   const location = useLocation();
   const { linkData } = location.state;
   const { getElapsed } = useGetTime();
 
-  const {data, error, isFetching} = useFetchTransactionByHashQuery(linkData);
+  const {data, error, isFetching} = useFetchBlocksQuery();
 
-  console.log("TXN HASH ", linkData);
-  console.log("TXN BY HASH ======== DATA", data);
-
-  const handleSubmit = () => {
-    return;
-  }
+  const block = data[linkData];
 
   let tableData;
 
@@ -45,36 +40,34 @@ const SingleTransactionPage = () => {
     );
 
   } else if (error) {
-    tableData = <div>Error loading blocks.</div>
+    tableData = <div>Error loading block.</div>
 
   } else {
     const date = Date.now();
-    const dateCreated = +new Date(data && data.dateCreated);
+    const dateCreated = +new Date(data && block.dateCreated);
     const timeElapsed = getElapsed(date, dateCreated);
 
-    const transactionData = [
-      {rowHead: "Transaction Hash", rowData: data.transactionDataHash},
+    const blockData = [
+      {rowHead: "Block Height", rowData: block.index},
+      {rowHead: "Block Hash", rowData: block.blockHash},
       {
         rowHead: "Status",
-        rowData: data.transferSuccessful || data.data === "coinbase tx" ?
-        <StatusSuccess /> :
-        <StatusPending />
-      },
-      {
-        rowHead: "Block",
-        rowData:
-        <HashLink to="/singleBlock" linkData={data.minedInBlockIndex}>
-          {data.minedInBlockIndex}
-        </HashLink> || "~"
+        rowData: <StatusSuccess />
       },
       {rowHead: "Timestamp", rowData: timeElapsed},
-      {rowHead: "From", rowData: <HashLink to="/">{data.from}</HashLink>},
-      {rowHead: "To", rowData: <HashLink to="/">{data.to}</HashLink>},
-      {rowHead: "Value", rowData: `${data.value / 1000000} PRANA`},
-      {rowHead: "Transaction Fee", rowData: `${data.fee} Nyasa`},
+      {
+        rowHead: "Transactions",
+        rowData:
+        <HashLink to="/txnsOfBlock" linkData={block.transactions}>
+          {block.transactions.length}
+        </HashLink>},
+      {rowHead: "Fee Recipient", rowData: <HashLink to="/userAddress">{block.minedBy}</HashLink>},
+      {rowHead: "Block Reward", rowData: `${5000} PRANA`},
+      {rowHead: "Difficulty", rowData: block.difficulty},
+      {rowHead: "Nonce", rowData: block.nonce},
     ];
 
-    tableData = transactionData.map( (item, index) => {
+    tableData = blockData.map( (item, index) => {
 
       return (
         <tr key={index} className="text-left text-white hover:bg-violet-400/50">
@@ -94,14 +87,17 @@ const SingleTransactionPage = () => {
       <div className="w-full h-full bg-gradient-to-b from-gray-900 via-transparent text-white">
         <div>
           <div className="flex items-start w-10/12 ml-auto">
-            <SearchBar onSubmit={handleSubmit} />
+            <SearchBar />
           </div>
         </div>
         <DataPanelLarge>
           <table className="border table-auto w-full text-center text-xs text-white">
             <thead className='px-6 py-5 h-14 text-lg text-left font-normal text-gray-300 bg-gradient-to-b from-cyan-900 via-cyan-900'>
               <tr>
-                <td className="w-48 pl-4">Transaction Details</td>
+                <td className="w-48 pl-4">
+                  Block 
+                  <span className="inline ml-2 text-xs text-gray-400">{`#${block.index}`}</span>
+                </td>
                 <td></td>
               </tr>
             </thead>
@@ -121,4 +117,4 @@ const SingleTransactionPage = () => {
   );
 }
 
-export default SingleTransactionPage
+export default SingleBlockPage;

@@ -8,6 +8,7 @@ import Header from './components/navigation/Header';
 import HomePage from './pages/HomePage';
 import ExplorerPage from './pages/ExplorerPage';
 import BlockchainPage from './pages/BlockchainPage';
+import SingleBlockPage from './pages/SingleBlockPage';
 import TransactionsPage from './pages/TransactionsPage';
 import SingleTransactionPage from './pages/SingleTransactionPage';
 import AddressPage from './pages/AddressPage';
@@ -26,6 +27,7 @@ const router = createBrowserRouter(createRoutesFromElements(
       <Route path="/" element={<HomePage />} />
       <Route path="explorer" element={<ExplorerPage />} />
       <Route path="blockchain" element={<BlockchainPage />} />
+      <Route path="singleBlock" element={<SingleBlockPage />} />
       <Route path="transactions" element={<TransactionsPage />} />
       <Route path="singleTxn" element={<SingleTransactionPage />} />
       <Route path="userAddress" element={<AddressPage />} />

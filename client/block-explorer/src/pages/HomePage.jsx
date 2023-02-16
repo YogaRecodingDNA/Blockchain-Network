@@ -1,12 +1,15 @@
+// HOOKS
 import { useNavigate } from "react-router-dom";
-import shootingStar from "../assets/images/shootingStar.jpg";
+// COMPONENTS
 import Button from "../components/Button";
+// ASSETS
+import shootingStar from "../assets/images/shootingStar.jpg";
 
 const HomePage = () => {
   const navigate = useNavigate();
   
   const handleClick = () => {
-    navigate("explorer");
+    navigate("/explorer");
   }
 
   return (

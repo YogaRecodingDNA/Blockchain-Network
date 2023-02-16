@@ -1,10 +1,13 @@
+// HOOKS
 import { useFetchBlocksQuery, useFetchConfirmedTransactionsQuery } from "../store";
-import moonExplorer from "../assets/images/moonExplorer.jpeg";
+// COMPONENTS
 import SearchBar from "../components/navigation/SearchBar";
 import PageHead from "../components/PageHead";
 import HeadPanelHalf from "../components/panels/HeadPanelHalf";
 import DataPanelLarge from "../components/panels/DataPanelLarge";
 import Blocks from "../components/blocks/Blocks";
+// ASSETS
+import moonExplorer from "../assets/images/moonExplorer.jpeg";
 
 const BlockchainPage = () => {
   const {
@@ -18,16 +21,12 @@ const BlockchainPage = () => {
     // isFetching: blocksIsFetching
   } = useFetchBlocksQuery();
 
-  const handleSubmit = () => {
-    console.log("Search Click");
-  }
-
   return (
     <div className="flex bg-cover bg-fixed w-full h-full" style={{ backgroundImage: `url(${moonExplorer})`}} >
       <div className="w-full h-screen overflow-auto bg-gradient-to-b from-gray-900 via-transparent text-white">
         <div>
           <div className="flex items-start w-10/12 ml-auto">
-            <SearchBar onSubmit={handleSubmit} />
+            <SearchBar />
           </div>
         </div>
         <PageHead>VINYASA BLOCKCHAIN</PageHead>

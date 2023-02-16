@@ -21,8 +21,12 @@ export const store = configureStore({
 
 setupListeners(store.dispatch);
 
-export { useFetchBlocksQuery } from './apis/blocksApi';
 export {
+  useFetchBlocksQuery,
+  useFetchBlockByIndexQuery
+} from './apis/blocksApi';
+export {
+  useFetchAllTransactionsQuery,
   useFetchConfirmedTransactionsQuery,
   useFetchPendingTransactionsQuery,
   useFetchTransactionByHashQuery
@@ -30,5 +34,5 @@ export {
 export {
   useFetchAllBalancesQuery,
   useFetchBalancesByAddressQuery,
-  useFetchTransactionsByAddressQuery,
+  useFetchTransactionsByAddressQuery
 } from "./apis/addressesAndBalancesApi";

@@ -1,11 +1,14 @@
+// HOOKS
 import { useState } from "react";
-import moonExplorer from "../assets/images/moonExplorer.jpeg";
+// COMPONENTS
 import ExplorerPanel from "../components/panels/ExplorerPanel";
 import SearchBar from "../components/navigation/SearchBar";
 import LatestBlocksDataTable from "../components/blocks/LatestBlocksDataTable";
 import LatestTxnsConfirmedExplorer from "../components/transactions/LatestTxnsConfirmedExplorer";
 import LatestTxnsPendingExplorer from "../components/transactions/LatestTxnsPendingExplorer";
 import LatestTxnsHeadingExplorer from "../components/transactions/LatestTxnsHeadingExplorer";
+// ASSETS
+import moonExplorer from "../assets/images/moonExplorer.jpeg";
 
 
 const ExplorerPage = () => {
@@ -69,21 +72,3 @@ export default ExplorerPage;
 -View peers
 -View network difficulty
 */
-
-
-
-
-// const [info, setInfo] = useState({});
-
-// const handleSubmit = async () => {
-//   await axios.get("http://localhost:5555/blocks")
-//   .then( data => {
-//     data = data.data;
-//     const newInfo = {
-//       ...info,
-//       data
-//     }
-//     setInfo(newInfo);
-//     console.log(info);
-//   }).catch( err => console.error(err));
-// }

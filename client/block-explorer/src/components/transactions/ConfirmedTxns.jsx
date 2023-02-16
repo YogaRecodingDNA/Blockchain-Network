@@ -1,6 +1,7 @@
 import { useFetchConfirmedTransactionsQuery } from '../../store';
 import useGetTime from '../../hooks/use-getTime';
 import HashLink from '../navigation/HashLink';
+import TableFooter from '../TableFooter';
 import { Dna } from 'react-loader-spinner';
 import { BsFillArrowRightSquareFill } from "react-icons/bs";
 
@@ -72,20 +73,9 @@ const ConfirmedTxns = () => {
     });
     
     transactionData = transactionData.reverse();
+    console.log("transactionData", transactionData.length)
 
   }
-
-  const tableFoot = (length) => {
-    let footArray = [];
-    for (let i = 0; i < length; i++){
-      footArray.push(
-        <td className="h-10 w-full bg-gradient-to-b from-transparent via-cyan-900 to-cyan-900"></td>
-      )
-    }
-
-    return footArray;
-  }
-
 
   return (
       <table className="border table-auto w-full text-center text-xs text-white">
@@ -105,9 +95,9 @@ const ConfirmedTxns = () => {
             {transactionData}
         </tbody>
         <tfoot>
-            <tr>
-              {tableFoot(8)}
-            </tr>
+          <tr>
+            <TableFooter numberOfCells={8} />
+          </tr>
         </tfoot>
       </table>
   )

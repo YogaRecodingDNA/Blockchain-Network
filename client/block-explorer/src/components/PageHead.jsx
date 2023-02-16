@@ -1,5 +1,3 @@
-import React from 'react'
-
 const PageHead = ({ children }) => {
   return (
     <div className="flex h-10 mx-5 my-5 justify-start items-center">

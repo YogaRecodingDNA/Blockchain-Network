@@ -19,6 +19,14 @@ const transactionsApi = createApi({ // Autogenerate hooks \ slices \ thunks
   }),
   endpoints(builder) {
     return { // CONFIGURATION
+      fetchAllTransactions: builder.query({ // === useFetchAllTransactionsQuery()
+        query: () => {
+          return {
+            url: '/transactions/all',
+            method: 'GET'
+          };
+        },
+      }),
       fetchConfirmedTransactions: builder.query({ // === useFetchConfirmedTransactionsQuery()
         query: () => {
           return {
@@ -58,6 +66,7 @@ const transactionsApi = createApi({ // Autogenerate hooks \ slices \ thunks
 });
 
 export const { 
+  useFetchAllTransactionsQuery,
   useFetchConfirmedTransactionsQuery,
   useFetchPendingTransactionsQuery,
   useFetchTransactionByHashQuery
