@@ -6,6 +6,8 @@ import { Provider } from 'react-redux';
 import { store } from './store';
 import Header from './components/navigation/Header';
 import HomePage from './pages/HomePage';
+import AllPeersPage from './pages/AllPeersPage';
+import PeerInfoPage from './pages/PeerInfoPage';
 import ExplorerPage from './pages/ExplorerPage';
 import BlockchainPage from './pages/BlockchainPage';
 import SingleBlockPage from './pages/SingleBlockPage';
@@ -25,6 +27,8 @@ const Layout = () => {
 const router = createBrowserRouter(createRoutesFromElements(
     <Route element={<Layout />}>
       <Route path="/" element={<HomePage />} />
+      <Route path="peers" element={<AllPeersPage />} />
+      <Route path="peers/details" element={<PeerInfoPage />} />
       <Route path="explorer" element={<ExplorerPage />} />
       <Route path="blockchain" element={<BlockchainPage />} />
       <Route path="singleBlock" element={<SingleBlockPage />} />

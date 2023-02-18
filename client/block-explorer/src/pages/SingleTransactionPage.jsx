@@ -6,8 +6,8 @@ import useGetTime from "../hooks/use-getTime";
 import SearchBar from "../components/navigation/SearchBar";
 import DataPanelLarge from "../components/panels/DataPanelLarge";
 import HashLink from "../components/navigation/HashLink";
-import StatusSuccess from "../components/StatusSuccess";
-import StatusPending from "../components/StatusPending";
+import StatusSuccess from "../components/status-indicators/StatusSuccess";
+import StatusPending from "../components/status-indicators/StatusPending";
 // ASSETS
 import moonExplorer from "../assets/images/moonExplorer.jpeg"
 import { Dna } from 'react-loader-spinner';

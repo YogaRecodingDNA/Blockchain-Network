@@ -9,7 +9,7 @@ import HeadPanelHalf from "../components/panels/HeadPanelHalf";
 import DataPanelLarge from "../components/panels/DataPanelLarge";
 import HashLink from "../components/navigation/HashLink";
 import TableFooter from "../components/TableFooter";
-import StatusPending from "../components/StatusPending";
+import StatusPending from "../components/status-indicators/StatusPending";
 // ASSETS
 import moonExplorer from "../assets/images/moonExplorer.jpeg"
 import { BsFillArrowRightSquareFill } from "react-icons/bs";

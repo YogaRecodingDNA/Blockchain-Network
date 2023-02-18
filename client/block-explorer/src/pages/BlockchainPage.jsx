@@ -1,13 +1,19 @@
 // HOOKS
-import { useFetchBlocksQuery, useFetchConfirmedTransactionsQuery } from "../store";
+import {
+  useFetchBlocksQuery,
+  useFetchConfirmedTransactionsQuery,
+  useFetchPeerInfoQuery
+} from "../store";
 // COMPONENTS
 import SearchBar from "../components/navigation/SearchBar";
 import PageHead from "../components/PageHead";
 import HeadPanelHalf from "../components/panels/HeadPanelHalf";
 import DataPanelLarge from "../components/panels/DataPanelLarge";
 import Blocks from "../components/blocks/Blocks";
+import { Link } from "react-router-dom";
 // ASSETS
 import moonExplorer from "../assets/images/moonExplorer.jpeg";
+import { TbChevronsRight } from "react-icons/tb";
 
 const BlockchainPage = () => {
   const {
@@ -20,6 +26,22 @@ const BlockchainPage = () => {
     // error: blockserror,
     // isFetching: blocksIsFetching
   } = useFetchBlocksQuery();
+  const {
+    data: peerData,
+    // error: peerError,
+    // isFetching: peerIsFetching
+  } = useFetchPeerInfoQuery();
+
+  const peersLink = (
+    <div className="w-full hover:text-violet-400">
+      <Link to="/peers" state={{ linkData: peerData }} className="flex hover:text-violet-400">
+        PEERS
+        <TbChevronsRight className="ml-1 text-xl" />
+      </Link>
+    </div>
+  )
+
+  console.log("Blocks.jsx PEER DATA", peerData);
 
   return (
     <div className="flex bg-cover bg-fixed w-full h-full" style={{ backgroundImage: `url(${moonExplorer})`}} >
@@ -34,14 +56,13 @@ const BlockchainPage = () => {
           <HeadPanelHalf title="BLOCKS" data={blocksData && blocksData.length}/>
           <HeadPanelHalf title="TRANSACTIONS" data={confirmedData && confirmedData.length}/>
         </div>
+        <div className="flex my-5 mx-5 h-20 space-x-4">
+          <HeadPanelHalf title={peersLink} data={peerData && peerData.peersTotal} />
+          <HeadPanelHalf title="CURRENT DIFFICULTY" data={peerData && peerData.currentDifficulty}/>
+        </div>
         <DataPanelLarge>
           <Blocks />
         </DataPanelLarge>
-        {/* <div className="w-full h-max mx-auto my-10 px-5 space-y-4 rounded-lg">
-          <div className="overflow-x-auto w-full h-max rounded-lg border border-gray-700 bg-gray-900/40 shadow-md">
-            <Blocks />
-          </div>
-        </div> */}
       </div>
     </div>
   )

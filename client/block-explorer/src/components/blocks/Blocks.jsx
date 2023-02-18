@@ -11,13 +11,15 @@ const truncateHash = (hash) => {
 }
 
 const Blocks = () => {
-  const { data, error, isFetching } = useFetchBlocksQuery();
   const { getElapsed } = useGetTime();
+  const { data, error, isFetching } = useFetchBlocksQuery();
 
-  let blockData;
+  // console.log("Blocks.jsx BLOCK DATA", Object.keys(data).length);
+
+  let blockInfo;
 
   if (isFetching) {
-    blockData = (
+    blockInfo = (
       <tr>
         <td>
           <Dna
@@ -32,9 +34,9 @@ const Blocks = () => {
       </tr>
     );
   } else if (error) {
-    blockData = <div>Error loading blocks.</div>
+    blockInfo = <div>Error loading blocks.</div>
   } else {
-    blockData = data.map(block => {
+    blockInfo = data.map(block => {
       const date = Date.now();
       const dateCreated = +new Date(block.dateCreated);
       const timeElapsed = getElapsed(date, dateCreated);
@@ -63,14 +65,15 @@ const Blocks = () => {
       );
     });
     
-    blockData = blockData.reverse();
+    blockInfo = blockInfo.reverse();
   }
-
-  console.log(data);
-
 
   return (
     <div>
+      <div className='flex border-gray-700 items-center px-6 pt-7 h-10 bg-cyan-900'>
+        <h2 className="">All Blocks</h2>
+        <p className="ml-3 text-xs text-gray-400 font-medium">{`${data && data.length} TOTAL BLOCKS`}</p>
+      </div>
       <table className="table-auto w-full text-left text-sm text-white">
         <thead className='px-6 py-5 h-14 font-normal bg-gradient-to-b from-cyan-900 via-cyan-900'>
           <tr>
@@ -82,7 +85,7 @@ const Blocks = () => {
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-700">
-            {blockData}
+            {blockInfo}
         </tbody>
       </table>
       <div className='px-6 py-5 h-10 font-semibold bg-gradient-to-t from-cyan-900 via-cyan-900'>

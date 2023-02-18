@@ -1,3 +1,4 @@
+
 import { Disclosure } from '@headlessui/react'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 import Logo from '../../assets/images/chakraLogo.png';
@@ -7,7 +8,6 @@ const navigation = [
   { name: 'Blockchain', path: '/blockchain', current: false },
   { name: 'Explorer', path: '/explorer', current: false },
   { name: 'Transactions', path: '/transactions', current: false },
-  // { name: 'SingleTxn', path: '/singleTxn', current: false },
   { name: 'Faucet', path: '#', current: false },
   { name: 'Wallet', path: '/transactions', current: false },
   { name: 'Miner', path: '#', current: false },

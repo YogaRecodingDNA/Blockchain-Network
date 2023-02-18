@@ -1,24 +1,27 @@
 // HOOKS
 import { useLocation } from "react-router-dom";
-import { useFetchBlocksQuery } from "../store";
-import useGetTime from "../hooks/use-getTime";
+import { useFetchPeerInfoQuery } from "../store";
 // COMPONENTS
 import SearchBar from "../components/navigation/SearchBar";
+import PageHead from "../components/PageHead";
 import DataPanelLarge from "../components/panels/DataPanelLarge";
 import HashLink from "../components/navigation/HashLink";
-import StatusFinalized from "../components/status-indicators/StatusFinalized";
 // ASSETS
 import moonExplorer from "../assets/images/moonExplorer.jpeg"
 import { Dna } from 'react-loader-spinner';
 
-const SingleBlockPage = () => {
+const truncateHash = (hash) => {
+  return `${hash.slice(0, 19)}...`
+}
+
+const PeerInfoPage = () => {
   const location = useLocation();
   const { linkData } = location.state;
-  const { getElapsed } = useGetTime();
 
-  const {data, error, isFetching} = useFetchBlocksQuery();
+  const {data, error, isFetching} = useFetchPeerInfoQuery(linkData);
 
-  const block = data[linkData];
+  console.log("PEER INFO LINKDATA >>>>>>> ", linkData);
+  console.log("PEER INFO >>>>>>>>> DATA", data);
 
   let tableData;
 
@@ -39,33 +42,24 @@ const SingleBlockPage = () => {
     );
 
   } else if (error) {
-    tableData = <div>Error loading block.</div>
+    tableData = <div>Error loading peer.</div>
 
   } else {
-    const date = Date.now();
-    const dateCreated = +new Date(data && block.dateCreated);
-    const timeElapsed = getElapsed(date, dateCreated);
-    const reward = block.transactions[0].value / 1000000;
 
-    const blockData = [
-      {rowHead: "Block Height", rowData: block.index},
-      {rowHead: "Block Hash", rowData: block.blockHash},
-      {rowHead: "Status", rowData: <StatusFinalized />},
-      {rowHead: "Timestamp", rowData: timeElapsed},
-      {rowHead: "Transactions", rowData:
-        <HashLink to="/txnsOfBlock" linkData={block.transactions}>
-          {block.transactions.length}
-        </HashLink>},
-      {rowHead: "Fee Recipient", rowData:
-        <HashLink to="/userAddress" linkData={block.minedBy}>
-          {block.minedBy}
-        </HashLink>},
-      {rowHead: "Block Reward", rowData: `${reward} PRANA`},
-      {rowHead: "Difficulty", rowData: block.difficulty},
-      {rowHead: "Nonce", rowData: block.nonce},
+    const peerData = [
+      {rowHead: "Blockchain", rowData: <HashLink to="/blockchain">{data.about}</HashLink>},
+      {rowHead: "Chain ID", rowData: data.chainId},
+      {rowHead: "Node ID", rowData: data.nodeId},
+      {rowHead: "Node URL", rowData: data.nodeId},
+      {rowHead: "Blocks", rowData: data.blocksCount},
+      {rowHead: "Total Peers", rowData: data.peersTotal - 1},
+      {rowHead: "Current Difficulty", rowData: data.currentDifficulty},
+      {rowHead: "Cumulative Difficulty", rowData: data.cumulativeDifficulty},
+      {rowHead: "Txns Confirmed", rowData: data.confirmedTransactions},
+      {rowHead: "Txns Pending", rowData: data.pendingTransactions},
     ];
 
-    tableData = blockData.map( (item, index) => {
+    tableData = peerData.map( (item, index) => {
 
       return (
         <tr key={index} className="text-left text-white hover:bg-violet-400/50">
@@ -88,14 +82,21 @@ const SingleBlockPage = () => {
             <SearchBar />
           </div>
         </div>
+        <div>
+          <PageHead>Peer:
+              <button className="ml-2 text-normal font-normal text-teal-400 md:hidden">
+                {data && truncateHash(data.nodeId)}
+              </button>
+              <button className="hidden ml-2 text-normal font-normal text-teal-400 md:inline">
+                {data && data.nodeId}
+              </button>
+          </PageHead>
+        </div>
         <DataPanelLarge>
           <table className="border table-auto w-full text-center text-xs text-white">
             <thead className='px-6 py-5 h-14 text-lg text-left font-normal text-gray-300 bg-gradient-to-b from-cyan-900 via-cyan-900'>
               <tr>
-                <td className="w-48 pl-4">
-                  Block 
-                  <span className="inline ml-2 text-xs text-gray-400">{`#${block.index}`}</span>
-                </td>
+                <td className="w-48 pl-4">Peer Node Details</td>
                 <td></td>
               </tr>
             </thead>
@@ -115,4 +116,4 @@ const SingleBlockPage = () => {
   );
 }
 
-export default SingleBlockPage;
+export default PeerInfoPage;
