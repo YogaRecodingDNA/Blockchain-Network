@@ -388,7 +388,10 @@ Blockchain.prototype.getAllBalances = function() {
 // ------------------------- {{{GET ADDRESS}}} BALANCES ------------------------------
 // -----------------------------------------------------------------------------------
 Blockchain.prototype.getBalancesForAddress = function(address) {
+    // console.log("ADDRESS ======================", address);
+    // console.log("FAUCET ADDRESS ======================", Config.faucetAddress);
     if (!ValidationUtils.isValidAddress(address)) return { errorMsg: "Invalid address"};
+    const isFaucetAddress = (address === Config.faucetAddress) ? true : false;
 
     let balance = {
         safeBalance: 0,       // 6 or more confirmations
@@ -399,47 +402,58 @@ Blockchain.prototype.getBalancesForAddress = function(address) {
     const transactionHistory = this.getAddressTransactionHistory(address);
 
     for (let transaction of transactionHistory) {
-        let confirmationsCount = 0;
-        if (transaction.minedInBlockIndex) {// Match the confirmations count
-            confirmationsCount = this.blocks.length - transaction.minedInBlockIndex + 1;
-        }
-       
-        if (transaction.to === address) { // Sum the values received
-            if (confirmationsCount >= Config.safeConfirmations && transaction.transferSuccessful) {
-                balance.safeBalance += transaction.value;
+        if (isFaucetAddress && transaction.minedInBlockIndex === 0) {
+    
+            balance.safeBalance += transaction.value;
+    
+        } else {
+            
+            let confirmationsCount = 0;
+            
+            if (transaction.minedInBlockIndex) { // Match the confirmations count
+                confirmationsCount = this.blocks.length - transaction.minedInBlockIndex + 1;
             }
-
-            if (confirmationsCount >= 1 && transaction.transferSuccessful) {
-                balance.confirmedBalance += transaction.value;
-            }
-
-            if (confirmationsCount === 0 || transaction.transferSuccessful) {
-                balance.pendingBalance += transaction.value;
-            }
-        }
-        
-        if (transaction.from === address) {
-            // Subtract "fee" for "all" spent txs / Subtract "value" for "successful" spent txs
-            balance.pendingBalance -= transaction.fee;
-            if (confirmationsCount === 0 || transaction.transferSuccessful) {
-                balance.pendingBalance -= transaction.value;
-            }
-
-            if(confirmationsCount >= Config.safeConfirmations) {
-                balance.confirmedBalance -= transaction.fee;
-                if(transaction.transferSuccessful) {
-                    balance.confirmedBalance -= transaction.value;
+           
+            if (transaction.to === address) { // Sum the values received
+                if (confirmationsCount >= Config.safeConfirmations && transaction.transferSuccessful) {
+                    balance.safeBalance += transaction.value;
+                }
+    
+                if (confirmationsCount >= 1 && transaction.transferSuccessful) {
+                    balance.confirmedBalance += transaction.value;
+                }
+    
+                if (confirmationsCount === 0 || transaction.transferSuccessful) {
+                    balance.pendingBalance += transaction.value;
                 }
             }
-
-            if (confirmationsCount >= 1 && transaction.transferSuccessful) {
-                balance.safeBalance -= transaction.fee;
-                if(transaction.transferSuccessful) {
-                    balance.safeBalance -= transaction.value;
+            
+            if (transaction.from === address) {
+                // Subtract "fee" for "all" spent txs / Subtract "value" for "successful" spent txs
+                balance.pendingBalance -= transaction.fee;
+                if (confirmationsCount === 0 || transaction.transferSuccessful) {
+                    balance.pendingBalance -= transaction.value;
+                }
+    
+                if(confirmationsCount >= Config.safeConfirmations) {
+                    balance.confirmedBalance -= transaction.fee;
+                    if(transaction.transferSuccessful) {
+                        balance.confirmedBalance -= transaction.value;
+                    }
+                }
+    
+                if (confirmationsCount >= 1 && transaction.transferSuccessful) {
+                    balance.safeBalance -= transaction.fee;
+                    if(transaction.transferSuccessful) {
+                        balance.safeBalance -= transaction.value;
+                    }
                 }
             }
         }
-    }
+}
+    
+    
+
     return balance;
 };
 
@@ -551,8 +565,6 @@ Blockchain.prototype.prepareBlockCandidate = function(minerAddress, difficulty) 
         Config.nullPrivateKey,      // senderPrivKey (FOR TESTING ONLY)
         Config.nullSenderSignature  // senderSignature 
     );
-
-    coinbaseTransaction.minedInBlockIndex = newBlockIndex;
 
     // 5. Prepend the coinbase txn with updated (reward + fees) to txn list
     transactions.unshift(coinbaseTransaction);

@@ -13,7 +13,9 @@ import BlockchainPage from './pages/BlockchainPage';
 import SingleBlockPage from './pages/SingleBlockPage';
 import TransactionsPage from './pages/TransactionsPage';
 import SingleTransactionPage from './pages/SingleTransactionPage';
+import TransactionsForBlockPage from './pages/TransactionsForBlockPage';
 import AddressPage from './pages/AddressPage';
+import FaucetPage from './pages/FaucetPage';
 
 const Layout = () => {
   return (
@@ -34,30 +36,11 @@ const router = createBrowserRouter(createRoutesFromElements(
       <Route path="singleBlock" element={<SingleBlockPage />} />
       <Route path="transactions" element={<TransactionsPage />} />
       <Route path="singleTxn" element={<SingleTransactionPage />} />
+      <Route path="blockTxns" element={<TransactionsForBlockPage />} />
       <Route path="userAddress" element={<AddressPage />} />
+      <Route path="faucet" element={<FaucetPage />} />
     </Route>
 ));
-
-// const router = createBrowserRouter([
-//   {
-//     // path: "/",
-//     element: <Layout />,
-//     children: [
-//       {
-//         path: "/",
-//         element: <HomePage />,
-//       },
-//       {
-//         path: "/blocks",
-//         element: <BlocksPage />,
-//       },
-//       {
-//         path: "/transactions",
-//         element: <TransactionsPage />,
-//       }
-//     ]
-//   },
-// ])
 
 createRoot(document.getElementById('root')).render(
   <Provider store={store}>
@@ -65,9 +48,3 @@ createRoot(document.getElementById('root')).render(
   </Provider>
 
 );
-
-
-
-  // <Provider store={store}>
-  //   <App />
-  // </Provider>

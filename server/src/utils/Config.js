@@ -4,10 +4,11 @@ const PORT = process.argv[2]; // 2nd arg of node package "script" is port number
 const genesisNodeURL = "http://localhost:5555"
 const currentNodeURL = process.argv[3]; // 3rd arg of node package "script" is url
 const currentNodeId = CryptoHashUtils.createId();
-const currentNodeMiningAddress = "977936f1322d63c133c00611a597f788b40854ce";
+// const currentNodeMiningAddress = "977936f1322d63c133c00611a597f788b40854ce";
 
 
 // GENESIS + FAUCET TRANSACTION CREATION DATE
+// const genesisMiningAddress = "c62b8128cd0bbdeeab50c8ee5f0a4bc1b995946d";
 // let genesisDate = "2022-12-22T08:18:11.847Z";
 let genesisDate = new Date().toISOString();
 
@@ -27,6 +28,8 @@ const nullSenderSignature = [
 const faucetPrivateKey = "687e39772b92fd475264cf6bd059d2201760471b6ed04cc02b73306c24f5cc30";
 const faucetPublicKey = CryptoHashUtils.getPublicKeyFromPrivateKey(faucetPrivateKey);
 const faucetAddress = CryptoHashUtils.getAddressFromPublicKey(faucetPublicKey);
+console.log("FAUCET PUBLILC KEY", faucetPublicKey);
+console.log("FAUCET ADDRESS", faucetAddress);
 
 module.exports = {
     defaultServerHost: "localhost",
@@ -34,7 +37,6 @@ module.exports = {
     genesisNodeURL,
     currentNodeURL,
     currentNodeId,
-    currentNodeMiningAddress,
     genesisDate,
     genesisDummyData,
     nullMinerAddress,

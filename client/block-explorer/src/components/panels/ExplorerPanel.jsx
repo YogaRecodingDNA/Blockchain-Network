@@ -4,7 +4,7 @@ const ExplorerPanel = ({ children, containerExplorer, fullExplorer, mobileExplor
   const classes = className(rest.className, {
     "w-1/2 rounded-lg bg-gray-700/40 shadow-md": fullExplorer,
     "w-full h-96 rounded-lg bg-gray-700/40 shadow-md": mobileExplorer,
-    "w-full px-3 mt-20 mx-auto rounded-lg": containerExplorer,
+    "w-full px-3 mt-10 mx-auto rounded-lg": containerExplorer,
   })
 
   return (

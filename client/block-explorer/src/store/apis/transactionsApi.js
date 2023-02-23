@@ -1,22 +1,11 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-// DEV ONLY!!!
-const pause = (duration) => {
-  return new Promise((resolve) => {
-    setTimeout(resolve, duration);
-  });
-};
-
 const transactionsApi = createApi({ // Autogenerate hooks \ slices \ thunks
   reducerPath: 'transactions',
   baseQuery: fetchBaseQuery({ // transactionsApi.fetchBaseQuery === fetch
     baseUrl: 'http://localhost:5555',
-    fetchFn: async (...args) => { // Manipulate the RTKQ fetching function
-      // Remove for production
-      await pause(1000);
-      return fetch(...args);
-    }
   }),
+  tagTypes: ["AllTxns", "ConfirmedTxns", "PendingTxns", "TxnsByAddress"],
   endpoints(builder) {
     return { // CONFIGURATION
       fetchAllTransactions: builder.query({ // === useFetchAllTransactionsQuery()
@@ -26,6 +15,7 @@ const transactionsApi = createApi({ // Autogenerate hooks \ slices \ thunks
             method: 'GET'
           };
         },
+        providesTags: ["AllTxns"],
       }),
       fetchConfirmedTransactions: builder.query({ // === useFetchConfirmedTransactionsQuery()
         query: () => {
@@ -34,6 +24,7 @@ const transactionsApi = createApi({ // Autogenerate hooks \ slices \ thunks
             method: 'GET'
           };
         },
+        providesTags: ["ConfirmedTxns"],
       }),
       fetchPendingTransactions: builder.query({ // === useFetchPendingTransactionsQuery()
         query: () => {
@@ -42,6 +33,7 @@ const transactionsApi = createApi({ // Autogenerate hooks \ slices \ thunks
             method: 'GET'
           };
         },
+        providesTags: ["PendingTxns"],
       }),
       fetchTransactionByHash: builder.query({ // === useFetchTransactionByHashQuery()
         query: (hash) => {
@@ -53,14 +45,32 @@ const transactionsApi = createApi({ // Autogenerate hooks \ slices \ thunks
             },
           };
         },
+        providesTags: ["TxnsByAddress"],
       }),
-      // fetchBlockByHash: builder.query({
-      //   query: (hash) => {
-      //     return {
-      //       url: ''
-      //     }
-      //   }
-      // }),
+      faucetTxnSend: builder.mutation({
+        query: (formData) => {
+          console.log(formData);
+          console.log(formData.recipientAddress);
+          console.log(+formData.amount);
+          return { // THE REQUEST-CONFIGURATION OBJECT
+            url: '/transactions/send',
+            method: 'POST',
+            body: {
+              from: "",
+              to: formData.recipientAddress,
+              value: +formData.amount,
+              fee: 10,
+              dateCreated: "",
+              data: "Faucet withdrawal",
+              senderPubKey: "c53e76ee33f73997639edce6818e03914229722926669aabe16f58c001f40f911",
+              transactionDataHash: "",
+              senderPrivKey: "687e39772b92fd475264cf6bd059d2201760471b6ed04cc02b73306c24f5cc30",
+              senderSignature: ""
+            }
+          };
+        },
+        invalidatesTags: ["AllTxns", "ConfirmedTxns", "PendingTxns", "TxnsByAddress"],
+      }),
     };
   },
 });
@@ -69,6 +79,7 @@ export const {
   useFetchAllTransactionsQuery,
   useFetchConfirmedTransactionsQuery,
   useFetchPendingTransactionsQuery,
-  useFetchTransactionByHashQuery
+  useFetchTransactionByHashQuery,
+  useFaucetTxnSendMutation
 } = transactionsApi;
 export { transactionsApi };

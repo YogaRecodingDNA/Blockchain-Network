@@ -1,7 +1,11 @@
+// HOOKS
 import { useFetchPendingTransactionsQuery } from '../../store';
 import useGetTime from '../../hooks/use-getTime';
+// COMPONENTS
 import DataTable from '../DataTable';
-import { Dna } from 'react-loader-spinner';
+// ASSETS/ICONS/STATUS COMPONENTS
+import LoadingDNA from '../status-indicators/LoadingDNA';
+
 
 const LatestTxnsPendingExplorer = () => {
   const { data,error,isFetching } = useFetchPendingTransactionsQuery();
@@ -13,14 +17,7 @@ const LatestTxnsPendingExplorer = () => {
     transactionData = (
       <tr className="pl-9">
         <td>
-          <Dna
-            visible={true}
-            height="80"
-            width="80"
-            ariaLabel="dna-loading"
-            wrapperStyle={{}}
-            wrapperClass="dna-wrapper"
-          />;
+          <LoadingDNA />
         </td>
       </tr>
     );

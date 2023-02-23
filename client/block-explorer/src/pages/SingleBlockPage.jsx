@@ -7,7 +7,7 @@ import SearchBar from "../components/navigation/SearchBar";
 import DataPanelLarge from "../components/panels/DataPanelLarge";
 import HashLink from "../components/navigation/HashLink";
 import StatusFinalized from "../components/status-indicators/StatusFinalized";
-// ASSETS
+// ASSETS/ICONS/STATUS COMPONENTS
 import moonExplorer from "../assets/images/moonExplorer.jpeg"
 import { Dna } from 'react-loader-spinner';
 
@@ -52,10 +52,11 @@ const SingleBlockPage = () => {
       {rowHead: "Block Hash", rowData: block.blockHash},
       {rowHead: "Status", rowData: <StatusFinalized />},
       {rowHead: "Timestamp", rowData: timeElapsed},
-      {rowHead: "Transactions", rowData:
-        <HashLink to="/txnsOfBlock" linkData={block.transactions}>
+      {rowHead: "Transactions", rowData: 
+        <HashLink to="/blockTxns" linkData={block.transactions}>
           {block.transactions.length}
-        </HashLink>},
+        </HashLink>
+      },
       {rowHead: "Fee Recipient", rowData:
         <HashLink to="/userAddress" linkData={block.minedBy}>
           {block.minedBy}
@@ -69,7 +70,7 @@ const SingleBlockPage = () => {
 
       return (
         <tr key={index} className="text-left text-white hover:bg-violet-400/50">
-          <th className="pl-4 pr-10 py-4">
+          <th className="pl-4 pr-10 py-4 text-gray-300 font-medium">
             {item.rowHead}:
           </th>
           <td className="px-4 py-4">
@@ -90,11 +91,11 @@ const SingleBlockPage = () => {
         </div>
         <DataPanelLarge>
           <table className="border table-auto w-full text-center text-xs text-white">
-            <thead className='px-6 py-5 h-14 text-lg text-left font-normal text-gray-300 bg-gradient-to-b from-cyan-900 via-cyan-900'>
+            <thead className='px-6 py-5 h-14 text-lg text-left font-normal text-white bg-gradient-to-b from-cyan-900 via-cyan-900'>
               <tr>
                 <td className="w-48 pl-4">
                   Block 
-                  <span className="inline ml-2 text-xs text-gray-400">{`#${block.index}`}</span>
+                  <span className="inline ml-2 text-sm text-gray-400">{`#${block.index}`}</span>
                 </td>
                 <td></td>
               </tr>

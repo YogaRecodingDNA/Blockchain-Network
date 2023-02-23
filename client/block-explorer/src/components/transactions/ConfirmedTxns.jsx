@@ -43,16 +43,16 @@ const ConfirmedTxns = () => {
       return (
         <tr key={txn.transactionDataHash} className="text-left text-white hover:bg-violet-400/50">
               <td className="px-4 py-4 w-full">
-                  <HashLink to={`singleTxn/${txn.transactionDataHash}`}>{truncateHash(txn.transactionDataHash)}</HashLink>
+                  <HashLink to="/singleTxn" linkData={txn.transactionDataHash}>{truncateHash(txn.transactionDataHash)}</HashLink>
               </td>
               <td className="px-4 py-4 text-xs font-semibold truncate">
-                  <HashLink to="/">{txn.minedInBlockIndex}</HashLink>
+                  <HashLink to="/singleBlock" linkData={txn.minedInBlockIndex}>{txn.minedInBlockIndex}</HashLink>
               </td>
               <td className="px-4 py-4 text-xs font-semibold truncate">
                   {timeElapsed}
               </td>
               <td className="px-4 py-4 truncate">
-                  <HashLink to="/">{truncateHash(txn.from)}</HashLink>
+                  <HashLink to="/userAddress" linkData={txn.from}>{truncateHash(txn.from)}</HashLink>
               </td>
               <td className="px-4 py-4 text-xl text-transparent/60">
                 <div>
@@ -60,7 +60,7 @@ const ConfirmedTxns = () => {
                 </div>
               </td>
               <td className="px-4 py-4 truncate">
-                  <HashLink to="/">{truncateHash(txn.to)}</HashLink>
+                  <HashLink to="/userAddress" linkData={txn.to}>{truncateHash(txn.to)}</HashLink>
               </td>
               <td className="px-4 py-4 text-sm font-medium truncate">
                   {txn.value + " PRANA"}

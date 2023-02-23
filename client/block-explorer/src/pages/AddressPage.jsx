@@ -10,10 +10,10 @@ import DataPanelLarge from "../components/panels/DataPanelLarge";
 import HashLink from "../components/navigation/HashLink";
 import TableFooter from "../components/TableFooter";
 import StatusPending from "../components/status-indicators/StatusPending";
-// ASSETS
+// ASSETS/ICONS/STATUS COMPONENTS
+import LoadingDNA from "../components/status-indicators/LoadingDNA";
 import moonExplorer from "../assets/images/moonExplorer.jpeg"
 import { BsFillArrowRightSquareFill } from "react-icons/bs";
-import { Dna } from 'react-loader-spinner';
 
 const truncateHash = (hash) => {
   return `${hash.slice(0, 19)}...`
@@ -38,28 +38,21 @@ const AddressPage = () => {
 
   let addressBalance; 
   if (balanceIsFetching) {
-    addressBalance = (
-    <Dna visible={true} height="80" width="80" ariaLabel="dna-loading" wrapperStyle={{}} wrapperClass="dna-wrapper" />
-    )
+    addressBalance = <LoadingDNA />
   } else if (balanceError) {
     addressBalance = <div>Error loading balance.</div>
   } else {
     addressBalance = balanceData.addressBalances.safeBalance.toLocaleString();
   }
+  console.log(balanceData);
+  console.log(addressBalance);
 
   let tableData;
   if (txnIsFetching) {
     tableData = (
       <tr>
         <td>
-          <Dna
-            visible={true}
-            height="80"
-            width="80"
-            ariaLabel="dna-loading"
-            wrapperStyle={{}}
-            wrapperClass="dna-wrapper"
-          />
+          <LoadingDNA />
         </td>
       </tr>
     );

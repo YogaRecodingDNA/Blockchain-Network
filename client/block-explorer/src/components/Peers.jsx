@@ -2,13 +2,13 @@
 import { useFetchAllPeersQuery } from '../store';
 // COMPONENTS
 import HashLink from './navigation/HashLink';
+import StatusCurrentNode from './status-indicators/StatusCurrentNode';
 // ASSETS
 import { Dna } from 'react-loader-spinner';
 
 const Peers = () => {
+  const currentUrl = "http://localhost:5555";
   const { data, error, isFetching } = useFetchAllPeersQuery();
-
-  console.log("PEERS.JSX DATA", data);
 
   let peerData;
 
@@ -37,8 +37,11 @@ const Peers = () => {
 
       peerData.push(
         <tr key={nodeId} className="text-left text-white bg-transparent hover:bg-violet-400/50">
-              <td className="px-12 py-4 items-center">
-                <HashLink to="/peers/details" linkData={nodeUrl}>{nodeId}</HashLink>
+              <td className="flex space-x-10 px-12 py-4 items-center">
+                <HashLink to="/peers/details" linkData={nodeUrl}>
+                  {nodeId}
+                </HashLink>
+                {(currentUrl === nodeUrl) && <StatusCurrentNode />}
               </td>
               <td className="px-10 py-4 text-xs font-semibold truncate">
                   {nodeUrl}
@@ -46,9 +49,6 @@ const Peers = () => {
           </tr>
       );
     };
-    
-    // peerData = peerData.reverse();
-    console.log("PEER DATA ARRAY", peerData);
   }
 
   return (

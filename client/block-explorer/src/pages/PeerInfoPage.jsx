@@ -6,9 +6,9 @@ import SearchBar from "../components/navigation/SearchBar";
 import PageHead from "../components/PageHead";
 import DataPanelLarge from "../components/panels/DataPanelLarge";
 import HashLink from "../components/navigation/HashLink";
-// ASSETS
+// ASSETS/ICONS/STATUS COMPONENTS
 import moonExplorer from "../assets/images/moonExplorer.jpeg"
-import { Dna } from 'react-loader-spinner';
+import LoadingDNA from "../components/status-indicators/LoadingDNA";
 
 const truncateHash = (hash) => {
   return `${hash.slice(0, 19)}...`
@@ -17,11 +17,7 @@ const truncateHash = (hash) => {
 const PeerInfoPage = () => {
   const location = useLocation();
   const { linkData } = location.state;
-
   const {data, error, isFetching} = useFetchPeerInfoQuery(linkData);
-
-  console.log("PEER INFO LINKDATA >>>>>>> ", linkData);
-  console.log("PEER INFO >>>>>>>>> DATA", data);
 
   let tableData;
 
@@ -29,14 +25,7 @@ const PeerInfoPage = () => {
     tableData = (
       <tr>
         <td>
-          <Dna
-            visible={true}
-            height="80"
-            width="80"
-            ariaLabel="dna-loading"
-            wrapperStyle={{}}
-            wrapperClass="dna-wrapper"
-          />
+        <LoadingDNA />
         </td>
       </tr>
     );
@@ -52,7 +41,7 @@ const PeerInfoPage = () => {
       {rowHead: "Node ID", rowData: data.nodeId},
       {rowHead: "Node URL", rowData: data.nodeId},
       {rowHead: "Blocks", rowData: data.blocksCount},
-      {rowHead: "Total Peers", rowData: data.peersTotal - 1},
+      {rowHead: "Connected Peers", rowData: data.peersTotal - 1},
       {rowHead: "Current Difficulty", rowData: data.currentDifficulty},
       {rowHead: "Cumulative Difficulty", rowData: data.cumulativeDifficulty},
       {rowHead: "Txns Confirmed", rowData: data.confirmedTransactions},
@@ -63,7 +52,7 @@ const PeerInfoPage = () => {
 
       return (
         <tr key={index} className="text-left text-white hover:bg-violet-400/50">
-          <th className="pl-4 pr-10 py-4">
+          <th className="pl-4 pr-10 py-4 text-gray-300 font-medium">
             {item.rowHead}:
           </th>
           <td className="px-4 py-4">
@@ -94,7 +83,7 @@ const PeerInfoPage = () => {
         </div>
         <DataPanelLarge>
           <table className="border table-auto w-full text-center text-xs text-white">
-            <thead className='px-6 py-5 h-14 text-lg text-left font-normal text-gray-300 bg-gradient-to-b from-cyan-900 via-cyan-900'>
+            <thead className='px-6 py-5 h-14 text-lg text-left font-normal text-white bg-gradient-to-b from-cyan-900 via-cyan-900'>
               <tr>
                 <td className="w-48 pl-4">Peer Node Details</td>
                 <td></td>

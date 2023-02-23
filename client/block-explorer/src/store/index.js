@@ -38,7 +38,8 @@ export {
   useFetchAllTransactionsQuery,
   useFetchConfirmedTransactionsQuery,
   useFetchPendingTransactionsQuery,
-  useFetchTransactionByHashQuery
+  useFetchTransactionByHashQuery,
+  useFaucetTxnSendMutation
 } from "./apis/transactionsApi";
 
 export {

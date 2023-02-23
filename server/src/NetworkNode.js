@@ -593,6 +593,7 @@ app.get("/view/network-difficulty", (req, res) => {
 
 // REGISTER A NODE WITH THE NETWORK
 app.listen(Config.defaultServerPort, async function() {
+    
     if (vinyasa.currentNodeURL !== Config.genesisNodeURL) { // New nodes receive genesis block
         await axios.get(Config.genesisNodeURL + "/blocks")
         .then( genesisChain => {

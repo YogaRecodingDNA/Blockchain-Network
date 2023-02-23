@@ -1,21 +1,9 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-// DEV ONLY!!!
-const pause = (duration) => {
-  return new Promise((resolve) => {
-    setTimeout(resolve, duration);
-  });
-};
-
 const addressesAndBalancesApi = createApi({ // Autogenerate hooks \ slices \ thunks
   reducerPath: 'addresses',
   baseQuery: fetchBaseQuery({
     baseUrl: 'http://localhost:5555',
-    fetchFn: async (...args) => { // Manipulate the RTKQ fetching function
-      // Remove for production
-      await pause(1000);
-      return fetch(...args);
-    }
   }),
   endpoints(builder) {
     return { // CONFIGURATION

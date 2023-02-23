@@ -68,7 +68,7 @@ Transaction.prototype.verifySignature = function() {
 // ===============================================================================
 Transaction.genesisFaucetTransaction = function() {
     return new Transaction(
-        "",                         // from Address
+        Config.nullMinerAddress,    // from Address
         Config.faucetAddress,       // to Address
         1000000000000,              // Faucet value
         10,                         // mining fee

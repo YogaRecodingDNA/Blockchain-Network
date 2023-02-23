@@ -3,49 +3,39 @@ import { useNavigate } from "react-router-dom";
 import { useFetchAllTransactionsQuery, useFetchBlocksQuery } from "../../store";
 // COMPONENTS
 import Button from "../Button";
-// ASSETS
+// ASSETS/ICONS/STATUS COMPONENTS
 import { FaSearch } from 'react-icons/fa'
 
 const SearchBar = () => {
   const navigate = useNavigate();
-  const {
-    data: txnsData,
-    error: txnsError,
-    isFetching: txnsIsFetching
-  } = useFetchAllTransactionsQuery();
-  console.log("SEARCHBAR TXN DATA", txnsData);
-
-  const {
-    data: blocksData,
-    error: blocksError,
-    isFetching: blocksIsFetching
-  } = useFetchBlocksQuery();
-
-  console.log("SEARCHBAR BLOCK DATA", blocksData);
+  const { data: blocksData } = useFetchBlocksQuery();
+  const { data: txnsData } = useFetchAllTransactionsQuery();
 
   const handleFormSubmit = (event) => {
     event.preventDefault();
-    const query = event.currentTarget.elements.searchBar.value;
-    const isAddress = /^[A-Fa-f0-9]{1,40}$/g.test(query);
-    const isBlockOrTxn = /^[A-Fa-f0-9]{1,64}$/g.test(query);
+    let query = event.currentTarget.elements.searchBar.value;
+    const isBlock = /(?:\b|-)([1-9]{1,4}[0]?|100)\b/g.test(query);
+    const isAddress = /^[A-Fa-f0-9]{40}$/g.test(query);
+    const isTransaction = /^[A-Fa-f0-9]{64}$/g.test(query);
 
-    if (isAddress) {
-      navigate("/userAddress", { state: {linkData: query}});
+    if (blocksData && isBlock) {
+      const targetBlock = +query + 1;
+        if (targetBlock <= blocksData.length + 1) {
+          navigate("/singleBlock", { state: {linkData: targetBlock}});
 
-    } else if (isBlockOrTxn) {
-      const blockHash = blocksData.filter(block => block.blockHash === query);
-      const txnHash = txnsData.filter(txn => txn.transactionDataHash === query);
-
-      if (blockHash.length > 0) {
-        navigate("/singleBlock", { state: {linkData: query}});
-
+        }
+  
+      } else if (blocksData && isTransaction) {
+        const txnHash = txnsData.filter(txn => txn.transactionDataHash === query);
+        
+        if (txnHash.length > 0) {
+          navigate("/singleTxn", { state: {linkData: query}});
+        }
+  
+      } else if (blocksData && isAddress) {
+        navigate("/userAddress", { state: {linkData: query}});
+  
       }
-      
-      if (txnHash.length > 0) {
-        navigate("/singleTxn", { state: {linkData: query}});
-
-      }
-    }
 
     return;
   }

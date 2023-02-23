@@ -1,7 +1,7 @@
 import { useFetchBlocksQuery } from '../../store';
 import useGetTime from '../../hooks/use-getTime';
 import DataTable from '../DataTable';
-import { Dna } from 'react-loader-spinner';
+import LoadingDNA from '../status-indicators/LoadingDNA';
 
 const LatestBlocksDataTable = () => {
   const { data, error, isFetching } = useFetchBlocksQuery();
@@ -13,14 +13,7 @@ const LatestBlocksDataTable = () => {
     blockData = (
       <tr className="pl-9">
         <td>
-          <Dna
-            visible={true}
-            height="80"
-            width="80"
-            ariaLabel="dna-loading"
-            wrapperStyle={{}}
-            wrapperClass="dna-wrapper"
-          />;
+          <LoadingDNA />
         </td>
       </tr>
     );

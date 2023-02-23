@@ -62,11 +62,23 @@ Block.genesisBlock = function() {
             Config.genesisDate,                         // dateCreated
             0                                           // blockHash
          );
+
         return [genesisBlock];
+        
     } else {
-        return [];
+        return;
     }
 };
 
 
 module.exports = Block;
+
+
+
+// try {
+//     const genesisBlock = await axios.get(`${Config.currentNodeURL}/debug/mine/${Config.genesisMiningAddress}/5`);
+//     console.log("GENESIS BLOCK ================================================ ", genesisBlock.data.newBlock);
+
+// } catch (error) {
+//     console.error(error);
+// }

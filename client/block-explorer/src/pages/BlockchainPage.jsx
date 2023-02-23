@@ -10,38 +10,14 @@ import PageHead from "../components/PageHead";
 import HeadPanelHalf from "../components/panels/HeadPanelHalf";
 import DataPanelLarge from "../components/panels/DataPanelLarge";
 import Blocks from "../components/blocks/Blocks";
-import { Link } from "react-router-dom";
-// ASSETS
+import HeadLink from "../components/navigation/HeadLink";
+// ASSETS/ICONS/STATUS COMPONENTS
 import moonExplorer from "../assets/images/moonExplorer.jpeg";
-import { TbChevronsRight } from "react-icons/tb";
 
 const BlockchainPage = () => {
-  const {
-    data: confirmedData,
-    // error: confirmedError,
-    // isFetching: confirmedIsFetching
-  } = useFetchConfirmedTransactionsQuery();
-  const {
-    data: blocksData,
-    // error: blockserror,
-    // isFetching: blocksIsFetching
-  } = useFetchBlocksQuery();
-  const {
-    data: peerData,
-    // error: peerError,
-    // isFetching: peerIsFetching
-  } = useFetchPeerInfoQuery();
-
-  const peersLink = (
-    <div className="w-full hover:text-violet-400">
-      <Link to="/peers" state={{ linkData: peerData }} className="flex hover:text-violet-400">
-        PEERS
-        <TbChevronsRight className="ml-1 text-xl" />
-      </Link>
-    </div>
-  )
-
-  console.log("Blocks.jsx PEER DATA", peerData);
+  const { data: confirmedTxnsData } = useFetchConfirmedTransactionsQuery();
+  const { data: blocksData } = useFetchBlocksQuery();
+  const { data: peerData } = useFetchPeerInfoQuery();
 
   return (
     <div className="flex bg-cover bg-fixed w-full h-full" style={{ backgroundImage: `url(${moonExplorer})`}} >
@@ -54,11 +30,17 @@ const BlockchainPage = () => {
         <PageHead>VINYASA BLOCKCHAIN</PageHead>
         <div className="flex my-5 mx-5 h-20 space-x-4">
           <HeadPanelHalf title="BLOCKS" data={blocksData && blocksData.length}/>
-          <HeadPanelHalf title="TRANSACTIONS" data={confirmedData && confirmedData.length}/>
+          <HeadPanelHalf title="TRANSACTIONS" data={confirmedTxnsData && confirmedTxnsData.length}/>
         </div>
         <div className="flex my-5 mx-5 h-20 space-x-4">
-          <HeadPanelHalf title={peersLink} data={peerData && peerData.peersTotal} />
-          <HeadPanelHalf title="CURRENT DIFFICULTY" data={peerData && peerData.currentDifficulty}/>
+          <HeadPanelHalf
+            title={<HeadLink path="/peers" titleHead="TOTAL PEERS" dataHead={peerData} />}
+            data={peerData && peerData.peersTotal}
+          />
+          <HeadPanelHalf
+            title="CURRENT DIFFICULTY"
+            data={peerData && peerData.currentDifficulty}
+          />
         </div>
         <DataPanelLarge>
           <Blocks />
