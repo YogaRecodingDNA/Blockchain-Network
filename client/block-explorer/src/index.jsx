@@ -16,6 +16,11 @@ import SingleTransactionPage from './pages/SingleTransactionPage';
 import TransactionsForBlockPage from './pages/TransactionsForBlockPage';
 import AddressPage from './pages/AddressPage';
 import FaucetPage from './pages/FaucetPage';
+import WalletPage from './wallet-app/pages/WalletPage';
+import CreateNewWalletPage from './wallet-app/CreateNewWalletPage';
+import OpenExistingWalletPage from './wallet-app/OpenExistingWalletPage';
+import AccountBalancePage from './wallet-app/AccountBalancePage';
+import SendTransactionPage from './wallet-app/SendTransactionPage';
 
 const Layout = () => {
   return (
@@ -26,6 +31,10 @@ const Layout = () => {
   );
 };
 
+// { name: 'Create New Wallet', path: 'wallet/create', current: false },
+// { name: 'Open Existing Wallet', path: 'wallet/open-existing', current: false },
+// { name: 'Balance', path: 'wallet/balance', current: false },
+// { name: 'Send Transaction', path: 'wallet/transaction', current: false },
 const router = createBrowserRouter(createRoutesFromElements(
     <Route element={<Layout />}>
       <Route path="/" element={<HomePage />} />
@@ -39,6 +48,11 @@ const router = createBrowserRouter(createRoutesFromElements(
       <Route path="blockTxns" element={<TransactionsForBlockPage />} />
       <Route path="userAddress" element={<AddressPage />} />
       <Route path="faucet" element={<FaucetPage />} />
+      <Route path="wallet" element={<WalletPage />} />
+      <Route path="wallet/create" element={<CreateNewWalletPage />} />
+      <Route path="wallet/open-existing" element={<OpenExistingWalletPage />} />
+      <Route path="wallet/balance" element={<AccountBalancePage />} />
+      <Route path="wallet/send-transaction" element={<SendTransactionPage />} />
     </Route>
 ));
 

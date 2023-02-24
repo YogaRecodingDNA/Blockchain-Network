@@ -10,8 +10,7 @@ const navigation = [
   { name: 'Blockchain', path: '/blockchain', current: false },
   { name: 'Explorer', path: '/explorer', current: false },
   { name: 'Faucet', path: '/faucet', current: false },
-  { name: 'Wallet', path: '/transactions', current: false },
-  { name: 'Miner', path: '#', current: false },
+  { name: 'Wallet', path: '/wallet', current: false },
 ]
 
 function classNames(...classes) {

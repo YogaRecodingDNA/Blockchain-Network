@@ -39,6 +39,7 @@
     "http-status-codes": "^2.2.0",
     "lodash.clonedeep": "^4.5.0",
     "nodemon": "^2.0.20",
+    "react-secure-storage": "^1.1.0",
     "request": "^2.88.2",
     "request-promise": "^4.2.6",
     "uuid": "^9.0.0"
