@@ -1,6 +1,5 @@
 // LIBRARIES
 import  secureLocalStorage  from  "react-secure-storage";
-import generateKeys from "../lib/session";
 // HOOKS
 import { useState } from "react";
 // COMPONENTS
@@ -12,6 +11,21 @@ import { GiWallet } from "react-icons/gi";
 
 var EC = require('elliptic').ec;
 var secp256k1 = new EC('secp256k1');
+const CryptoJS = require("crypto-js");
+
+const generateNewWallet = (keyPair) => {
+  const privateKey = keyPair.getPrivate().toString(16);
+  const publicKey =
+    keyPair.getPublic().getX().toString(16) +
+    (keyPair.getPublic().getY().isOdd() ? "1" : "0");
+  const address = CryptoJS.RIPEMD160(publicKey).toString();
+
+  return {
+    privateKey,
+    publicKey,
+    address
+  }
+}
 
 
 const CreateNewWalletPage = () => {
@@ -30,7 +44,7 @@ const CreateNewWalletPage = () => {
   const handleClick = () => {
     let newKeyPair = secp256k1.genKeyPair();
   
-    const newWallet = generateKeys(newKeyPair);
+    const newWallet = generateNewWallet(newKeyPair);
     console.log("NEW WALLET ======= ", newWallet)
 
     secureLocalStorage.setItem("privKey", newWallet.privateKey);

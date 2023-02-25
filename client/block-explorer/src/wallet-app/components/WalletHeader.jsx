@@ -14,10 +14,10 @@ export default function WalletHeader({ isLoggedIn }) {
   const navigate = useNavigate();
   
   const navigation = [
-    { name: 'Create New Wallet', path: 'wallet/create', current: false },
-    { name: 'Open Existing Wallet', path: 'wallet/open-existing', current: false },
-    { name: 'Balance', path: 'wallet/balance', current: false },
-    { name: 'Send Transaction', path: 'wallet/send-transaction', current: false },
+    { name: 'Create New Wallet', path: '/wallet/create', current: false },
+    { name: 'Open Existing Wallet', path: '/wallet/open-existing', current: false },
+    { name: 'Balance', path: '/wallet/balance', current: false },
+    { name: 'Send Transaction', path: '/wallet/send-transaction', current: false },
   ]
 
   const handleClick = () => {
