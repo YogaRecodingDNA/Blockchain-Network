@@ -1,153 +1,140 @@
-import React from 'react'
+// LIBRARIES
+import secureLocalStorage from "react-secure-storage";
+// HOOKS
+import { useState } from "react";
+// COMPONENTS
+// import Button from "../components/Button";
+import WalletHeader from "./components/WalletHeader";
+// ASSETS/ICONS/STATUS COMPONENTS
+import wavePattern2 from "../assets/images/wavePattern2.jpeg";
+import { GiWallet } from "react-icons/gi";
+
+var EC = require('elliptic').ec;
+var secp256k1 = new EC('secp256k1');
+const CryptoJS = require("crypto-js");
+
+const openWallet = (privateKey) => {
+  secureLocalStorage.clear();
+  const keyPair = secp256k1.keyFromPrivate(privateKey);
+  const publicKey =
+    keyPair.getPublic().getX().toString(16) +
+    (keyPair.getPublic().getY().isOdd() ? "1" : "0");
+  const address = CryptoJS.RIPEMD160(publicKey).toString();
+
+  return {
+    privateKey,
+    publicKey,
+    address
+  }
+}
+
 
 const AccountBalancePage = () => {
+  const [formInputs, setFormInputs] = useState({});
+  const [generatedData, setGeneratedData] = useState("")
+  
+  const handleChange = (event) => {
+    const name = event.target.name;
+    const value = event.target.value;
+    setFormInputs(values => ({...values, [name]: value}));
+  }
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    const target = event.target;
+
+    const wallet = openWallet(formInputs.privateKey);
+    console.log("NEW WALLET ======= ", wallet)
+
+    secureLocalStorage.setItem("privKey", wallet.privateKey);
+    secureLocalStorage.setItem("pubKey", wallet.publicKey);
+    secureLocalStorage.setItem("address", wallet.address);
+    
+    setGeneratedData(
+      "Decoded existing private key: " +
+      "\n" +
+      wallet.privateKey +
+      "\n" +
+      "\n" +
+      "Extracted public key: " +
+      "\n" +
+      wallet.publicKey +
+      "\n" +
+      "\n" +
+      "Extracted blockchain address: " +
+      "\n" +
+      wallet.address
+    );
+
+    target.reset();
+  
+  }
+
   return (
-    <div>AccountBalancePage</div>
+    <div className="bg-cover bg-fixed w-full h-full" style={{ backgroundImage: `url(${wavePattern2})`}}>
+      <WalletHeader />
+      <div className="flex bg-gradient-to-b from-gray-900 via-transparent justify-center items-start w-full h-full text-white">
+          <div className="w-2/3 h-max mx-auto my-10 px-5 space-y-4 rounded-lg">
+            <div className="overflow-x-auto w-full h-max px-5 py-5 rounded-lg border border-gray-700 bg-gray-900/60 shadow-md">
+              <div className="flex items-center">
+                <h1 className="w-full h-10 text-2xl font-normal">
+                Open An Existing Wallet
+                </h1>
+                {/* <Button
+                  secondary
+                  onClick={handleLogin}
+                  className={isLoggedIn ? "bg-gradient-to-r from-rose-700 via-red-400 to-orange-500 hover:bg-gradient-to-r hover:from-yellow-300 hover:via-red-500 hover:to-rose-500" : ""}
+                >
+                  { isLoggedIn ? "Logout" : "Login" }
+                </Button> */}
+              </div>
+              <p className="ml-0 mt-3 text-sm text-gray-300">Enter your wallet's private key (conpressed ECDSA key, 65 hex digits):</p>
+              <form onSubmit={handleSubmit} className="mt-5 space-y-6">
+                <div className="space-y-5 rounded-md shadow-sm">
+                  <div>
+                  <label htmlFor="private-key" className="sr-only">
+                      Private Key
+                    </label>
+                    <input
+                      type="text"
+                      id="private-key"
+                      name="privateKey"
+                      onChange={handleChange}
+                      autoComplete="off"
+                      required
+                      className="relative block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                      placeholder="Private key..."
+                    />
+                  </div>
+                  <div>
+                  <button
+                    type="submit"
+                    className="group relative flex w-full justify-center rounded-md border border border-indigo-600 py-2 px-4 text-sm font-medium text-white bg-gradient-to-r from-cyan-700 to-teal-400 hover:from-sky-400 hover:to-violet-500 text-white drop-shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                  >
+                    <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+                      <GiWallet className="ml-5 h-6 w-6 text-indigo-800" aria-hidden="true" />
+                    </span>
+                    Open Wallet
+                  </button>
+                </div>
+                  <div>
+                    <textarea
+                      type="text"
+                      id="wallet"
+                      name="wallet"
+                      value={generatedData && generatedData}
+                      onChange={e => setGeneratedData(e.target.value)}
+                      className="relative block w-full h-56 appearance-none rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 text-sm "
+                      placeholder={"Wallet Info..."}
+                    />
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+      </div>
+    </div>
   )
 }
 
 export default AccountBalancePage;
-
-
-
-
-
-
-
-
-// import Head from "next/head";
-// import MenuBar from "../../Components/Wallet/MenuBar";
-// import { useState, useRef } from "react";
-// import { useRecoilValue } from "recoil";
-// import { lockState } from "../../recoil/atoms";
-// import { ToastContainer, toast } from "react-toastify";
-// import "react-toastify/dist/ReactToastify.min.css";
-// import axios from "axios";
-
-// export default function AccountBalancesPage() {
-
-//   const [userAddress, setUserAddress] = useState("");
-//   const [confirmedBalance, setConfirmedBalance] = useState("");
-//   const [pendingBalance, setPendingBalance] = useState("");
-//   const [safeBalance, setSafeBalance] = useState("");
-//   const [safeCount, setSafeCount] = useState(0);
-//   const [showDetails, setShowDetails] = useState(false);
-//   const nodeUrl = "http://localhost:3001";
-
-//   const handleClick = async () => {
-//     console.log("handleClick");
-//     if (!userAddress) {
-//       toast.error("Please enter an address.", {
-//         position: "bottom-right",
-//         theme: "colored",
-//       });
-//       return;
-//     }
-
-//     const isValidAddress = /^[0-9a-f]{40}$/.test(userAddress);
-//     if (!isValidAddress) {
-//       toast.error("Invalid address.", {
-//         position: "bottom-right",
-//         theme: "colored",
-//       });
-//       return;
-//     }
-
-//     let [balances] = await Promise.all([
-//       axios.get(`${nodeUrl}/address/${userAddress}/balance`),
-//     ]);
-
-//     console.log(balances);
-
-//     const { confirmedBalance, pendingBalance, safeBalance, safeCount } =
-//       balances.data;
-//     setConfirmedBalance(confirmedBalance);
-//     setPendingBalance(pendingBalance);
-//     setSafeBalance(safeBalance);
-//     setSafeCount(safeCount);
-//     setShowDetails(true);
-//   };
-
-//   return (
-//     <>
-//       <Head>
-//         <title>NOOB Wallet | Balances</title>
-//       </Head>
-
-//       <ToastContainer position="top-center" pauseOnFocusLoss={false} />
-//       <MenuBar />
-//       <div className="container ">
-//         <h1 className="display-5 my-5">View Account Balance</h1>
-
-//         <div className="d-flex align-items-between my-2">
-//           <input
-//             type="text"
-//             className=" w-100 py-1"
-//             placeholder="Enter your wallet address"
-//             style={{ marginRight: "10px" }}
-//             value={userAddress}
-//             onChange={(e) => {
-//               setUserAddress(e.target.value);
-//             }}
-//           />
-//           <button
-//             type="button"
-//             className="btn btn-primary btn w-25"
-//             onClick={handleClick}
-//           >
-//             Display Balance
-//           </button>
-//         </div>
-
-//         {showDetails && (
-//           <>
-//             <div className="mt-5">
-//               <h1 className="display-5">Balance Details</h1>
-//             </div>
-
-//             <hr />
-
-//             <div className="container w-75" style={{ height: "28rem" }}>
-//               <table className="table" style={{ maxWidth: "60rem" }}>
-//                 <thead>
-//                   <tr>
-//                     <th scope="col">Status</th>
-//                     <th scope="col">Balance</th>
-//                     <th scope="col">Info</th>
-//                   </tr>
-//                 </thead>
-//                 <tbody>
-//                   <tr>
-//                     <td>Confirmed</td>
-//                     <td>{confirmedBalance.toLocaleString("en-CA")}</td>
-//                     <td>{`Your transactions have been mined and are on the blockchain.`}</td>
-//                   </tr>
-//                   <tr>
-//                     <td>Safe</td>
-//                     <td>{safeBalance.toLocaleString("en-CA")}</td>
-//                     <td>{`These funds are considered safe once ${safeCount} additional blocks have been mined.`}</td>
-//                   </tr>
-//                   <tr>
-//                     <td>Pending</td>
-//                     <td>{pendingBalance.toLocaleString("en-CA")}</td>
-//                     <td>{`These funds are currently waiting for the next block to be mined.`}</td>
-//                   </tr>
-//                 </tbody>
-//               </table>
-
-//               <div className="card text-center mt-4">
-//                 <div className="card-header">Total Wallet Balance</div>
-//                 <div className="card-body">
-//                   <h1 className="display-5">
-//                     {`${confirmedBalance.toLocaleString("en-CA")}`}
-//                   </h1>
-//                   <p className="card-text">NOOBS</p>
-//                 </div>
-//               </div>
-//             </div>
-//           </>
-//         )}
-//       </div>
-//     </>
-//   );
-// }
