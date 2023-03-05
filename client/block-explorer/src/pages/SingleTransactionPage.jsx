@@ -39,8 +39,6 @@ const SingleTransactionPage = () => {
     const timeElapsed = getElapsed(date, dateCreated);
     const isSuccessful = data.transferSuccessful ? true : false;
 
-    console.log("DATA MINED IN BLOCK INDEX", data.minedInBlockIndex);
-
     const transactionData = [
       {rowHead: "Transaction Hash", rowData: data.transactionDataHash},
       {

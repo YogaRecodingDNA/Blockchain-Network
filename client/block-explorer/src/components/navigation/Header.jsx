@@ -11,6 +11,7 @@ const navigation = [
   { name: 'Explorer', path: '/explorer', current: false },
   { name: 'Faucet', path: '/faucet', current: false },
   { name: 'Wallet', path: '/wallet', current: false },
+  { name: 'Miner', path: '/miner', current: false },
 ]
 
 function classNames(...classes) {

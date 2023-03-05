@@ -252,6 +252,18 @@ Blockchain.prototype.validateTransaction = function(transactionData) {
         const signature = transactionData.senderSignature;
         const isValidSignature = ValidationUtils.isValidSignature(signature);
         if (!isValidSignature) return { errorMsg: "Invalid Signature" };
+
+        console.log(
+            "\n" +
+            "Blockchain function:" +
+            "\n" +
+            "data hash: " + transactionData.transactionDataHash +
+            "\n" +
+            "sender PubKey: " + transactionData.senderPubKey +
+            "\n" +
+            "sender signature: " + transactionData.senderSignature +
+            "\n"
+        );
         
         if (!CryptoHashUtils.verifySignature(
             transactionData.transactionDataHash,
@@ -280,7 +292,7 @@ Blockchain.prototype.createNewTransaction = function(transactionData) {
     const isValidTransaction = this.validateTransaction(transactionData);
     if (isValidTransaction.errorMsg) return isValidTransaction;
     
-    // Create newTransaction params (from, to, value, fee, dateCreated, data, senderPubKey, senderPrivKey, senderSignature)
+    // Create newTransaction params (from, to, value, fee, dateCreated, data, senderPubKey, senderSignature)
     const newTransaction = new Transaction(
         transactionData.from,
         transactionData.to,
@@ -290,7 +302,6 @@ Blockchain.prototype.createNewTransaction = function(transactionData) {
         transactionData.data,
         transactionData.senderPubKey,
         transactionData.transactionDataHash,
-        transactionData.senderPrivKey,          // (FOR TESTING ONLY)
         transactionData.senderSignature,
         );
         

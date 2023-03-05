@@ -1,12 +1,12 @@
 // LIBRARIES
-import  secureLocalStorage  from  "react-secure-storage";
+import secureLocalStorage from "react-secure-storage";
+import { useNavigate } from "react-router-dom";
 // HOOKS
 import { useState } from "react";
 // COMPONENTS
-import Button from "../components/Button";
-import WalletHeader from "./components/WalletHeader";
+import WalletHeader from "../components/WalletHeader";
 // ASSETS/ICONS/STATUS COMPONENTS
-import wavePattern2 from "../assets/images/wavePattern2.jpeg";
+import wavePattern2 from "../../assets/images/wavePattern2.jpeg";
 import { GiWallet } from "react-icons/gi";
 
 var EC = require('elliptic').ec;
@@ -27,20 +27,13 @@ const generateNewWallet = (keyPair) => {
   }
 }
 
-
 const CreateNewWalletPage = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [generatedData, setGeneratedData] = useState("")
+  const [ isLoggedIn ] = useState(secureLocalStorage.getItem("loggedIn"));
+  const [ generatedData, setGeneratedData ] = useState("");
+  const navigate = useNavigate();
+
+  console.log("LOGGED IN? ", isLoggedIn);
   
-  const handleLogin = () => {
-    setIsLoggedIn(!isLoggedIn);
-
-    if (isLoggedIn === false) {
-      setGeneratedData("");
-      secureLocalStorage.clear();
-    }
-  }
-
   const handleClick = () => {
     let newKeyPair = secp256k1.genKeyPair();
   
@@ -52,15 +45,15 @@ const CreateNewWalletPage = () => {
     secureLocalStorage.setItem("address", newWallet.address);
     
     setGeneratedData(
-      "Generated random private key: " +
+      "PRIVATE KEY: " +
       newWallet.privateKey +
       "\n" +
       "\n" +
-      "Extracted public key: " +
+      "PUBLIC KEY: " +
       newWallet.publicKey +
       "\n" +
       "\n" +
-      "Extracted blockchain address: " +
+      "BLOCKCHAIN ADDRESS: " +
       newWallet.address
     );
   
@@ -68,21 +61,14 @@ const CreateNewWalletPage = () => {
 
   return (
     <div className="bg-cover bg-fixed w-full h-full" style={{ backgroundImage: `url(${wavePattern2})`}}>
-      <WalletHeader isLoggedIn={isLoggedIn} />
+      <WalletHeader login={isLoggedIn} />
       <div className="flex bg-gradient-to-b from-gray-900 via-transparent justify-center items-start w-full h-full text-white">
-          <div className="w-2/3 h-max mx-auto my-10 px-5 space-y-4 rounded-lg">
-            <div className="overflow-x-auto w-full h-max px-5 py-5 rounded-lg border border-gray-700 bg-gray-900/60 shadow-md">
+          <div className="flex justify-center w-2/3 h-max mx-auto my-10 px-5 space-y-4 rounded-lg">
+            <div className="overflow-x-auto w-full h-max px-5 py-5 rounded-lg border border-gray-700 bg-gray-900/60 shadow-md lg:w-3/5">
               <div className="flex items-center">
                 <h1 className="w-full h-10 ml-4 text-2xl font-normal">
                   Create a New Wallet
                 </h1>
-                <Button
-                  secondary
-                  onClick={handleLogin}
-                  className={isLoggedIn ? "bg-gradient-to-r from-rose-700 via-red-400 to-orange-500 hover:bg-gradient-to-r hover:from-yellow-300 hover:via-red-500 hover:to-rose-500" : ""}
-                >
-                  { isLoggedIn ? "Logout" : "Login" }
-                </Button>
               </div>
               <p className="ml-4 text-sm text-gray-300">Generate a new wallet: random private key | public key | address</p>
               <div className="mt-5 space-y-6">
@@ -112,6 +98,16 @@ const CreateNewWalletPage = () => {
                       <GiWallet className="ml-5 h-6 w-6 text-indigo-800" aria-hidden="true" />
                     </span>
                     Generate Now
+                  </button>
+                </div>}
+                {!isLoggedIn &&
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => navigate("/wallet")}
+                    className="group relative flex w-full justify-center rounded-md border border border-yellow-300 py-2 px-4 text-sm font-medium text-yellow-300 bg-yellow-400/60 hover:bg-yellow-400/80 hover:text-white drop-shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                  >
+                    Go to login page
                   </button>
                 </div>}
               </div>

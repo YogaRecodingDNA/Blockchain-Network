@@ -3,9 +3,9 @@ import secureLocalStorage from "react-secure-storage";
 // HOOKS
 import { useState } from "react";
 // COMPONENTS
-import WalletHeader from "./components/WalletHeader";
+import WalletHeader from "../components/WalletHeader";
 // ASSETS/ICONS/STATUS COMPONENTS
-import wavePattern2 from "../assets/images/wavePattern2.jpeg";
+import wavePattern2 from "../../assets/images/wavePattern2.jpeg";
 import { GiWallet } from "react-icons/gi";
 
 var EC = require('elliptic').ec;
@@ -31,6 +31,7 @@ const openWallet = (privateKey) => {
 const OpenExistingWalletPage = () => {
   const [formInputs, setFormInputs] = useState({});
   const [generatedData, setGeneratedData] = useState("")
+  const [isLoggedIn, setIsLoggedIn] = useState(secureLocalStorage.getItem("loggedIn"));
   
   const handleChange = (event) => {
     const name = event.target.name;
@@ -41,6 +42,7 @@ const OpenExistingWalletPage = () => {
   const handleSubmit = (event) => {
     event.preventDefault();
     const target = event.target;
+    secureLocalStorage.clear();
 
     const wallet = openWallet(formInputs.privateKey);
     console.log("NEW WALLET ======= ", wallet)
@@ -48,6 +50,7 @@ const OpenExistingWalletPage = () => {
     secureLocalStorage.setItem("privKey", wallet.privateKey);
     secureLocalStorage.setItem("pubKey", wallet.publicKey);
     secureLocalStorage.setItem("address", wallet.address);
+    secureLocalStorage.setItem("loggedIn", true);
     
     setGeneratedData(
       "Decoded existing private key: " +
@@ -71,10 +74,10 @@ const OpenExistingWalletPage = () => {
 
   return (
     <div className="bg-cover bg-fixed w-full h-full" style={{ backgroundImage: `url(${wavePattern2})`}}>
-      <WalletHeader />
+      <WalletHeader login={isLoggedIn} />
       <div className="flex bg-gradient-to-b from-gray-900 via-transparent justify-center items-start w-full h-full text-white">
-          <div className="w-2/3 h-max mx-auto my-10 px-5 space-y-4 rounded-lg">
-            <div className="overflow-x-auto w-full h-max px-5 py-5 rounded-lg border border-gray-700 bg-gray-900/60 shadow-md">
+          <div className="flex justify-center w-2/3 h-max mx-auto my-10 px-5 space-y-4 rounded-lg">
+            <div className="overflow-x-auto w-full h-max px-5 py-5 rounded-lg border border-gray-700 bg-gray-900/60 shadow-md lg:w-3/5">
               <div className="flex items-center">
                 <h1 className="w-full h-10 text-2xl font-normal">
                 Open An Existing Wallet

@@ -1,5 +1,8 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
+const faucetPrivate = process.env.REACT_APP_FAUCET_KEY;
+const faucetPublic = process.env.REACT_APP_FAUCET_PUBLIC;
+
 const transactionsApi = createApi({ // Autogenerate hooks \ slices \ thunks
   reducerPath: 'transactions',
   baseQuery: fetchBaseQuery({ // transactionsApi.fetchBaseQuery === fetch
@@ -47,6 +50,29 @@ const transactionsApi = createApi({ // Autogenerate hooks \ slices \ thunks
         },
         providesTags: ["TxnsByAddress"],
       }),
+      sendTransaction: builder.mutation({
+        query: (formData) => {
+          console.log("(((API))) VERIFY SIG DATA HASH", formData.transactionDataHash);
+          console.log("(((API))) VERIFY SIG PUB KEY", formData.senderPubKey);
+          console.log("(((API))) VERIFY SIG SIGNATURE", formData.senderSignature);
+          return { // THE REQUEST-CONFIGURATION OBJECT
+            url: '/transactions/send',
+            method: 'POST',
+            body: {
+              from: "",
+              to: formData.to,
+              value: formData.value,
+              fee: formData.fee,
+              dateCreated: formData.dateCreated,
+              data: formData.data,
+              senderPubKey: formData.senderPubKey,
+              transactionDataHash: "",
+              senderSignature: formData.senderSignature
+            }
+          };
+        },
+        invalidatesTags: ["AllTxns", "ConfirmedTxns", "PendingTxns", "TxnsByAddress"],
+      }),
       faucetTxnSend: builder.mutation({
         query: (formData) => {
           console.log(formData);
@@ -62,9 +88,9 @@ const transactionsApi = createApi({ // Autogenerate hooks \ slices \ thunks
               fee: 10,
               dateCreated: "",
               data: "Faucet withdrawal",
-              senderPubKey: "c53e76ee33f73997639edce6818e03914229722926669aabe16f58c001f40f911",
-              transactionDataHash: "",
-              senderPrivKey: "687e39772b92fd475264cf6bd059d2201760471b6ed04cc02b73306c24f5cc30",
+              senderPubKey: "",
+              transactionDataHash: faucetPublic,
+              senderPrivKey: faucetPrivate,
               senderSignature: ""
             }
           };
@@ -80,6 +106,7 @@ export const {
   useFetchConfirmedTransactionsQuery,
   useFetchPendingTransactionsQuery,
   useFetchTransactionByHashQuery,
+  useSendTransactionMutation,
   useFaucetTxnSendMutation
 } = transactionsApi;
 export { transactionsApi };

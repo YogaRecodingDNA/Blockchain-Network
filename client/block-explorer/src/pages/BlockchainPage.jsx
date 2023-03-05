@@ -1,7 +1,7 @@
 // HOOKS
 import {
   useFetchBlocksQuery,
-  useFetchConfirmedTransactionsQuery,
+  useFetchAllTransactionsQuery,
   useFetchPeerInfoQuery
 } from "../store";
 // COMPONENTS
@@ -15,9 +15,10 @@ import HeadLink from "../components/navigation/HeadLink";
 import moonExplorer from "../assets/images/moonExplorer.jpeg";
 
 const BlockchainPage = () => {
-  const { data: confirmedTxnsData } = useFetchConfirmedTransactionsQuery();
+  const { data: txnsData } = useFetchAllTransactionsQuery();
   const { data: blocksData } = useFetchBlocksQuery();
   const { data: peerData } = useFetchPeerInfoQuery();
+
 
   return (
     <div className="flex bg-cover bg-fixed w-full h-full" style={{ backgroundImage: `url(${moonExplorer})`}} >
@@ -30,7 +31,10 @@ const BlockchainPage = () => {
         <PageHead>VINYASA BLOCKCHAIN</PageHead>
         <div className="flex my-5 mx-5 h-20 space-x-4">
           <HeadPanelHalf title="BLOCKS" data={blocksData && blocksData.length}/>
-          <HeadPanelHalf title="TRANSACTIONS" data={confirmedTxnsData && confirmedTxnsData.length}/>
+          <HeadPanelHalf
+            title={<HeadLink path="/transactions" titleHead="TOTAL TRANSACTIONS" dataHead={txnsData} />}
+            data={txnsData && txnsData.length}
+          />
         </div>
         <div className="flex my-5 mx-5 h-20 space-x-4">
           <HeadPanelHalf

@@ -4,14 +4,16 @@ const Button = ({
   children,
   primary,
   secondary,
-  wallet,
+  login,
+  logout,
   search,
   ...rest
 }) => {
   const classes = className(rest.className, 'flex items-center px-8 py-2', {
     'rounded bg-gradient-to-r from-cyan-700 to-teal-400 hover:from-sky-400 hover:to-violet-500 text-white drop-shadow-lg': primary,
     'py-px text-xs font-normal bg-gradient-to-r from-cyan-700 to-teal-400 hover:from-sky-400 hover:to-violet-500 text-white drop-shadow-lg': secondary,
-    'rounded text-white bg-gradient-to-r from-gray-500 via-gray-600 to-gray-500 border border-gray-900/80 hover:from-gray-900 hover:via-gray-600 hover:to-gray-900 hover:border-sky-400 hover:text-sky-300 drop-shadow-lg': wallet,
+    'rounded text-emerald-400 border border-emerald-500 bg-black/70 hover:bg-emerald-800/70 hover:border-emerald-400 hover:text-emerald-400 drop-shadow-lg': login,
+    'rounded text-rose-400 border border-rose-500 bg-black/70 hover:bg-rose-800/70 hover:border-rose-400 hover:text-rose-400 drop-shadow-lg': logout,
     'px-4 py-2 rounded-r-lg bg-gradient-to-r from-cyan-700 to-teal-400 hover:from-sky-400 hover:to-violet-500 text-white': search,
   });
   

@@ -6,17 +6,16 @@ const CryptoHashUtils = require("./utils/CryptoHashUtils");
 // ======================= TRANSACTION CONSTRUCTOR ===============================
 // ===============================================================================
 // !!!Sending Private Key for testing purposes only!!!!!!
-function Transaction(from, to, value, fee, dateCreated, data, senderPubKey, transactionDataHash, senderPrivKey, senderSignature) {
+function Transaction(from, to, value, fee, dateCreated, data, senderPubKey, transactionDataHash, senderSignature) {
     this.from = from || CryptoHashUtils.getAddressFromPublicKey(senderPubKey);// address from PubKey
     this.to = to;                       // Recipient address - 40 hex digits
     this.value = value;                 // Positive integer
     this.fee = fee;                     // Fee for miner (positive integer)
-    this.dateCreated = dateCreated || new Date().toISOString();
+    this.dateCreated = dateCreated;
     this.data = data;                   // Transaction data (payload/comments) - optional string
     this.senderPubKey = senderPubKey;   // Sender public key – 65 hex digits
     this.transactionDataHash = transactionDataHash || this.calculateDataHash();
-    this.senderPrivKey = senderPrivKey; // Sender private key – 64 hex digits (FOR TESTING ONLY)
-    this.senderSignature = senderSignature || this.signTransaction(senderPrivKey);
+    this.senderSignature = senderSignature;
     this.minedInBlockIndex = undefined; // Determined at Mining Process
     this.transferSuccessful = undefined;// Determined at Mining Process
 
@@ -76,7 +75,6 @@ Transaction.genesisFaucetTransaction = function() {
         Config.genesisDummyData,    // data
         Config.nullPublicKey,       // senderPubKey
         "",                         // transactionDataHash
-        Config.nullPrivateKey,      // private key
         ""                          // senderSignature
     );
 };

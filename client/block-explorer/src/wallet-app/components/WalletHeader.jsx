@@ -1,7 +1,11 @@
-// HOOKS
+// LIBRARIES
 import { useNavigate } from 'react-router-dom';
+import secureLocalStorage from "react-secure-storage";
+// HOOKS
+import { useState, useEffect } from 'react';
 // COMPONENTS
 import { Disclosure } from '@headlessui/react'
+import { Link } from 'react-router-dom'
 // ASSETS/ICONS/STATUS COMPONENTS
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 import { GiWallet } from "react-icons/gi";
@@ -10,7 +14,8 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
 }
 
-export default function WalletHeader({ isLoggedIn }) {
+export default function WalletHeader() {
+  const [ isLoggedIn, setIsLoggedIn ] = useState(secureLocalStorage.getItem("loggedIn"));
   const navigate = useNavigate();
   
   const navigation = [
@@ -20,9 +25,26 @@ export default function WalletHeader({ isLoggedIn }) {
     { name: 'Send Transaction', path: '/wallet/send-transaction', current: false },
   ]
 
-  const handleClick = () => {
-    navigate("/wallet");
+  const handleLogin = () => {
+    if (!isLoggedIn) {
+      secureLocalStorage.setItem("loggedIn", true);
+      setIsLoggedIn(true);
+      navigate("/wallet/create");
+    } else {
+      secureLocalStorage.setItem("loggedIn", false);
+      setIsLoggedIn(false);
+    }
+    
+    console.log("LOGGED STORAGE", secureLocalStorage.getItem("loggedIn"));
+
+    if (isLoggedIn === false) {
+      secureLocalStorage.clear();
+    }
   }
+
+  // const handleClick = () => {
+  //   navigate("/wallet");
+  // }
 
   return (
     <Disclosure as="nav" className="bg-gradient-to-b from-gray-700 via-gray-500 to-gray-700 border-y border-sky-400">
@@ -42,15 +64,30 @@ export default function WalletHeader({ isLoggedIn }) {
                 </Disclosure.Button>
               </div>
               <div className="flex flex-1 items-center justify-center md:items-stretch md:justify-center">
-                <div className="flex flex-shrink-0 items-center">
-                  <GiWallet onClick={handleClick} className="block h-6 w-auto text-gray-900 cursor-pointer hover:text-white" />
+                {/* hover text bubble */}
+                {/* <div class="relative ">
+                  <a class="absolute inset-0 z-10 bg-black/40 text-center flex flex-col items-center justify-center opacity-0 hover:opacity-100 bg-opacity-90 duration-300">
+                  <GiWallet onClick={handleLogin} className="block h-6 w-auto hover:cursor-pointer text-sky-500" />
+                  </a>
+                  <a href="#" class="relative">
+                    <div class="h-48 flex flex-wrap content-center">
+                      test
+                    </div>
+                  </a>
+                </div> */}
+                <div className="flex flex-shrink-0 items-center text-xs font-medium">
+                  {isLoggedIn ? 
+                    <GiWallet onClick={handleLogin} className="block h-6 w-auto hover:cursor-pointer text-red-600 hover:text-violet-400" /> :
+                    <GiWallet onClick={handleLogin} className="block h-6 w-auto hover:cursor-pointer text-emerald-500 hover:text-violet-400" />
+                  }
                 </div>
                 <div className="hidden md:ml-6 md:block">
                   <div className="flex space-x-4">
                     {navigation.map((item) => (
-                      <a
+                      <Link
                         key={item.name}
-                        href={item.path}
+                        to={item.path}
+                        state={{loggedState: isLoggedIn}}
                         className={classNames(
                           item.current ? 'text-violet-400' : 'text-gray-300 hover:bg-gray-900 hover:text-sky-400',
                           'px-5 py-px rounded-full text-sm font-normal'
@@ -58,7 +95,7 @@ export default function WalletHeader({ isLoggedIn }) {
                         aria-current={item.current ? 'page' : undefined}
                       >
                         {item.name}
-                      </a>
+                      </Link>
                     ))}
                   </div>
                 </div>
@@ -70,10 +107,10 @@ export default function WalletHeader({ isLoggedIn }) {
           <Disclosure.Panel className="md:hidden">
             <div className="space-y-1 px-px pt-2 pb-3">
               {navigation.map((item) => (
-                <Disclosure.Button
+                <Link
                   key={item.name}
-                  as="a"
-                  href={item.path}
+                  to={item.path}
+                  state={{loggedState: isLoggedIn}}
                   className={classNames(
                     item.current ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-900 hover:text-white',
                     'block px-3 py-2 text-base font-medium'
@@ -81,7 +118,7 @@ export default function WalletHeader({ isLoggedIn }) {
                   aria-current={item.current ? 'page' : undefined}
                 >
                   {item.name}
-                </Disclosure.Button>
+                </Link>
               ))}
             </div>
           </Disclosure.Panel>
