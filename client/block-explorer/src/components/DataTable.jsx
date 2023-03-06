@@ -15,7 +15,9 @@ const DataTable = ({ block, transaction, dateCreated }) => {
                         <FaBuromobelexperte />
                     </div>
                     <span className="w-full pl-3 py-3 text-xs font-medium truncate">
+                    <HashLink to="/singleBlock" linkData={block.index}>
                         {"Block " + block.index}
+                    </HashLink>
                         <div className="text-xs font-normal truncate">
                             {dateCreated}
                         </div>

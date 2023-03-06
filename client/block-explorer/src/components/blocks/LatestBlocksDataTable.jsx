@@ -1,5 +1,7 @@
+// HOOKS
 import { useFetchBlocksQuery } from '../../store';
 import useGetTime from '../../hooks/use-getTime';
+// COMPONENTS
 import DataTable from '../DataTable';
 import LoadingDNA from '../status-indicators/LoadingDNA';
 
