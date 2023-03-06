@@ -15,10 +15,9 @@ const SingleBlockPage = () => {
   const location = useLocation();
   const { linkData } = location.state;
   const { getElapsed } = useGetTime();
-
-  const {data, error, isFetching} = useFetchBlocksQuery();
-
-  const block = data[linkData];
+  const { data, error, isFetching } = useFetchBlocksQuery();
+  
+  const block = data && data[linkData];
 
   let tableData;
 
@@ -43,13 +42,20 @@ const SingleBlockPage = () => {
 
   } else {
     const date = Date.now();
-    const dateCreated = +new Date(data && block.dateCreated);
-    const timeElapsed = getElapsed(date, dateCreated);
+    const creationDate = +new Date(block && block.dateCreated);
+    const timeElapsed = getElapsed(date, creationDate);
     const reward = block.transactions[0].value / 1000000;
 
     const blockData = [
-      {rowHead: "Block Height", rowData: block.index},
+      {rowHead: "Block Height", rowData: block.index === 0 ? "GENESIS BLOCK" : block.index},
       {rowHead: "Block Hash", rowData: block.blockHash},
+      {rowHead: "Previous Block", rowData: 
+        block.prevBlockHash === 0 ? 
+        "NONE" :
+        <HashLink to="/singleBlock" linkData={block.index - 1}>
+          {block.prevBlockHash}
+        </HashLink>
+      },
       {rowHead: "Status", rowData: <StatusFinalized />},
       {rowHead: "Timestamp", rowData: timeElapsed},
       {rowHead: "Transactions", rowData: 

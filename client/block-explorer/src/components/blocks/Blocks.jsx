@@ -10,11 +10,9 @@ const truncateHash = (hash) => {
   return `${hash.slice(0, 19)}...`
 }
 
-const Blocks = () => {
+const Blocks = ({ nodeUrl }) => {
   const { getElapsed } = useGetTime();
-  const { data, error, isFetching } = useFetchBlocksQuery();
-
-  // console.log("Blocks.jsx BLOCK DATA", Object.keys(data).length);
+  const { data, error, isFetching } = useFetchBlocksQuery(nodeUrl);
 
   let blockInfo;
 

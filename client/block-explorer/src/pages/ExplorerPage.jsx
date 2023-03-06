@@ -17,7 +17,7 @@ import moonExplorer from "../assets/images/moonExplorer.jpeg";
 const ExplorerPage = () => {
   const { data: blxData } = useFetchBlocksQuery();
   const { data: txnsData } = useFetchAllTransactionsQuery();
-  const [isConfirmedTxns, setIsConfirmedTxns] = useState(true);
+  const [ isConfirmedTxns, setIsConfirmedTxns ] = useState(true);
   const totalBlocks = blxData && blxData.length;
   const totalTxns = txnsData && txnsData.length;
 

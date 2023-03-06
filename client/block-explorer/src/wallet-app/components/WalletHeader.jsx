@@ -1,8 +1,9 @@
 // LIBRARIES
 import { useNavigate } from 'react-router-dom';
 import secureLocalStorage from "react-secure-storage";
+import { Tooltip } from "react-tooltip";
 // HOOKS
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 // COMPONENTS
 import { Disclosure } from '@headlessui/react'
 import { Link } from 'react-router-dom'
@@ -16,7 +17,15 @@ function classNames(...classes) {
 
 export default function WalletHeader() {
   const [ isLoggedIn, setIsLoggedIn ] = useState(secureLocalStorage.getItem("loggedIn"));
+  const [ isActiveWallet, setIsActiveWallet ] = useState(secureLocalStorage.getItem("address"));
   const navigate = useNavigate();
+
+  console.log("address local storage 1 ==", secureLocalStorage.getItem("address"));
+  
+  window.addEventListener('secureLocalStorage', () => {
+    setIsLoggedIn(secureLocalStorage.getItem("loggedIn"));
+    setIsActiveWallet(secureLocalStorage.getItem("address"));
+  });
   
   const navigation = [
     { name: 'Create New Wallet', path: '/wallet/create', current: false },
@@ -25,15 +34,21 @@ export default function WalletHeader() {
     { name: 'Send Transaction', path: '/wallet/send-transaction', current: false },
   ]
 
-  const handleLogin = () => {
-    if (!isLoggedIn) {
-      secureLocalStorage.setItem("loggedIn", true);
-      setIsLoggedIn(true);
-      navigate("/wallet/create");
+  const handleActivation = () => {
+    if (isActiveWallet) {
+      secureLocalStorage.removeItem("privKey");
+      secureLocalStorage.removeItem("pubKey");
+      secureLocalStorage.removeItem("address");
+      setIsActiveWallet(false);
     } else {
-      secureLocalStorage.setItem("loggedIn", false);
-      setIsLoggedIn(false);
+      secureLocalStorage.removeItem("privKey");
+      secureLocalStorage.removeItem("pubKey");
+      secureLocalStorage.removeItem("address");
+      setIsActiveWallet(false);
+      navigate("/wallet/open-existing");
     }
+
+    // window.dispatchEvent(new Event("secureLocalStorage"));
     
     console.log("LOGGED STORAGE", secureLocalStorage.getItem("loggedIn"));
 
@@ -41,10 +56,6 @@ export default function WalletHeader() {
       secureLocalStorage.clear();
     }
   }
-
-  // const handleClick = () => {
-  //   navigate("/wallet");
-  // }
 
   return (
     <Disclosure as="nav" className="bg-gradient-to-b from-gray-700 via-gray-500 to-gray-700 border-y border-sky-400">
@@ -64,21 +75,17 @@ export default function WalletHeader() {
                 </Disclosure.Button>
               </div>
               <div className="flex flex-1 items-center justify-center md:items-stretch md:justify-center">
-                {/* hover text bubble */}
-                {/* <div class="relative ">
-                  <a class="absolute inset-0 z-10 bg-black/40 text-center flex flex-col items-center justify-center opacity-0 hover:opacity-100 bg-opacity-90 duration-300">
-                  <GiWallet onClick={handleLogin} className="block h-6 w-auto hover:cursor-pointer text-sky-500" />
-                  </a>
-                  <a href="#" class="relative">
-                    <div class="h-48 flex flex-wrap content-center">
-                      test
-                    </div>
-                  </a>
-                </div> */}
-                <div className="flex flex-shrink-0 items-center text-xs font-medium">
-                  {isLoggedIn ? 
-                    <GiWallet onClick={handleLogin} className="block h-6 w-auto hover:cursor-pointer text-red-600 hover:text-violet-400" /> :
-                    <GiWallet onClick={handleLogin} className="block h-6 w-auto hover:cursor-pointer text-emerald-500 hover:text-violet-400" />
+                <div data-tooltip-content={isActiveWallet ? "Activated address: " + secureLocalStorage.getItem("address") : "Go open an existing wallet or create a new one to activate your session"} data-tooltip-id='toolTip1' data-place='top' className="flex flex-shrink-0 items-center text-xs font-medium">
+                <Tooltip id="toolTip1" />
+                  {isLoggedIn && isActiveWallet ?
+                  <div className="flex items-center space-x-1 hover:cursor-pointer text-emerald-500 hover:text-emerald-400">
+                    <GiWallet onClick={handleActivation} className="block h-6 w-auto" />
+                    <p className="font-bold">Active</p>
+                  </div> :
+                  <div className="flex items-center space-x-1 hover:cursor-pointer text-red-800 hover:text-red-600">
+                    <GiWallet onClick={handleActivation} className="block h-6 w-auto" />
+                    <p>Inactive</p>
+                  </div>
                   }
                 </div>
                 <div className="hidden md:ml-6 md:block">
@@ -87,7 +94,6 @@ export default function WalletHeader() {
                       <Link
                         key={item.name}
                         to={item.path}
-                        state={{loggedState: isLoggedIn}}
                         className={classNames(
                           item.current ? 'text-violet-400' : 'text-gray-300 hover:bg-gray-900 hover:text-sky-400',
                           'px-5 py-px rounded-full text-sm font-normal'
@@ -110,7 +116,6 @@ export default function WalletHeader() {
                 <Link
                   key={item.name}
                   to={item.path}
-                  state={{loggedState: isLoggedIn}}
                   className={classNames(
                     item.current ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-900 hover:text-white',
                     'block px-3 py-2 text-base font-medium'

@@ -1,4 +1,5 @@
 import './index.css';
+import 'react-tooltip/dist/react-tooltip.css'
 import React from 'react';
 import { createBrowserRouter, RouterProvider, Route, Outlet, createRoutesFromElements } from 'react-router-dom';
 import { createRoot } from 'react-dom/client';
@@ -32,10 +33,6 @@ const Layout = () => {
   );
 };
 
-// { name: 'Create New Wallet', path: 'wallet/create', current: false },
-// { name: 'Open Existing Wallet', path: 'wallet/open-existing', current: false },
-// { name: 'Balance', path: 'wallet/balance', current: false },
-// { name: 'Send Transaction', path: 'wallet/transaction', current: false },
 const router = createBrowserRouter(createRoutesFromElements(
     <Route element={<Layout />}>
       <Route path="/" element={<HomePage />} />

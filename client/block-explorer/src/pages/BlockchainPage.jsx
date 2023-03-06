@@ -1,4 +1,5 @@
 // HOOKS
+import { useLocation } from 'react-router-dom';
 import {
   useFetchBlocksQuery,
   useFetchAllTransactionsQuery,
@@ -15,10 +16,11 @@ import HeadLink from "../components/navigation/HeadLink";
 import moonExplorer from "../assets/images/moonExplorer.jpeg";
 
 const BlockchainPage = () => {
-  const { data: txnsData } = useFetchAllTransactionsQuery();
-  const { data: blocksData } = useFetchBlocksQuery();
-  const { data: peerData } = useFetchPeerInfoQuery();
-
+  const location = useLocation();
+  const { linkData } = location.state ? location.state : "";
+  const { data: txnsData } = useFetchAllTransactionsQuery(linkData, {refetchOnMountOrArgChange: true});
+  const { data: blocksData } = useFetchBlocksQuery(linkData, {refetchOnMountOrArgChange: true});
+  const { data: peerData } = useFetchPeerInfoQuery(linkData, {refetchOnMountOrArgChange: true});
 
   return (
     <div className="flex bg-cover bg-fixed w-full h-full" style={{ backgroundImage: `url(${moonExplorer})`}} >
@@ -47,7 +49,7 @@ const BlockchainPage = () => {
           />
         </div>
         <DataPanelLarge>
-          <Blocks />
+          <Blocks nodeUrl={linkData} />
         </DataPanelLarge>
       </div>
     </div>

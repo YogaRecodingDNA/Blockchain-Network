@@ -1,16 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useFetchBalancesByAddressQuery, useFaucetTxnSendMutation } from "../store";
+import { useFaucetTxnSendMutation } from "../store";
 // COMPONENTS
 import Button from "../../components/Button";
 // ASSETS/ICONS/STATUS COMPONENTS
 import { GiCoinflip } from "react-icons/gi";
-// import LoadingDNA from "./status-indicators/LoadingDNA";
 
 const faucetAddress = "f3d7dfd60b51f6804d47440e59404a393cdd9a78"
 
 const Form = () => {
-  const { data, error, isFetching } = useFetchBalancesByAddressQuery(faucetAddress);
   const [ faucetTxnSend ] = useFaucetTxnSendMutation();
   const [ isFaucetDonation, setIsFaucetDonation ] = useState(false);
   const [formInputs, setFormInputs] = useState({});
@@ -36,15 +34,6 @@ const Form = () => {
     
     navigate("/userAddress", { state: { linkData: formInputs.recipient } });
   }
-
-  // let addressBalance;
-  // if (isFetching) {
-  //   addressBalance = <LoadingDNA />
-  // } else if (error) {
-  //   addressBalance = <div>Error loading balance.</div>
-  // } else {
-  //   addressBalance = data.addressBalances.safeBalance.toLocaleString();
-  // }
 
   return (
     <div className="w-2/3 h-max mx-auto my-10 px-5 space-y-4 rounded-lg">

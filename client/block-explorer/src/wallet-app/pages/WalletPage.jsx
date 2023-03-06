@@ -10,8 +10,12 @@ import WalletHeader from "../components/WalletHeader";
 import vaultLockers from "../../assets/images/vaultLockers.jpeg";
 
 const WalletPage = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(secureLocalStorage.getItem("loggedIn"));
+  const [ isLoggedIn, setIsLoggedIn ] = useState(secureLocalStorage.getItem("loggedIn"));
   const navigate = useNavigate();
+
+  window.addEventListener('secureLocalStorage', () => {
+    setIsLoggedIn(secureLocalStorage.getItem("loggedIn"));
+  });
 
   const handleLogin = () => {
     if (!isLoggedIn) {
@@ -22,9 +26,9 @@ const WalletPage = () => {
       secureLocalStorage.setItem("loggedIn", false);
       setIsLoggedIn(false);
     }
-    
-    console.log("LOGGED STORAGE", secureLocalStorage.getItem("loggedIn"));
 
+    window.dispatchEvent(new Event("secureLocalStorage"));
+    
     if (isLoggedIn === false) {
       secureLocalStorage.clear();
     }
@@ -40,7 +44,7 @@ const WalletPage = () => {
             <div className="pt-4 px-7 text-gray-100 font-normal">
               <p className="text-2xl">This wallet is a free, simple service enabling you to generate addresses for sending, recieving, and storing your <span className="text-lg italic font-medium">PRANA</span> Crypto Tokens within the VinyasaChain network.
               <br />
-              Login below to create a new wallet, or open an existing wallet <Link to="/wallet/open-existing" className="text-2xl text-sky-400 font-medium underline underline-offset-4 hover:text-sky-500"> here</Link> for auto-login.
+              Login below to create a new wallet, or <Link to="/wallet/open-existing" className="text-2xl text-violet-400 font-medium underline-offset-4 hover:text-sky-400 hover:underline"> open</Link> an existing wallet for auto-login.
               </p>
             </div>
           </h1>

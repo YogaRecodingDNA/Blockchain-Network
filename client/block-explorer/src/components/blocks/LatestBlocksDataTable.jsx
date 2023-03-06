@@ -26,8 +26,7 @@ const LatestBlocksDataTable = () => {
       const date = Date.now();
       const dateCreated = +new Date(block.dateCreated);
       const timeElapsed = getElapsed(date, dateCreated);
-      // const reward = block.transactions[0].value / 1000000;// reward/fee value from mining reward Tx
-
+      
       return (
         <DataTable key={block.index} block={block} dateCreated={timeElapsed}/>
       );

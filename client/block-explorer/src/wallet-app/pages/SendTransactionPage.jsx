@@ -6,13 +6,14 @@ import useHashUtils from "../../hooks/use-hash-utils";
 import { useSendTransactionMutation } from "../../store";
 // COMPONENTS
 import WalletHeader from "../components/WalletHeader";
+import Button from "../../components/Button";
 // ASSETS/ICONS/STATUS COMPONENTS
 import wavePattern2 from "../../assets/images/wavePattern2.jpeg";
 import { FaFileSignature } from "react-icons/fa";
 import { GiWaves } from "react-icons/gi";
 
 const SendTransactionPage = () => {
-  const [ isLoggedIn ] = useState(secureLocalStorage.getItem("loggedIn"));
+  const [ isLoggedIn, setIsLoggedIn ] = useState(secureLocalStorage.getItem("loggedIn"));
   const [ renderTxnResponse, setRenderTxnResponse ] = useState("");
   const [ renderTxnDetails, setRenderTxnDetails ] = useState("");
   const [ formInputs, setFormInputs ] = useState({});
@@ -20,6 +21,9 @@ const SendTransactionPage = () => {
   const { sha256, signData, getAddressFromPublicKey } = useHashUtils();
   const [ sendTransaction ] = useSendTransactionMutation();
 
+  window.addEventListener('secureLocalStorage', () => {
+    setIsLoggedIn(secureLocalStorage.getItem("loggedIn"));
+  });
 
   const handleChange = (event) => {
     const name = event.target.name;
@@ -143,15 +147,15 @@ const SendTransactionPage = () => {
                     />
                   </div>
                   <div>
-                    <button
+                    <Button
+                      submit
                       type="submit"
-                      className="group relative flex w-full justify-center rounded-md border border border-indigo-600 py-2 px-4 text-sm font-medium text-white bg-gradient-to-r from-cyan-800 to-teal-400 hover:from-sky-400 hover:to-violet-500 text-white drop-shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                     >
                       <span className="absolute inset-y-0 left-0 flex items-center pl-3">
                         <FaFileSignature className="ml-5 h-5 w-5 text-indigo-800" aria-hidden="true" />
                       </span>
                       Sign Transaction
-                    </button>
+                    </Button>
                   </div>
                   <div>
                     <textarea
@@ -185,16 +189,16 @@ const SendTransactionPage = () => {
                     />
                   </div>
                   <div>
-                    <button
+                    <Button
+                      submit
                       type="button"
                       onClick={handleSendTxn}
-                      className="group relative flex w-full justify-center rounded-md border border border-indigo-600 py-2 px-4 text-sm font-medium text-white bg-gradient-to-r from-cyan-800 to-teal-400 hover:from-sky-400 hover:to-violet-500 text-white drop-shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                     >
                       <span className="absolute inset-y-0 left-0 flex items-center pl-3">
                         <GiWaves className="ml-5 h-7 w-7 text-indigo-800" aria-hidden="true" />
                       </span>
                       Send Transaction
-                    </button>
+                    </Button>
                   </div>
                   <div>
                     <textarea

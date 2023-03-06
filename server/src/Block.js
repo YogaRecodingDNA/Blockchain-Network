@@ -66,7 +66,7 @@ Block.genesisBlock = function() {
         return [genesisBlock];
         
     } else {
-        return;
+        return ;
     }
 };
 

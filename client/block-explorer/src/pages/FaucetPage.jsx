@@ -16,19 +16,27 @@ const faucetAddress = "f3d7dfd60b51f6804d47440e59404a393cdd9a78";
 
 const FaucetPage = () => {
   // STATE HOOKS
+  const [ isLoggedIn, setIsLoggedIn ] = useState(secureLocalStorage.getItem("loggedIn"));
   const [ isFaucetDonation, setIsFaucetDonation ] = useState(false);
   const [ responseMessage, setResponseMessage ] = useState("");
   const [ isSuccessful, setIsSuccessful ] = useState(false);
+  const [ isError, setIsError ] = useState(false);
   const [ formInputs, setFormInputs ] = useState({});
-  const [ isLoggedIn ] = useState(secureLocalStorage.getItem("loggedIn"));
   const [ loginMessage, setLoginMessage ] = useState(false);
   // API FETCHING HOOKS
-  const { data, error, isFetching } = useFetchBalancesByAddressQuery(faucetAddress);
+  const {
+    data,
+    error,
+    isFetching
+  } = useFetchBalancesByAddressQuery(faucetAddress);
   const [ sendTransaction ] = useSendTransactionMutation();
   // CUSTOM HOOKS
   const { calculateTxnData } = useHashUtils();
   const navigate = useNavigate();
 
+  window.addEventListener('secureLocalStorage', () => {
+    setIsLoggedIn(secureLocalStorage.getItem("loggedIn"));
+  });
 
   // EVENT HANDLERS
   const handleChange = (event) => { // HANDLE INPUTS
@@ -45,6 +53,8 @@ const FaucetPage = () => {
   const handleSubmit = (event) => { // HANDLE FORM SUBMIT
     event.preventDefault();
     const target = event.target;
+    setIsError(false);
+    setIsSuccessful(false);
 
     // Set txn data
     let transactionData;
@@ -70,11 +80,12 @@ const FaucetPage = () => {
     sendTransaction(transactionData)
     .then(res => {
       console.log("RESPONSE ==== ", res.data);
-      if(res.data) {
+      if(res.data.message === "Transaction created/broadcast successfully.") {
         setIsSuccessful(true);
         setResponseMessage("Successful Txn!!!");
       } else {
-        setResponseMessage(res.data.message);
+        setIsError(true);
+        setResponseMessage(res.data);
       }
     })
     .catch(error => console.error("ERROR: ", error));
@@ -102,8 +113,8 @@ const FaucetPage = () => {
   }
   
   const handleClickWalletPage = () => { // HANDLE CLICK LOGIN PAGE BUTTON
-    // Route to login/create wallet page
-    navigate("/wallet/create");
+    // Route to login
+    navigate("/wallet");
     setLoginMessage(false);
   }
 
@@ -218,23 +229,34 @@ const FaucetPage = () => {
                 </div>
                 {isSuccessful &&
                 <div>
-                  <button
+                  <Button
+                    success
                     type="button"
                     onClick={handleClickSuccess}
-                    className="group relative flex w-full justify-center rounded-md border border border-emerald-300 py-2 px-4 text-sm font-medium text-emerald-300 bg-emerald-400/60 hover:bg-emerald-400/80 hover:text-white drop-shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                   >
-                    {responseMessage && responseMessage} <span className="ml-10">{">>"} click to view {"<<"}</span>
-                  </button>
+                    {responseMessage && responseMessage} <span className="ml-2">(click to view)</span>
+                  </Button>
+                </div>}
+                {isError &&
+                <div>
+                  <Button
+                    error
+                    type="button"
+                    onClick={() => setIsError(false)}
+                  >
+                    {responseMessage && responseMessage}. Try Again.
+                    <span className="ml-4">(click to remove message)</span>
+                  </Button>
                 </div>}
                 {loginMessage &&
                 <div>
-                  <button
+                  <Button
+                    warning
                     type="button"
                     onClick={handleClickWalletPage}
-                    className="group relative flex w-full justify-center rounded-md border border border-yellow-300 py-2 px-4 text-sm font-medium text-yellow-300 bg-yellow-400/60 hover:bg-yellow-400/80 hover:text-white drop-shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                   >
                     Click here to login and create wallet for donations
-                  </button>
+                  </Button>
                 </div>}
               </form>
               

@@ -44,7 +44,9 @@ const Peers = () => {
                 {(currentUrl === nodeUrl) && <StatusCurrentNode />}
               </td>
               <td className="px-10 py-4 text-xs font-semibold truncate">
+              <HashLink to="/blockchain" linkData={nodeUrl}>
                   {nodeUrl}
+                </HashLink>
               </td>
           </tr>
       );

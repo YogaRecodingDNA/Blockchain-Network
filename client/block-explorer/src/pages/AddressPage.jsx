@@ -36,6 +36,7 @@ const AddressPage = () => {
     isFetching: balanceIsFetching
   } = useFetchBalancesByAddressQuery(linkData);
 
+
   let addressBalance; 
   if (balanceIsFetching) {
     addressBalance = <LoadingDNA />

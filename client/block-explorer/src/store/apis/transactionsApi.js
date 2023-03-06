@@ -8,17 +8,17 @@ const transactionsApi = createApi({ // Autogenerate hooks \ slices \ thunks
   baseQuery: fetchBaseQuery({ // transactionsApi.fetchBaseQuery === fetch
     baseUrl: 'http://localhost:5555',
   }),
-  tagTypes: ["AllTxns", "ConfirmedTxns", "PendingTxns", "TxnsByAddress"],
+  tagTypes: ['Transactions'],
   endpoints(builder) {
     return { // CONFIGURATION
       fetchAllTransactions: builder.query({ // === useFetchAllTransactionsQuery()
-        query: () => {
+        query: (nodeUrl) => {
           return {
-            url: '/transactions/all',
+            url: (nodeUrl && `${nodeUrl}/transactions/all`) || '/transactions/all',
             method: 'GET'
           };
         },
-        providesTags: ["AllTxns"],
+        providesTags: ['Transactions'],
       }),
       fetchConfirmedTransactions: builder.query({ // === useFetchConfirmedTransactionsQuery()
         query: () => {
@@ -27,7 +27,7 @@ const transactionsApi = createApi({ // Autogenerate hooks \ slices \ thunks
             method: 'GET'
           };
         },
-        providesTags: ["ConfirmedTxns"],
+        providesTags: ['Transactions'],
       }),
       fetchPendingTransactions: builder.query({ // === useFetchPendingTransactionsQuery()
         query: () => {
@@ -36,7 +36,7 @@ const transactionsApi = createApi({ // Autogenerate hooks \ slices \ thunks
             method: 'GET'
           };
         },
-        providesTags: ["PendingTxns"],
+        providesTags: ['Transactions'],
       }),
       fetchTransactionByHash: builder.query({ // === useFetchTransactionByHashQuery()
         query: (hash) => {
@@ -48,7 +48,7 @@ const transactionsApi = createApi({ // Autogenerate hooks \ slices \ thunks
             },
           };
         },
-        providesTags: ["TxnsByAddress"],
+        providesTags: ['Transactions'],
       }),
       sendTransaction: builder.mutation({
         query: (formData) => {
@@ -71,31 +71,37 @@ const transactionsApi = createApi({ // Autogenerate hooks \ slices \ thunks
             }
           };
         },
-        invalidatesTags: ["AllTxns", "ConfirmedTxns", "PendingTxns", "TxnsByAddress"],
+        invalidatesTags: ['Transactions'],
       }),
-      faucetTxnSend: builder.mutation({
-        query: (formData) => {
-          console.log(formData);
-          console.log(formData.recipientAddress);
-          console.log(+formData.amount);
-          return { // THE REQUEST-CONFIGURATION OBJECT
-            url: '/transactions/send',
-            method: 'POST',
-            body: {
-              from: "",
-              to: formData.recipientAddress,
-              value: +formData.amount,
-              fee: 10,
-              dateCreated: "",
-              data: "Faucet withdrawal",
-              senderPubKey: "",
-              transactionDataHash: faucetPublic,
-              senderPrivKey: faucetPrivate,
-              senderSignature: ""
-            }
+      fetchAllBalances: builder.query({ // === useFetchAllBalancesQuery()
+        query: () => {
+          return {
+            url: '/balances',
+            method: 'GET'
           };
         },
-        invalidatesTags: ["AllTxns", "ConfirmedTxns", "PendingTxns", "TxnsByAddress"],
+      }),
+      fetchBalancesByAddress: builder.query({ // === useFetchBalancesByAddressQuery()
+        query: (address) => {
+          return {
+            url: `/address/${address}/balance`,
+            method: 'GET',
+            params: {
+              userAddress: address
+            },
+          };
+        },
+      }),
+      fetchTransactionsByAddress: builder.query({ // === useFetchTransactionsByAddressQuery()
+        query: (address) => {
+          return {
+            url: `/address/${address}/transactions`,
+            method: 'GET',
+            params: {
+              userAddress: address
+            },
+          };
+        },
       }),
     };
   },
@@ -107,6 +113,8 @@ export const {
   useFetchPendingTransactionsQuery,
   useFetchTransactionByHashQuery,
   useSendTransactionMutation,
-  useFaucetTxnSendMutation
+  useFetchAllBalancesQuery,
+  useFetchBalancesByAddressQuery,
+  useFetchTransactionsByAddressQuery,
 } = transactionsApi;
 export { transactionsApi };

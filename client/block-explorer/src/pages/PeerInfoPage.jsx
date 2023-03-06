@@ -17,7 +17,7 @@ const truncateHash = (hash) => {
 const PeerInfoPage = () => {
   const location = useLocation();
   const { linkData } = location.state;
-  const {data, error, isFetching} = useFetchPeerInfoQuery(linkData);
+  const { data, error, isFetching } = useFetchPeerInfoQuery(linkData);
 
   let tableData;
 

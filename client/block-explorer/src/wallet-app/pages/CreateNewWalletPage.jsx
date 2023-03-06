@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 // COMPONENTS
 import WalletHeader from "../components/WalletHeader";
+import Button from "../../components/Button";
 // ASSETS/ICONS/STATUS COMPONENTS
 import wavePattern2 from "../../assets/images/wavePattern2.jpeg";
 import { GiWallet } from "react-icons/gi";
@@ -28,21 +29,28 @@ const generateNewWallet = (keyPair) => {
 }
 
 const CreateNewWalletPage = () => {
-  const [ isLoggedIn ] = useState(secureLocalStorage.getItem("loggedIn"));
+  const [ isLoggedIn, setIsLoggedIn ] = useState(secureLocalStorage.getItem("loggedIn"));
+  const [ isActiveWallet, setIsActiveWallet ] = useState(secureLocalStorage.getItem("address"));
   const [ generatedData, setGeneratedData ] = useState("");
   const navigate = useNavigate();
 
-  console.log("LOGGED IN? ", isLoggedIn);
-  
+  window.addEventListener('secureLocalStorage', () => {
+    setIsLoggedIn(secureLocalStorage.getItem("loggedIn"));
+    setIsActiveWallet(secureLocalStorage.getItem("address"));
+  });
+
   const handleClick = () => {
+    
     let newKeyPair = secp256k1.genKeyPair();
-  
+    
     const newWallet = generateNewWallet(newKeyPair);
     console.log("NEW WALLET ======= ", newWallet)
-
+    
     secureLocalStorage.setItem("privKey", newWallet.privateKey);
     secureLocalStorage.setItem("pubKey", newWallet.publicKey);
     secureLocalStorage.setItem("address", newWallet.address);
+    
+    window.dispatchEvent(new Event("secureLocalStorage"));
     
     setGeneratedData(
       "PRIVATE KEY: " +
@@ -89,26 +97,26 @@ const CreateNewWalletPage = () => {
 
                 {isLoggedIn && 
                 <div>
-                  <button
+                  <Button
+                    submit
                     type="button"
                     onClick={handleClick}
-                    className="group relative flex w-full justify-center rounded-md border border border-indigo-600 py-2 px-4 text-sm font-medium text-white bg-gradient-to-r from-cyan-700 to-teal-400 hover:from-sky-400 hover:to-violet-500 text-white drop-shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                   >
                     <span className="absolute inset-y-0 left-0 flex items-center pl-3">
                       <GiWallet className="ml-5 h-6 w-6 text-indigo-800" aria-hidden="true" />
                     </span>
                     Generate Now
-                  </button>
+                  </Button>
                 </div>}
                 {!isLoggedIn &&
                 <div>
-                  <button
+                  <Button
+                    warning
                     type="button"
                     onClick={() => navigate("/wallet")}
-                    className="group relative flex w-full justify-center rounded-md border border border-yellow-300 py-2 px-4 text-sm font-medium text-yellow-300 bg-yellow-400/60 hover:bg-yellow-400/80 hover:text-white drop-shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                   >
                     Go to login page
-                  </button>
+                  </Button>
                 </div>}
               </div>
               
