@@ -60,7 +60,7 @@ const SingleTransactionPage = () => {
       {rowHead: "Timestamp", rowData: timeElapsed},
       {rowHead: "From", rowData: <HashLink to="/userAddress" linkData={data.from}>{data.from}</HashLink>},
       {rowHead: "To", rowData: <HashLink to="/userAddress" linkData={data.to}>{data.to}</HashLink>},
-      {rowHead: "Value", rowData: `${data.value / 1000000} PRANA`},
+      {rowHead: "Value", rowData: `${data.value} PRANA`},
       {rowHead: "Transaction Fee", rowData: `${data.fee} Nyasa`},
     ];
 

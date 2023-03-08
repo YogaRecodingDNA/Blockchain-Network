@@ -38,7 +38,7 @@ const Blocks = ({ nodeUrl }) => {
       const date = Date.now();
       const dateCreated = +new Date(block.dateCreated);
       const timeElapsed = getElapsed(date, dateCreated);
-      const reward = block.transactions[0].value / 1000000;
+      const reward = (block.index === 0) ? 0 : block.transactions[0].value;
 
       return (
         <tr key={block.index} className="text-left text-white bg-transparent hover:bg-violet-400/50">

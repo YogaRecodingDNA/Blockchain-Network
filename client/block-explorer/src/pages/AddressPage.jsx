@@ -5,6 +5,7 @@ import useGetTime from "../hooks/use-getTime";
 // COMPONENTS
 import SearchBar from "../components/navigation/SearchBar";
 import PageHead from "../components/PageHead";
+import BalancePanel from "../components/panels/BalancePanel";
 import HeadPanelHalf from "../components/panels/HeadPanelHalf";
 import DataPanelLarge from "../components/panels/DataPanelLarge";
 import HashLink from "../components/navigation/HashLink";
@@ -37,16 +38,26 @@ const AddressPage = () => {
   } = useFetchBalancesByAddressQuery(linkData);
 
 
-  let addressBalance; 
+  let addressBalances;
+  let safeBalance;
+  let confirmedBalance;
+  let pendingBalance;
   if (balanceIsFetching) {
-    addressBalance = <LoadingDNA />
+    addressBalances = <LoadingDNA />
   } else if (balanceError) {
-    addressBalance = <div>Error loading balance.</div>
+    addressBalances = <div>Error loading balance.</div>
   } else {
-    addressBalance = balanceData.addressBalances.safeBalance.toLocaleString();
+    if (linkData === "0000000000000000000000000000000000000000") {
+      safeBalance = 0;
+      confirmedBalance = 0;
+      pendingBalance = 0;
+    } else {
+      addressBalances = balanceData.addressBalances;
+      safeBalance = addressBalances.safeBalance.toLocaleString("en-US");
+      confirmedBalance = addressBalances.confirmedBalance.toLocaleString("en-US");
+      pendingBalance = addressBalances.pendingBalance.toLocaleString("en-US");
+    }
   }
-  console.log(balanceData);
-  console.log(addressBalance);
 
   let tableData;
   if (txnIsFetching) {
@@ -117,7 +128,6 @@ const AddressPage = () => {
   }
 
   const handleSubmit = (query) => {
-
     return;
   }
 
@@ -148,7 +158,11 @@ const AddressPage = () => {
           </PageHead>
         </div>
         <div className="flex my-5 mx-5 h-20 space-x-4">
-          <HeadPanelHalf title="PRANA BALANCE" data={balanceData && addressBalance}/>
+          <BalancePanel 
+            safe={safeBalance}
+            confirmed={confirmedBalance}
+            pending={pendingBalance}
+          />
           <HeadPanelHalf title="TOTAL TRANSACTIONS" data={txnData && txnData.addressHistory.length}/>
         </div>
         <DataPanelLarge>

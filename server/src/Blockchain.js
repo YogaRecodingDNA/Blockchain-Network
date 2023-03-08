@@ -486,6 +486,8 @@ Blockchain.prototype.mineNewBlock = function(minerAddress) {
     // const minimumDifficulty = 4;
 
     let blockCandidate = this.prepareBlockCandidate(minerAddress, difficulty);
+    console.log("BLOCK CANDIDATE", blockCandidate);
+    console.log("CALC BLOCK HASH", blockCandidate.calculateBlockHash());
     blockCandidate.calculateBlockHash();
     
     // PROOF OF WORK
@@ -539,7 +541,7 @@ Blockchain.prototype.prepareBlockCandidate = function(minerAddress, difficulty) 
         balances[asSender] = balances[asSender] || 0;
         balances[asRecipient] = balances[asRecipient] || 0;
 
-        if (balances[asSender] >= transaction.fee) {
+        if ((balances[asSender] >= transaction.fee)) {
             transaction.minedInBlockIndex = newBlockIndex;
 
             // 2. Transfer all pending transactions' fees
@@ -565,17 +567,19 @@ Blockchain.prototype.prepareBlockCandidate = function(minerAddress, difficulty) 
 
     // 4. Create coinbase transaction collects/transfers all tx fees + block reward
     const coinbaseTransaction = new Transaction(
-        undefined,                  // from: address (derived from senderPubKey)
+        Config.nullMinerAddress,    // from: address (derived from senderPubKey)
         minerAddress,               // to: address
-        blockReward,                // value: miner's reward
+        (blockReward / 1000000),    // value: miner's reward
         0,                          // fee: mining fee
         new Date().toISOString(),   // dateCreated: ISO format
-        "coinbase tx",              // data: payload / comments
+        "coinbase txn",             // data: payload / comments
         Config.nullPublicKey,       // senderPubKey
         undefined,                  // transactionDataHash (auto calculated)
-        Config.nullPrivateKey,      // senderPrivKey (FOR TESTING ONLY)
         Config.nullSenderSignature  // senderSignature 
     );
+
+    coinbaseTransaction.minedInBlockIndex = newBlockIndex;
+    coinbaseTransaction.transferSuccessful = true;
 
     // 5. Prepend the coinbase txn with updated (reward + fees) to txn list
     transactions.unshift(coinbaseTransaction);

@@ -15,21 +15,19 @@ import { Dna } from 'react-loader-spinner';
 const currentUrl = "http://localhost:5555";
 
 const Miner = ({ peers }) => {
+  const navigate = useNavigate();
   const [ isLoggedIn ] = useState(secureLocalStorage.getItem("loggedIn"));
   const [ isWalletActive ] = useState(secureLocalStorage.getItem("address"));
   const [ isMessage, setIsMessage ] = useState(false);
   const [ isNoTxns, setIsNoTxns ] = useState(false);
+  const [ isMining, setIsMining ] = useState(false);
   const [ minerNodeUrl, setMinerNodeUrl ] = useState("");
   const [ minerAddress, setMinerAddress ] = useState("");
-  const [ isMining, setIsMining ] = useState(false);
-  const navigate = useNavigate();
-
-  const { data: miningData } = useFetchMineNewBlockQuery({ nodeUrl: minerNodeUrl, address: minerAddress }, { skip: isMining });
-
   const { data: txnsData } = useFetchPendingTransactionsQuery();
-
-  console.log("IS LOGGED IN ", isLoggedIn);
-  console.log("IS WALLET ACTIVE ", isWalletActive);
+  const { data: miningData } = useFetchMineNewBlockQuery(
+      { nodeUrl: minerNodeUrl, address: minerAddress },
+      { skip: isMining }
+  );
 
   const handleMineClick = (nodeUrl) => { // HANDLE MINER CLILCK
     if (!isLoggedIn || !isWalletActive) {
@@ -46,7 +44,6 @@ const Miner = ({ peers }) => {
       if ( minerNodeUrl && minerAddress ){
         setIsMining(true);
       }
-
     }
   }
 
@@ -82,6 +79,7 @@ const Miner = ({ peers }) => {
   } else {
     let count = 1;
     peerInfo = [];
+
     for (let node in peers.peersData) {
       const nodeId = node;
       const nodeUrl = peers.peersData[node];
@@ -112,6 +110,7 @@ const Miner = ({ peers }) => {
 
       count++;
     };
+
   }
 
   console.log("MINING DATA ========= ", miningData);

@@ -9,7 +9,7 @@ import { Disclosure } from '@headlessui/react'
 import { Link } from 'react-router-dom'
 // ASSETS/ICONS/STATUS COMPONENTS
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
-import { GiWallet } from "react-icons/gi";
+import { GiWallet, GiHouse } from "react-icons/gi";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -74,9 +74,23 @@ export default function WalletHeader() {
                   )}
                 </Disclosure.Button>
               </div>
-              <div className="flex flex-1 items-center justify-center md:items-stretch md:justify-center">
-                <div data-tooltip-content={isActiveWallet ? "Activated address: " + secureLocalStorage.getItem("address") : "Go open an existing wallet or create a new one to activate your session"} data-tooltip-id='toolTip1' data-place='top' className="flex flex-shrink-0 items-center text-xs font-medium">
-                <Tooltip id="toolTip1" />
+              <div className="flex flex-1 relative items-center justify-center md:items-stretch md:justify-center">
+              <div
+                  data-tooltip-content={ isLoggedIn ? 
+                    "Logout / Wallet Home" :
+                    "Login / Wallet Home"
+                  }
+                  data-tooltip-id='toolTip2'
+                  data-place='top'
+                  className="fixed w-6 items-center text-xs font-medium hidden md:flex md:left-5"
+                >
+                  <Tooltip id="toolTip2" />
+                  <div className="flex flex-shrink-0 items-center mr-10 space-x-1 hover:cursor-pointer text-gray-300 hover:text-white">
+                    <GiHouse onClick={() => navigate("/wallet")} className="block h-5 w-auto" />
+                  </div>
+                </div>
+                <div data-tooltip-content={isActiveWallet ? "Active Wallet: " + secureLocalStorage.getItem("address") : "Go open an existing wallet or create a new one to activate your session"} data-tooltip-id='toolTip1' data-place='top' className="flex flex-shrink-0 items-center text-xs font-medium">
+                  <Tooltip id="toolTip1" />
                   {isLoggedIn && isActiveWallet ?
                   <div className="flex items-center space-x-1 hover:cursor-pointer text-emerald-500 hover:text-emerald-400">
                     <GiWallet onClick={handleActivation} className="block h-6 w-auto" />
@@ -88,6 +102,7 @@ export default function WalletHeader() {
                   </div>
                   }
                 </div>
+                
                 <div className="hidden md:ml-6 md:block">
                   <div className="flex space-x-4">
                     {navigation.map((item) => (
@@ -112,6 +127,17 @@ export default function WalletHeader() {
 
           <Disclosure.Panel className="md:hidden">
             <div className="space-y-1 px-px pt-2 pb-3">
+                <Link
+                  key="wallet-login"
+                  to="/wallet"
+                  className={classNames(
+                    'text-gray-300 hover:bg-gray-900 hover:text-white',
+                    'block px-3 py-2 text-base font-medium'
+                  )}
+                  aria-current={true ? 'page' : undefined}
+                >
+                  Login / Logout
+                </Link>
               {navigation.map((item) => (
                 <Link
                   key={item.name}

@@ -22,16 +22,16 @@ const WalletPage = () => {
       secureLocalStorage.setItem("loggedIn", true);
       setIsLoggedIn(true);
       navigate("/wallet/create");
-    } else {
-      secureLocalStorage.setItem("loggedIn", false);
+    } else if (isLoggedIn) {
       setIsLoggedIn(false);
+      // secureLocalStorage.setItem("loggedIn", false);
+      secureLocalStorage.clear();
+    }
+    
+    if (isLoggedIn === false) {
     }
 
     window.dispatchEvent(new Event("secureLocalStorage"));
-    
-    if (isLoggedIn === false) {
-      secureLocalStorage.clear();
-    }
   }
 
   return (

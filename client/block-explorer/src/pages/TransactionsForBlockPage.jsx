@@ -11,12 +11,24 @@ import BlockTxns from "../components/blocks/BlockTxns";
 import moonExplorer from "../assets/images/moonExplorer.jpeg";
 
 const TransactionsForBlockPage = () => {
-  const { data: confirmedData } = useFetchConfirmedTransactionsQuery();
-  const location = useLocation();
   const navigate = useNavigate();
+  const location = useLocation();
   const { linkData } = location.state;
-  const txns = linkData;
-  const blockNumber = txns[0].minedInBlockIndex === 0 ? "GENESIS BLOCK" : txns[0].minedInBlockIndex;
+  const { data: confirmedData } = useFetchConfirmedTransactionsQuery();
+
+  const transactions = linkData;
+  const blockReward = transactions[0].value;
+  const totalFees = transactions.map((txn) => txn.fee).reduce((a, b) => a + b) / 1000000;
+  const totalReward = blockReward + totalFees;
+
+  const blockNumber = (
+    (transactions[0].minedInBlockIndex === 0) ?
+    "GENESIS BLOCK" :
+    transactions[0].minedInBlockIndex
+  );
+
+  console.log("Reward === ", transactions[0].value);
+  console.log("Fees", totalFees);
 
   return (
     <div className="flex bg-cover bg-fixed w-full h-full" style={{ backgroundImage: `url(${moonExplorer})`}} >
@@ -30,11 +42,11 @@ const TransactionsForBlockPage = () => {
           TRANSACTIONS FOR BLOCK # <button onClick={() => navigate(-1)} className="text-xl font-normal text-violet-400">{blockNumber}</button>
         </PageHead>
         <div className="flex my-5 mx-5 h-20 space-x-4">
-          <HeadPanelHalf title="CONFIRMED TRANSACTIONS" data={confirmedData && confirmedData.length}/>
-          <HeadPanelHalf title="TRANSACTIONS LAST 24 HRS" data={confirmedData && confirmedData.length}/>
+          <HeadPanelHalf title="TRANSACTIONS" data={transactions.length}/>
+          <HeadPanelHalf title="TOTAL PRANA REWARD" data={totalReward}/>
         </div>
         <DataPanelLarge>
-          <BlockTxns txns={txns} />
+          <BlockTxns txns={transactions} />
         </DataPanelLarge>
       </div>
     </div>

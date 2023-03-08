@@ -72,13 +72,3 @@ Block.genesisBlock = function() {
 
 
 module.exports = Block;
-
-
-
-// try {
-//     const genesisBlock = await axios.get(`${Config.currentNodeURL}/debug/mine/${Config.genesisMiningAddress}/5`);
-//     console.log("GENESIS BLOCK ================================================ ", genesisBlock.data.newBlock);
-
-// } catch (error) {
-//     console.error(error);
-// }
