@@ -1,7 +1,7 @@
 # VinyasaChain Educational Blockchain-Network
 
 <p align="center">
-  <a ><img  src="client/block-explorer/public/readme/homepage.png" alt="homepage"></a></p>
+  <a ><img  src="client/block-explorer/public/readme/home.png" alt="homepage"></a></p>
 </p>
 
 ## About The Project
