@@ -1,7 +1,7 @@
 # VinyasaChain Educational Blockchain-Network
 
 <p align="center">
-  <a ><img  src="public/readme/homepage.png" alt="homepage"></a></p>
+  <a ><img  src="client/block-explorer/public/readme/homepage.png" alt="homepage"></a></p>
 </p>
 
 ## About The Project
@@ -61,14 +61,14 @@ Open your browser and go to http://localhost:9999/
 ### 1. Wallet
 
 <p align="center">
-  <a ><img  src="public/readme/wallet-home.png" alt="wallet home"></a></p>
-  <a ><img  src="public/readme/wallet-create.png" alt="create new wallet"></a></p>
-  <a ><img  src="public/readme/wallet-create-generate.png" alt="derived key & address"></a></p>
-  <a ><img  src="public/readme/wallet-send-txn.png" alt="send transaction"></a></p>
-  <a ><img  src="public/readme/wallet-txn-sign-sent.png" alt="signed and sent transaction"></a></p>
+  <a ><img  src="client/block-explorer/public/readme/wallet-home.png" alt="wallet home"></a></p>
+  <a ><img  src="client/block-explorer/public/readme/wallet-create.png" alt="create new wallet"></a></p>
+  <a ><img  src="client/block-explorer/public/readme/wallet-create-generate.png" alt="derived key & address"></a></p>
+  <a ><img  src="client/block-explorer/public/readme/wallet-send-txn.png" alt="send transaction"></a></p>
+  <a ><img  src="client/block-explorer/public/readme/wallet-txn-sign-sent.png" alt="signed and sent transaction"></a></p>
 </p>
-  <a ><img  src="public/readme/wallet-balances.png" alt="wallet balances"></a></p>
-  <a ><img  src="public/readme/wallet-open.png" alt="wallet restore"></a></p>
+  <a ><img  src="client/block-explorer/public/readme/wallet-balances.png" alt="wallet balances"></a></p>
+  <a ><img  src="client/block-explorer/public/readme/wallet-open.png" alt="wallet restore"></a></p>
 
 #### Functionality
 
@@ -82,7 +82,7 @@ Open your browser and go to http://localhost:9999/
 ### 2. Faucet
 
 <p align="center">
-  <a ><img  src="public/readme/faucet.png" alt="faucet"></a></p>
+  <a ><img  src="client/block-explorer/public/readme/faucet.png" alt="faucet"></a></p>
 </p>
 
 #### Functionality
@@ -97,7 +97,7 @@ Open your browser and go to http://localhost:9999/
 ### 3. Block Explorer
 
 <p align="center">
-  <a ><img  src="public/readme/block-explorer.png" alt="explorer"></a></p>
+  <a ><img  src="client/block-explorer/public/readme/block-explorer.png" alt="explorer"></a></p>
 </p>
 
 #### Functionality
@@ -114,7 +114,7 @@ Open your browser and go to http://localhost:9999/
 ### 4. Miner & Nodes
 
 <p align="center">
-  <a ><img  src="public/readme/miner.png" alt="miner"></a></p>
+  <a ><img  src="client/block-explorer/public/readme/miner.png" alt="miner"></a></p>
 </p>
 
 #### Functionality
