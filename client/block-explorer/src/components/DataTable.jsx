@@ -6,7 +6,8 @@ const DataTable = ({ block, transaction, dateCreated }) => {
     let tableBody;
     
     if (block) {
-        const minerReward = block.transactions[0].value / 1000000;
+        const minerReward = block.transactions[0].value;
+        // const minerReward = block.transactions[0].value / 1000000;
 
         tableBody = (
             <tr className="text-white hover:bg-violet-400/50">
@@ -35,7 +36,8 @@ const DataTable = ({ block, transaction, dateCreated }) => {
             </tr>
         )
     } else if (transaction) {
-        const txnAmount = transaction.value / 1000000;
+        const txnAmount = transaction.value;
+        // const txnAmount = transaction.value / 1000000;
         tableBody = (
             <tr className="text-white hover:bg-violet-400/50">
                 <th className="w-full inline-flex items-center">

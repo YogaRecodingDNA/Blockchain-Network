@@ -56,11 +56,11 @@ const MinerPage = () => {
   return (
     <div className="flex bg-cover bg-fixed w-full h-full" style={{ backgroundImage: `url(${guruMountain})`}} >
       <div className="w-full h-screen overflow-auto bg-gradient-to-b from-gray-900 via-gray-900/40 text-white">
-        <div>
+        {/* <div>
           <div className="flex items-start w-10/12 ml-auto">
             <SearchBar />
           </div>
-        </div>
+        </div> */}
         <div className="w-3/4 mx-auto font-medium mt-2">
           <h1 className="font-light text-center text-5xl">
             Vinyasa Block Miner

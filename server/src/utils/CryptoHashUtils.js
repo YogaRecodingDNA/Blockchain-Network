@@ -1,5 +1,6 @@
 // const Config = require("./Config");
 const CryptoJS = require("crypto-js");
+
 const EC = require('elliptic').ec;
 const secp256k1 = new EC('secp256k1');
 

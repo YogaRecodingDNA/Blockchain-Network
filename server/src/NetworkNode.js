@@ -10,8 +10,8 @@ const { StatusCodes } = require("http-status-codes");
 
 // Create Express app
 const app = express();
-app.use(bodyParser.json()); // Enable JSON data in the HTTP request body
 app.use(bodyParser.urlencoded({ extended: false}));
+app.use(bodyParser.json()); // Enable JSON data in the HTTP request body
 app.use(cors()); // Enable Cross-Origin Resource Sharing (CORS)
 
 const vinyasa = new Blockchain(); // CREATE NEW BLOCKCHAIN INSTANCE
@@ -48,7 +48,9 @@ app.get("/", (req, res) => {
 });
 
 
-
+app.get("/blahblah", (req, res) => {
+    console.log("works?");
+})
 
         
 // ****************************************************************************
@@ -163,7 +165,7 @@ app.get("/blocks/:blockIndex", (req, res) => {
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
-// ----------------------- GET ALL TRANSACTIONS ---------------------------
+// ----------------------- GET ALL TRANSACTIONS -------------------------------
 // ----------------------------------------------------------------------------
 app.get("/transactions/all", (req, res) => {
     res.status(StatusCodes.OK).json(vinyasa.getAllTransactions());
