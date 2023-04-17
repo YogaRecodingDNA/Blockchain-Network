@@ -111,7 +111,7 @@ Open your browser and go to http://localhost:9999/
 
 ---
 
-### 5. Miner
+### 4. Miner & Nodes
 
 <p align="center">
   <a ><img  src="public/readme/miner.png" alt="miner"></a></p>
@@ -122,16 +122,6 @@ Open your browser and go to http://localhost:9999/
 - Manual & automatic modes.
 - Sync miner to their connected wallet.
 - Only mines if pending transactions are present.
-
----
-
-### 4. Nodes
-
-<p align="center">
-  <a ><img  src="public/readme/miner-connected-peers.png" alt="nodes"></a></p>
-</p>
-
-#### Functionality
 
 - REST API.
 - Validates Transactions.
