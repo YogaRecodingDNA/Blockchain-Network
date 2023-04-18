@@ -61,14 +61,44 @@ Open your browser and go to http://localhost:9999/
 ### 1. Wallet
 
 <p align="center">
-  <a ><img  src="client/block-explorer/public/readme/wallet-home.png" alt="wallet home"></a></p>
-  <a ><img  src="client/block-explorer/public/readme/wallet-create.png" alt="create new wallet"></a></p>
-  <a ><img  src="client/block-explorer/public/readme/wallet-create-generate.png" alt="derived key & address"></a></p>
-  <a ><img  src="client/block-explorer/public/readme/wallet-send-txn.png" alt="send transaction"></a></p>
-  <a ><img  src="client/block-explorer/public/readme/wallet-txn-sign-sent.png" alt="signed and sent transaction"></a></p>
+  <a><img  src="client/block-explorer/public/readme/wallet-home.png" alt="wallet home"></a>
 </p>
-  <a ><img  src="client/block-explorer/public/readme/wallet-balances.png" alt="wallet balances"></a></p>
-  <a ><img  src="client/block-explorer/public/readme/wallet-open.png" alt="wallet restore"></a></p>
+
+#### Key and Address Derivation
+
+<p align="center">
+  <a><img  src="client/block-explorer/public/readme/wallet-create.png" alt="create new wallet"></a>
+</p>
+<p align="center">
+  <a><img  src="client/block-explorer/public/readme/wallet-create-generate.png" alt="derived key & address"></a>
+</p>
+
+#### Sign and Send Transaction
+
+<p align="center">
+  <a><img  src="client/block-explorer/public/readme/wallet-send-txn.png" alt="send transaction"></a>
+</p>
+<p align="center">
+  <a><img  src="client/block-explorer/public/readme/wallet-txn-sign-sent.png" alt="signed and sent transaction"></a>
+</p>
+
+#### Get Balances
+
+<p align="center">
+  <a><img  src="client/block-explorer/public/readme/wallet-balances.png" alt="wallet balances"></a>
+</p>
+<p align="center">
+  <a><img  src="client/block-explorer/public/readme/wallet-balances-display.png" alt="displayed balances"></a>
+</p>
+
+#### Open Existing Wallet With Private Key
+
+<p align="center">
+  <a><img  src="client/block-explorer/public/readme/wallet-open.png" alt="wallet restore"></a>
+</p>
+<p align="center">
+  <a><img  src="client/block-explorer/public/readme/wallet-open-display.png" alt="wallet restored"></a>
+</p>
 
 #### Functionality
 
@@ -111,7 +141,7 @@ Open your browser and go to http://localhost:9999/
 
 ---
 
-### 4. Miner & Nodes
+### 4. Miner & Peer Nodes
 
 <p align="center">
   <a ><img  src="client/block-explorer/public/readme/miner.png" alt="miner"></a></p>
@@ -119,14 +149,11 @@ Open your browser and go to http://localhost:9999/
 
 #### Functionality
 
-- Manual & automatic modes.
 - Sync miner to their connected wallet.
 - Only mines if pending transactions are present.
-
-- REST API.
 - Validates Transactions.
-- Multiple node synchronization.
 - Block Validations.
+- Multiple node synchronization.
 - Mining Jobs.
 - Consensus Verification.
 
