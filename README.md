@@ -58,73 +58,23 @@ Open your browser and go to http://localhost:9999/
 
 ---
 
-### 1. Wallet
+### 1. Blockchain
 
 <p align="center">
-  <a><img  src="client/block-explorer/public/readme/wallet-home.png" alt="wallet home"></a>
-</p>
-
-#### Key and Address Derivation
-
-<p align="center">
-  <a><img  src="client/block-explorer/public/readme/wallet-create.png" alt="create new wallet"></a>
-</p>
-<p align="center">
-  <a><img  src="client/block-explorer/public/readme/wallet-create-generate.png" alt="derived key & address"></a>
-</p>
-
-#### Sign and Send Transaction
-
-<p align="center">
-  <a><img  src="client/block-explorer/public/readme/wallet-send-txn.png" alt="send transaction"></a>
-</p>
-<p align="center">
-  <a><img  src="client/block-explorer/public/readme/wallet-txn-sign-sent.png" alt="signed and sent transaction"></a>
-</p>
-
-#### Get Balances
-
-<p align="center">
-  <a><img  src="client/block-explorer/public/readme/wallet-balances.png" alt="wallet balances"></a>
-</p>
-<p align="center">
-  <a><img  src="client/block-explorer/public/readme/wallet-balances-display.png" alt="displayed balances"></a>
-</p>
-
-#### Open Existing Wallet With Private Key
-
-<p align="center">
-  <a><img  src="client/block-explorer/public/readme/wallet-open.png" alt="wallet restore"></a>
-</p>
-<p align="center">
-  <a><img  src="client/block-explorer/public/readme/wallet-open-display.png" alt="wallet restored"></a>
+  <a ><img  src="client/block-explorer/public/readme/blockchain.png" alt="explorer"></a></p>
 </p>
 
 #### Functionality
 
-- Wallet key & address derivation
-- Wallet transaction sign & send
-- Check balances
-- Use a private key to restore the wallet
+- Displays all blocks and block information.
+- Displays blocks & transactions total count.
+- Displays total peers count and links to peer node info.
+- Displays current Difficulty.
+- Search bar for quick access to information.
 
 ---
 
-### 2. Faucet
-
-<p align="center">
-  <a ><img  src="client/block-explorer/public/readme/faucet.png" alt="faucet"></a></p>
-</p>
-
-#### Functionality
-
-- Coin request limit is set to 5,000 PRANA
-- Additional coins can be requested after a 90 second delay.
-- Donate button lets you send coins back to the faucet
-- The total balance of the faucet is displayed at all times.
-
----
-
-### 3. Block Explorer
+### 2. Block Explorer
 
 <p align="center">
   <a ><img  src="client/block-explorer/public/readme/block-explorer.png" alt="explorer"></a></p>
@@ -138,6 +88,21 @@ Open your browser and go to http://localhost:9999/
 - Displays transaction history of addresses.
 - Displays balances (pending, confirmed, and safe) for addresses.
 - Search bar for quick access to information.
+
+---
+
+### 3. Faucet
+
+<p align="center">
+  <a ><img  src="client/block-explorer/public/readme/faucet.png" alt="faucet"></a></p>
+</p>
+
+#### Functionality
+
+- Coin request limit is set to 5,000 PRANA
+- Additional coins can be requested after a 90 second delay.
+- Donate button lets you send coins back to the faucet
+- The total balance of the faucet is displayed at all times.
 
 ---
 
@@ -156,6 +121,57 @@ Open your browser and go to http://localhost:9999/
 - Multiple node synchronization.
 - Mining Jobs.
 - Consensus Verification.
+
+---
+
+### 5. Wallet
+
+<p align="center">
+  <a><img  src="client/block-explorer/public/readme/wallet-home.png" alt="wallet home"></a>
+</p>
+
+#### Key & Address Derivation
+
+<p align="center">
+  <a><img  src="client/block-explorer/public/readme/wallet-create.png" alt="create new wallet"></a>
+</p>
+<p align="center">
+  <a><img  src="client/block-explorer/public/readme/wallet-create-generate.png" alt="derived key & address"></a>
+</p>
+
+#### Sign & Send Transactions
+
+<p align="center">
+  <a><img  src="client/block-explorer/public/readme/wallet-send-txn.png" alt="send transaction"></a>
+</p>
+<p align="center">
+  <a><img  src="client/block-explorer/public/readme/wallet-txn-sign-sent.png" alt="signed and sent transaction"></a>
+</p>
+
+#### Get Balances
+
+<p align="center">
+  <a><img  src="client/block-explorer/public/readme/wallet-balances.png" alt="wallet balances"></a>
+</p>
+<p align="center">
+  <a><img  src="client/block-explorer/public/readme/wallet-balances-display.png" alt="displayed balances"></a>
+</p>
+
+#### Open Existing Wallet With Your Private Key
+
+<p align="center">
+  <a><img  src="client/block-explorer/public/readme/wallet-open.png" alt="wallet restore"></a>
+</p>
+<p align="center">
+  <a><img  src="client/block-explorer/public/readme/wallet-open-display.png" alt="wallet restored"></a>
+</p>
+
+#### Functionality
+
+- Wallet key & address derivation
+- Wallet transaction sign & send
+- Check balances
+- Use a private key to restore the wallet
 
 ---
 
